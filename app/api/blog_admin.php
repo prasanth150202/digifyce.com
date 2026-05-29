@@ -1,0 +1,1 @@
+Admin REST API for blog create, update, soft delete (POST, PUT, DELETE). Includes simple session-based admin check.

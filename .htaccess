@@ -1,0 +1,25 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# Redirect .php URLs to clean URLs — GET only (POST must never be redirected: 301 drops POST body)
+RewriteCond %{REQUEST_METHOD} !POST
+RewriteCond %{THE_REQUEST} /([^.]+)\.php [NC]
+RewriteRule ^ /%1 [R=301,L,NE]
+
+# Internally serve .php files for clean URLs (any depth)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+)$ $1.php [L,NC]
+
+# Pages: /pages/slug -> pages.php?slug=slug
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^pages/([^/]+)/?$ pages.php?slug=$1 [L,QSA,NC]
+
+# Custom slug router: handles user-defined slugs set in admin SEO Settings
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php !-f
+RewriteRule ^(.+)$ slug_router.php?uri=$1 [L,QSA]
+</IfModule>

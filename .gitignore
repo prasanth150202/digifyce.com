@@ -1,0 +1,34 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# PHP / app cache and logs
+*.log
+/cache/
+/tmp/
+/storage/*.key
+/storage/logs/
+/storage/cache/
+/storage/sessions/
+
+# Uploads and generated files
+/storage/uploads/
+/public/uploads/
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Build artifacts
+build/
+dist/
+*.tmp
