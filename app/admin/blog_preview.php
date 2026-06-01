@@ -28,7 +28,7 @@ $blog['tags'] = $tagsStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Env / appUrl (blog view uses these)
 $envFile = __DIR__ . '/../../.env';
-$appUrl  = 'http://localhost/digifyce';
+$appUrl  = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce', '/');
 if (file_exists($envFile)) {
     foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
         if (strpos($line, '=') !== false && strpos(trim($line), '#') !== 0) {

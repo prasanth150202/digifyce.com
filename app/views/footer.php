@@ -1,6 +1,6 @@
 <?php
 // footer.php: Contains the full footer HTML with dynamic navigation and settings
-$appUrl = $appUrl ?? 'http://localhost/digifyce2';
+$appUrl = $appUrl ?? ($_ENV['APP_URL'] ?? 'http://localhost/digifyce');
 $footerLogo = '';
 $footerDescription = '';
 $footerCopyright = '© ' . date('Y') . ' Digifyce Performance. All rights reserved.';
