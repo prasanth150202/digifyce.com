@@ -344,6 +344,14 @@ function buildSimpleField(key, field, val) {
         return `<div class="mb-3"><label class="form-label fw-bold small">${esc(field.label)}</label>
             <textarea data-key="${key}" class="form-control form-control-sm" rows="3" ${ph}>${esc(val)}</textarea></div>`;
     }
+    if (field.type === 'code') {
+        return `<div class="mb-3">
+            <label class="form-label fw-bold small">${esc(field.label)}</label>
+            <div class="text-muted mb-1" style="font-size:11px">HTML, inline CSS, and &lt;script&gt; tags are all supported.</div>
+            <textarea data-key="${key}" class="form-control form-control-sm font-monospace" rows="14"
+                style="font-size:12px;white-space:pre;resize:vertical" ${ph}>${esc(val)}</textarea>
+        </div>`;
+    }
     return `<div class="mb-3"><label class="form-label fw-bold small">${esc(field.label)}</label>
         <input type="text" data-key="${key}" class="form-control form-control-sm" value="${esc(val)}" ${ph}></div>`;
 }

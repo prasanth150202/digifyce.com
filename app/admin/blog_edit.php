@@ -40,18 +40,20 @@ tinymce.init({
   height: 500,
 
   plugins: 'advlist autolink lists link image table code paste',
-  toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | code',
+  toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | table | code',
 
   paste_as_text: false,
-  paste_remove_styles: true,
   paste_remove_spans: true,
   paste_strip_class_attributes: 'all',
 
-  valid_elements: 'p,h1,h2,h3,h4,h5,h6,ul,ol,li,strong,b,em,i,a[href],img[src|alt],br',
+  valid_elements: 'p,h1,h2,h3,h4,h5,h6,ul,ol,li,strong,b,em,i,a[href],img[src|alt],br,' +
+    'table[width|cellpadding|cellspacing|border|style],thead,tbody,tfoot,' +
+    'tr,th[colspan|rowspan|scope|style|align],td[colspan|rowspan|style|align|width]',
 
   paste_preprocess: function(plugin, args) {
     let content = args.content;
-    content = content.replace(/\s+(class|style|lang|xml:lang|role|aria-[a-z-]+|data-[^=]*)="[^"]*"/gi, '');
+    // Strip Word/Office junk attributes but preserve style on table cells
+    content = content.replace(/\s+(class|lang|xml:lang|role|aria-[a-z-]+|data-[^=]*)="[^"]*"/gi, '');
     content = content.replace(/<\/?(span|div|font|o:p|w:[^>]*)[^>]*>/gi, '');
     content = content.replace(/<\/ul>\s*<ul>/gi, '');
     content = content.replace(/<\/ol>\s*<ol>/gi, '');

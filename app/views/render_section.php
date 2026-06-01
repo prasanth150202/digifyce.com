@@ -15,6 +15,7 @@ function render_section(string $type, array $cfg): string {
         'testimonials' => _sec_testimonials($cfg),
         'services'     => _sec_services($cfg),
         'content'      => _sec_content($cfg),
+        'custom_html'  => _sec_custom_html($cfg),
         default        => '',
     };
 }
@@ -336,6 +337,22 @@ function _sec_services(array $c): string {
     </div>
 </section>
     <?php return ob_get_clean();
+}
+
+// ─── CUSTOM HTML ─────────────────────────────────────────────────────────────
+function _sec_custom_html(array $c): string {
+    $html    = $c['html'] ?? '';
+    $padding = match($c['padding'] ?? 'normal') {
+        'small' => '40px 24px',
+        'none'  => '0',
+        default => '80px 24px',
+    };
+    $bg = match($c['bg'] ?? 'transparent') {
+        'dark'  => '#05070a',
+        'light' => '#f8fafc',
+        default => 'transparent',
+    };
+    return "<section style=\"background:{$bg};padding:{$padding}\">{$html}</section>";
 }
 
 // ─── CONTENT BLOCK ────────────────────────────────────────────────────────────

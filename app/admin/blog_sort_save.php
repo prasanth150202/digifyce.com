@@ -20,4 +20,8 @@ foreach ($ids as $order => $id) {
     $stmt->execute([(int)$order, (int)$id]);
 }
 
+// Automatically make the public blog page use this manual order
+$pdo->prepare("INSERT INTO site_settings (setting_key, setting_value) VALUES ('blog_default_sort', 'manual')
+               ON DUPLICATE KEY UPDATE setting_value = 'manual'")->execute();
+
 echo json_encode(['ok' => true]);

@@ -9,8 +9,29 @@ $pdo = Database::getInstance();
 $permissionManager = new PermissionManager($pdo);
 $permissionManager->requirePermission('blog.view');
 
-// Add sort_order column if missing
-try { $pdo->exec("ALTER TABLE blogs ADD COLUMN sort_order INT DEFAULT 0"); } catch (Exception $e) {}
+// Add sort_order column if missing, then migrate default from 0 → NULL
+// NULL = "never ordered" (sorts last); explicit values 0,1,2... = manual order
+try { $pdo->exec("ALTER TABLE blogs ADD COLUMN sort_order INT DEFAULT NULL"); } catch (Exception $e) {}
+try { $pdo->exec("ALTER TABLE blogs MODIFY COLUMN sort_order INT DEFAULT NULL"); } catch (Exception $e) {}
+
+// ── Save default sort ────────────────────────────────────────────────────────
+if (isset($_GET['set_default_sort'])) {
+    $validSortsCheck = ['a-z','z-a','old-new','new-old','manual'];
+    $newDefault = in_array($_GET['set_default_sort'], $validSortsCheck) ? $_GET['set_default_sort'] : 'new-old';
+    $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value) VALUES ('blog_default_sort', ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)")
+        ->execute([$newDefault]);
+    header('Location: blogs.php?sort=' . $newDefault . '&default_saved=1');
+    exit;
+}
+
+// Read current saved default sort
+$defaultSort = 'new-old';
+try {
+    $row = $pdo->query("SELECT setting_value FROM site_settings WHERE setting_key='blog_default_sort' LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+    if ($row && in_array($row['setting_value'], ['a-z','z-a','old-new','new-old','manual'])) {
+        $defaultSort = $row['setting_value'];
+    }
+} catch (Exception $e) {}
 
 // ── Blog Listing Page SEO ────────────────────────────────────────────────────
 // Handle SEO save
@@ -38,6 +59,7 @@ try {
 } catch (Exception $e) {}
 
 // ── Sort mode ────────────────────────────────────────────────────────────────
+$sortLabels = ['new-old'=>'New → Old','old-new'=>'Old → New','a-z'=>'A → Z','z-a'=>'Z → A','manual'=>'Manual'];
 $validSorts = ['a-z','z-a','old-new','new-old','manual'];
 $sort       = in_array($_GET['sort'] ?? '', $validSorts) ? $_GET['sort'] : 'new-old';
 
@@ -45,8 +67,8 @@ $orderBy = match($sort) {
     'a-z'     => 'b.title ASC',
     'z-a'     => 'b.title DESC',
     'old-new' => 'COALESCE(b.published_at, b.created_at) ASC',
-    'manual'  => 'b.sort_order ASC, b.id ASC',
-    default   => 'b.updated_at DESC',   // new-old
+    'manual'  => 'ISNULL(b.sort_order) ASC, b.sort_order ASC, b.id ASC',
+    default   => 'COALESCE(b.published_at, b.created_at) DESC',  // new-old (same as frontend)
 };
 
 $blogs = $pdo->query("
@@ -84,6 +106,12 @@ include __DIR__ . '/../views/admin_header.php';
 <?php if (isset($_GET['seo_saved'])): ?>
 <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
     <i class="fas fa-check-circle me-2"></i> Blog listing SEO saved.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+<?php endif; ?>
+<?php if (isset($_GET['default_saved'])): ?>
+<div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+    <i class="fas fa-star me-2"></i> Default sort saved — the blog page will now use <strong><?= htmlspecialchars($sortLabels[$sort] ?? $sort) ?></strong> order.
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 <?php endif; ?>
@@ -153,17 +181,28 @@ include __DIR__ . '/../views/admin_header.php';
 <!-- ── Header row ──────────────────────────────────────────────────────────── -->
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <!-- Sort buttons -->
-    <div class="d-flex gap-1 flex-wrap">
-        <?php
-        $sortLabels = ['new-old'=>'New → Old','old-new'=>'Old → New','a-z'=>'A → Z','z-a'=>'Z → A','manual'=>'Manual'];
-        foreach ($sortLabels as $key => $label):
+    <div class="d-flex gap-1 flex-wrap align-items-center">
+        <?php foreach ($sortLabels as $key => $label):
+            $isActive  = $sort === $key;
+            $isDefault = $defaultSort === $key;
         ?>
         <a href="blogs.php?sort=<?= $key ?>"
-           class="sort-btn text-decoration-none <?= $sort === $key ? 'active' : '' ?>">
+           class="sort-btn text-decoration-none <?= $isActive ? 'active' : '' ?>">
             <?php if ($key === 'manual'): ?><i class="fas fa-grip-lines me-1"></i><?php endif; ?>
             <?= $label ?>
+            <?php if ($isDefault): ?>
+            <i class="fas fa-star ms-1" style="font-size:10px;opacity:.7" title="Current website default"></i>
+            <?php endif; ?>
         </a>
         <?php endforeach; ?>
+        <?php if ($sort !== $defaultSort): ?>
+        <a href="blogs.php?set_default_sort=<?= $sort ?>"
+           class="btn btn-sm btn-outline-warning ms-1 text-decoration-none"
+           title="Save '<?= htmlspecialchars($sortLabels[$sort]) ?>' as the default order shown on the public blog page"
+           onclick="return confirm('Set \'<?= htmlspecialchars($sortLabels[$sort]) ?>\' as the default sort for the public blog page?')">
+            <i class="fas fa-star me-1"></i> Set as Default
+        </a>
+        <?php endif; ?>
     </div>
 
     <div class="d-flex gap-2 align-items-center">

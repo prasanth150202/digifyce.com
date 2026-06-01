@@ -201,6 +201,21 @@ $SECTION_DEFS = [
         ],
     ],
 
+    'custom_html' => [
+        'label'         => 'Custom HTML',
+        'icon'          => 'fa-code',
+        'color'         => '#374151',
+        'preview_field' => 'html',
+        'fields' => [
+            'html'    => ['type'=>'code',   'label'=>'HTML / CSS / JS', 'placeholder'=>'<p>Your custom HTML here...</p>'],
+            'padding' => ['type'=>'select', 'label'=>'Section Padding',
+                          'options'=>['normal'=>'Normal (80px top/bottom)','small'=>'Small (40px top/bottom)','none'=>'None']],
+            'bg'      => ['type'=>'select', 'label'=>'Background',
+                          'options'=>['transparent'=>'Transparent','dark'=>'Dark (#05070a)','light'=>'Light (#f8fafc)']],
+        ],
+        'defaults' => ['html'=>'', 'padding'=>'normal', 'bg'=>'transparent'],
+    ],
+
     'content' => [
         'label'         => 'Content Block',
         'icon'          => 'fa-align-left',

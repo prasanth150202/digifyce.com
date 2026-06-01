@@ -74,16 +74,20 @@ include __DIR__ . '/header.php';
         </div>
     </section>
 
+    <?php
+        // Sort helper — build current query string without sort/page
+        $sortLabelsPublic = ['new-old'=>'Latest First','old-new'=>'Oldest First','a-z'=>'A → Z','z-a'=>'Z → A'];
+        $sortBase = '';
+        if (!empty($currentCategory)) $sortBase .= '&category=' . urlencode($currentCategory);
+        if (!empty($currentTag))      $sortBase .= '&tag='      . urlencode($currentTag);
+    ?>
+
     <!-- Filters / Chips or Category Title -->
     <?php if (!empty($currentCategory)) : ?>
         <?php
-            // Find the category name for the selected slug
             $categoryTitle = null;
             foreach ($categories as $cat) {
-                if ($cat['slug'] === $currentCategory) {
-                    $categoryTitle = $cat['name'];
-                    break;
-                }
+                if ($cat['slug'] === $currentCategory) { $categoryTitle = $cat['name']; break; }
             }
         ?>
         <div class="px-6 md:px-20 lg:px-40 mb-12">
@@ -94,11 +98,11 @@ include __DIR__ . '/header.php';
             <div class="mb-8">
                 <h3 class="text-xs font-bold tracking-widest uppercase text-white/60 mb-4">Categories</h3>
                 <div class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
-                    <a href="<?= $appUrl ?>/blog_list.php" class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full <?= empty($currentTag) && empty($currentCategory) ? 'bg-primary' : 'bg-white/5 border border-white/10 hover:bg-white/10' ?> px-6 transition-all cursor-pointer relative z-10">
+                    <a href="<?= $appUrl ?>/blog_list.php<?= $sort !== $defaultSort ? '?sort=' . urlencode($sort) : '' ?>" class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full <?= empty($currentTag) && empty($currentCategory) ? 'bg-primary' : 'bg-white/5 border border-white/10 hover:bg-white/10' ?> px-6 transition-all cursor-pointer relative z-10">
                         <p class="<?= empty($currentTag) && empty($currentCategory) ? 'text-white' : 'text-white/60' ?> text-xs font-bold tracking-widest uppercase">ALL INTEL</p>
                     </a>
                     <?php foreach ($categories as $cat): ?>
-                        <a href="<?= $appUrl ?>/blog_list.php?category=<?= htmlspecialchars($cat['slug']) ?>" class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full <?= $currentCategory === $cat['slug'] ? 'bg-primary' : 'bg-white/5 border border-white/10 hover:bg-white/10' ?> px-6 transition-all cursor-pointer relative z-10">
+                        <a href="<?= $appUrl ?>/blog_list.php?category=<?= htmlspecialchars($cat['slug']) ?><?= $sort !== $defaultSort ? '&sort=' . urlencode($sort) : '' ?>" class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full <?= $currentCategory === $cat['slug'] ? 'bg-primary' : 'bg-white/5 border border-white/10 hover:bg-white/10' ?> px-6 transition-all cursor-pointer relative z-10">
                             <p class="<?= $currentCategory === $cat['slug'] ? 'text-white' : 'text-white/60' ?> text-xs font-bold tracking-widest uppercase"><?= htmlspecialchars($cat['name']) ?></p>
                         </a>
                     <?php endforeach; ?>
@@ -106,17 +110,30 @@ include __DIR__ . '/header.php';
             </div>
 
             <?php if (!empty($tags)): ?>
-            <div>
+            <div class="mb-8">
                 <h3 class="text-xs font-bold tracking-widest uppercase text-white/60 mb-4">Tags</h3>
                 <div class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
                     <?php foreach ($tags as $tag): ?>
-                        <a href="<?= $appUrl ?>/blog_list.php?tag=<?= htmlspecialchars($tag['slug']) ?>" class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full <?= $currentTag === $tag['slug'] ? 'bg-primary' : 'bg-white/5 border border-white/10 hover:bg-white/10' ?> px-6 transition-all cursor-pointer relative z-10">
+                        <a href="<?= $appUrl ?>/blog_list.php?tag=<?= htmlspecialchars($tag['slug']) ?><?= $sort !== $defaultSort ? '&sort=' . urlencode($sort) : '' ?>" class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full <?= $currentTag === $tag['slug'] ? 'bg-primary' : 'bg-white/5 border border-white/10 hover:bg-white/10' ?> px-6 transition-all cursor-pointer relative z-10">
                             <p class="<?= $currentTag === $tag['slug'] ? 'text-white' : 'text-white/60' ?> text-xs font-bold tracking-widest uppercase"><?= htmlspecialchars($tag['name']) ?></p>
                         </a>
                     <?php endforeach; ?>
                 </div>
             </div>
             <?php endif; ?>
+
+            <!-- Sort controls -->
+            <div>
+                <h3 class="text-xs font-bold tracking-widest uppercase text-white/60 mb-4">Sort By</h3>
+                <div class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
+                    <?php foreach ($sortLabelsPublic as $sKey => $sLabel): ?>
+                    <a href="<?= $appUrl ?>/blog_list.php?sort=<?= urlencode($sKey) ?><?= $sortBase ?>"
+                       class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full <?= $sort === $sKey ? 'bg-primary' : 'bg-white/5 border border-white/10 hover:bg-white/10' ?> px-6 transition-all cursor-pointer relative z-10">
+                        <p class="<?= $sort === $sKey ? 'text-white' : 'text-white/60' ?> text-xs font-bold tracking-widest uppercase"><?= htmlspecialchars($sLabel) ?></p>
+                    </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
         </div>
     <?php endif; ?>
 
@@ -160,25 +177,32 @@ include __DIR__ . '/header.php';
         </div>
 
         <!-- Pagination -->
+        <?php
+            // Build a query string that carries current filters + sort across pages
+            $pageQs = '';
+            if (!empty($currentTag))      $pageQs .= '&tag='      . urlencode($currentTag);
+            if (!empty($currentCategory)) $pageQs .= '&category=' . urlencode($currentCategory);
+            if ($sort !== $defaultSort)   $pageQs .= '&sort='     . urlencode($sort);
+        ?>
         <?php if ($totalPages > 1): ?>
             <div class="mt-24 flex justify-center gap-4">
                 <?php if ($page > 1): ?>
-                    <a href="<?= $appUrl ?>/blog_list.php?page=<?= $page - 1 ?><?= !empty($_GET['tag']) ? '&tag=' . htmlspecialchars($_GET['tag']) : '' ?><?= !empty($_GET['category']) ? '&category=' . htmlspecialchars($_GET['category']) : '' ?>" class="flex items-center gap-4 px-10 py-5 rounded-full border border-white/10 hover:border-primary/50 transition-all text-white font-bold group">
+                    <a href="<?= $appUrl ?>/blog_list.php?page=<?= $page - 1 ?><?= $pageQs ?>" class="flex items-center gap-4 px-10 py-5 rounded-full border border-white/10 hover:border-primary/50 transition-all text-white font-bold group">
                         <span class="material-symbols-outlined group-hover:-translate-y-1 transition-transform">expand_less</span>
                         PREVIOUS
                     </a>
                 <?php endif; ?>
-                
+
                 <div class="flex items-center gap-2">
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <a href="<?= $appUrl ?>/blog_list.php?page=<?= $i ?><?= !empty($_GET['tag']) ? '&tag=' . htmlspecialchars($_GET['tag']) : '' ?><?= !empty($_GET['category']) ? '&category=' . htmlspecialchars($_GET['category']) : '' ?>" class="w-10 h-10 flex items-center justify-center rounded-full <?= $page === $i ? 'bg-primary text-white' : 'border border-white/10 text-white hover:border-primary/50' ?> transition-all">
+                        <a href="<?= $appUrl ?>/blog_list.php?page=<?= $i ?><?= $pageQs ?>" class="w-10 h-10 flex items-center justify-center rounded-full <?= $page === $i ? 'bg-primary text-white' : 'border border-white/10 text-white hover:border-primary/50' ?> transition-all">
                             <?= $i ?>
                         </a>
                     <?php endfor; ?>
                 </div>
 
                 <?php if ($page < $totalPages): ?>
-                    <a href="<?= $appUrl ?>/blog_list.php?page=<?= $page + 1 ?><?= !empty($_GET['tag']) ? '&tag=' . htmlspecialchars($_GET['tag']) : '' ?><?= !empty($_GET['category']) ? '&category=' . htmlspecialchars($_GET['category']) : '' ?>" class="flex items-center gap-4 px-10 py-5 rounded-full border border-white/10 hover:border-primary/50 transition-all text-white font-bold group">
+                    <a href="<?= $appUrl ?>/blog_list.php?page=<?= $page + 1 ?><?= $pageQs ?>" class="flex items-center gap-4 px-10 py-5 rounded-full border border-white/10 hover:border-primary/50 transition-all text-white font-bold group">
                         LOAD MORE INTEL
                         <span class="material-symbols-outlined group-hover:translate-y-1 transition-transform">expand_more</span>
                     </a>
