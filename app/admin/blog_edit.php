@@ -151,9 +151,41 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
             <div class="col-md-6">
                 <label class="form-label">Featured Image</label>
-                <input type="file" name="featured_image" class="form-control">
+                <input type="file" name="featured_image" class="form-control" accept="image/*">
                 <?php if (!empty($blog['featured_image'])): ?>
-                    <img src="<?= $appUrl ?>/storage/uploads/<?= htmlspecialchars($blog['featured_image']) ?>" alt="Featured" class="mt-2 rounded" style="width: 160px; height: 100px; object-fit: cover;">
+                    <div class="mt-2 d-flex align-items-start gap-2" id="currentImageWrap">
+                        <img src="<?= $appUrl ?>/storage/uploads/<?= htmlspecialchars($blog['featured_image']) ?>"
+                             alt="Featured" class="rounded" style="width:160px;height:100px;object-fit:cover;">
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    onclick="removeImage()">
+                                <i class="fas fa-trash me-1"></i> Remove
+                            </button>
+                            <input type="hidden" name="remove_image" id="removeImageFlag" value="0">
+                            <div id="removeImageNote" class="text-muted small mt-1" style="display:none">
+                                Image will be removed on save.
+                            </div>
+                        </div>
+                    </div>
+                    <script>
+                    function removeImage() {
+                        document.getElementById('removeImageFlag').value = '1';
+                        document.getElementById('currentImageWrap').style.opacity = '0.3';
+                        document.getElementById('removeImageNote').style.display = 'block';
+                        event.currentTarget.textContent = 'Undo';
+                        event.currentTarget.className = 'btn btn-sm btn-outline-secondary';
+                        event.currentTarget.onclick = function() {
+                            document.getElementById('removeImageFlag').value = '0';
+                            document.getElementById('currentImageWrap').style.opacity = '1';
+                            document.getElementById('removeImageNote').style.display = 'none';
+                            this.innerHTML = '<i class="fas fa-trash me-1"></i> Remove';
+                            this.className = 'btn btn-sm btn-outline-danger';
+                            this.onclick = removeImage;
+                        };
+                    }
+                    </script>
+                <?php else: ?>
+                    <input type="hidden" name="remove_image" value="0">
                 <?php endif; ?>
             </div>
             <div class="col-md-6">

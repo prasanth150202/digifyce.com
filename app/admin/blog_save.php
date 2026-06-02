@@ -91,13 +91,26 @@ if ($uploadError) {
     $_SESSION['upload_error'] = $uploadError;
 }
 
+$removeImage = ($_POST['remove_image'] ?? '0') === '1';
+
 if ($id) {
     // Update
     $sql = 'UPDATE blogs SET title=?, slug=?, excerpt=?, content=?, meta_title=?, meta_description=?, author_id=?, category_id=?, status=?, scheduled_at=?, updated_at=NOW()';
     $params = [$title, $slug, $excerpt, $content, $meta_title, $meta_description, $author_id, $category_id, $status, $scheduled_at];
     if ($featured_image) {
+        // New image uploaded — replace existing
         $sql .= ', featured_image=?';
         $params[] = $featured_image;
+    } elseif ($removeImage) {
+        // Explicitly cleared by admin
+        $sql .= ', featured_image=NULL';
+        // Optionally delete the file from disk
+        $oldRow = $pdo->prepare('SELECT featured_image FROM blogs WHERE id=?');
+        $oldRow->execute([$id]);
+        $oldFile = $oldRow->fetchColumn();
+        if ($oldFile && file_exists($uploadDir . '/' . $oldFile)) {
+            @unlink($uploadDir . '/' . $oldFile);
+        }
     }
     $sql .= ' WHERE id=?';
     $params[] = $id;
