@@ -193,9 +193,9 @@ include __DIR__ . '/header.php';
 
 
 
-    <section class="relative min-h-screen flex items-end grainy-overlay overflow-hidden">
+    <section class="relative min-h-[40vh] md:min-h-screen flex items-end grainy-overlay overflow-hidden">
         <?php if (!empty($featuredImage)): ?>
-            <div class="absolute inset-0 z-0 grayscale bg-cover bg-center bg-no-repeat"
+            <div class="absolute inset-0 z-0 grayscale bg-contain bg-center bg-no-repeat mt-[100px]"
                 style="background-image: url('<?= $appUrl ?>/storage/uploads/<?= htmlspecialchars($featuredImage) ?>'); filter: contrast(1.2) brightness(0.4);"></div>
         <?php else: ?>
             <div class="absolute inset-0 z-0 bg-gradient-to-br from-background-dark via-black to-slate-900"></div>
@@ -212,7 +212,7 @@ include __DIR__ . '/header.php';
         </div>
     </section>
 
-    <main class="relative px-6 md:px-20 lg:px-40 py-24 flex flex-col lg:flex-row gap-20">
+    <main class="relative px-6 md:px-20 lg:px-40 py-12 flex flex-col lg:flex-row gap-20">
         <aside class="hidden lg:block w-72 shrink-0">
             <div class="sticky top-24 space-y-12">
                 <?php if (!empty($blog['tags'])): ?>
