@@ -1988,7 +1988,7 @@ if ($homeCtaHref !== '') {
         </div>
 
         <!-- Premium Cards Grid / Slider -->
-        <div class="cards-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-5 sm:grid-auto-flow-row sm:overflow-auto sm:scroll-smooth"
+        <div class="cards-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-5 sm:grid-auto-flow-row  sm:scroll-smooth"
             id="cardsContainer">
             <!-- Card 1 -->
             <div class="advantage-card group h-full shrink-0 sm:shrink" data-category="strategy">

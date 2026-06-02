@@ -51,15 +51,44 @@ while (true) {
     $slug = $slugBase . '-' . $slugSuffix++;
 }
 
+// Ensure uploads directory exists and is writable
+$uploadDir = __DIR__ . '/../../storage/uploads';
+if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0755, true);
+}
+
 // Handle image upload
 $featured_image = null;
+$uploadError    = null;
 if (!empty($_FILES['featured_image']['name'])) {
-    $ext = pathinfo($_FILES['featured_image']['name'], PATHINFO_EXTENSION);
-    $filename = uniqid('blog_', true) . '.' . $ext;
-    $dest = __DIR__ . '/../../storage/uploads/' . $filename;
-    if (move_uploaded_file($_FILES['featured_image']['tmp_name'], $dest)) {
-        $featured_image = $filename;
+    $fileErr = $_FILES['featured_image']['error'];
+    if ($fileErr !== UPLOAD_ERR_OK) {
+        $uploadError = match($fileErr) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'File too large (server limit: ' . ini_get('upload_max_filesize') . '). Use a smaller image.',
+            UPLOAD_ERR_NO_TMP_DIR => 'Server missing temp folder — contact your host.',
+            UPLOAD_ERR_CANT_WRITE => 'Server could not write the temp file — contact your host.',
+            default               => 'Upload failed (PHP error code ' . $fileErr . ').',
+        };
+    } else {
+        $allowedExts = ['jpg','jpeg','png','gif','webp','avif'];
+        $ext = strtolower(pathinfo($_FILES['featured_image']['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowedExts)) {
+            $uploadError = 'Invalid file type "' . $ext . '". Allowed: jpg, jpeg, png, gif, webp, avif.';
+        } elseif (!is_writable($uploadDir)) {
+            $uploadError = 'Upload folder is not writable on the server (storage/uploads/). Set permissions to 755.';
+        } else {
+            $filename = uniqid('blog_', true) . '.' . $ext;
+            $dest     = $uploadDir . '/' . $filename;
+            if (move_uploaded_file($_FILES['featured_image']['tmp_name'], $dest)) {
+                $featured_image = $filename;
+            } else {
+                $uploadError = 'move_uploaded_file failed — check that storage/uploads/ exists and is writable.';
+            }
+        }
     }
+}
+if ($uploadError) {
+    $_SESSION['upload_error'] = $uploadError;
 }
 
 if ($id) {
@@ -78,9 +107,11 @@ if ($id) {
     // Remove old tags
     $pdo->prepare('DELETE FROM blog_tag_map WHERE blog_id=?')->execute([$blog_id]);
 } else {
+    // Assign new post a sort_order at the end of the current list
+    $nextOrder = (int)$pdo->query("SELECT COALESCE(MAX(sort_order) + 1, 0) FROM blogs")->fetchColumn();
     // Insert
-    $stmt = $pdo->prepare('INSERT INTO blogs (title, slug, excerpt, content, meta_title, meta_description, author_id, category_id, status, scheduled_at, featured_image, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW())');
-    $stmt->execute([$title, $slug, $excerpt, $content, $meta_title, $meta_description, $author_id, $category_id, $status, $scheduled_at, $featured_image]);
+    $stmt = $pdo->prepare('INSERT INTO blogs (title, slug, excerpt, content, meta_title, meta_description, author_id, category_id, status, scheduled_at, featured_image, sort_order, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW())');
+    $stmt->execute([$title, $slug, $excerpt, $content, $meta_title, $meta_description, $author_id, $category_id, $status, $scheduled_at, $featured_image, $nextOrder]);
     $blog_id = $pdo->lastInsertId();
 }
 // Insert tags
@@ -90,5 +121,7 @@ if ($tags && $blog_id) {
         $tag_stmt->execute([$blog_id, $tag_id]);
     }
 }
-header("Location: blog_edit.php?id=$blog_id&saved=1");
+$redirect = "blog_edit.php?id=$blog_id&saved=1";
+if ($uploadError) $redirect .= '&img_err=1';
+header("Location: $redirect");
 exit;

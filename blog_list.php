@@ -21,6 +21,32 @@ if (file_exists($envFile)) {
 
 
 $pdo = Database::getInstance();
+
+// Redirect old ?-style URLs to clean path-based URLs
+$requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+if (!preg_match('#/blog_list/(category|tag|page)/#', $requestPath)) {
+    $cleanUrl = $appUrl . '/blog_list';
+    $redirectNeeded = false;
+    if (!empty($_GET['category'])) {
+        $cleanUrl .= '/category/' . rawurlencode($_GET['category']);
+        $redirectNeeded = true;
+    } elseif (!empty($_GET['tag'])) {
+        $cleanUrl .= '/tag/' . rawurlencode($_GET['tag']);
+        $redirectNeeded = true;
+    }
+    if (!empty($_GET['page']) && intval($_GET['page']) > 1) {
+        $cleanUrl .= '/page/' . intval($_GET['page']);
+        $redirectNeeded = true;
+    }
+    if (!empty($_GET['sort'])) {
+        $cleanUrl .= '?sort=' . rawurlencode($_GET['sort']);
+    }
+    if ($redirectNeeded) {
+        header('Location: ' . $cleanUrl, true, 301);
+        exit;
+    }
+}
+
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $perPage = 6;
 $offset = ($page-1)*$perPage;

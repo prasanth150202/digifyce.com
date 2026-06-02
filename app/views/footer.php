@@ -136,15 +136,14 @@ try {
         </div>
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-6 pt-6 sm:pt-8 border-t border-white/5 text-[10px] uppercase tracking-[0.2em] text-slate-700">
             <div class="text-center sm:text-left"><?= htmlspecialchars($footerCopyright) ?></div>
-            <?php if (!empty($footerPages)): ?>
-                <div class="flex flex-wrap justify-center sm:justify-end gap-4 sm:gap-8">
-                    <?php foreach ($footerPages as $page): ?>
-                        <a href="<?= $appUrl ?>/pages/<?= htmlspecialchars($page['slug']) ?>">
-                            <?= htmlspecialchars($page['title']) ?>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+            <div class="flex flex-wrap justify-center sm:justify-end gap-4 sm:gap-8">
+                <a href="<?= $appUrl ?>/about-us" class="hover:text-white transition-colors">About Us</a>
+                <?php foreach ($footerPages as $page): ?>
+                    <a href="<?= $appUrl ?>/pages/<?= htmlspecialchars($page['slug']) ?>" class="hover:text-white transition-colors">
+                        <?= htmlspecialchars($page['title']) ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
 </footer>

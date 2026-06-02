@@ -28,6 +28,13 @@ if (!$slug) {
     exit;
 }
 
+// Redirect old /blog?slug=X to clean /blog/slug
+$requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+if (!preg_match('#/blog/[^/]+$#', $requestPath)) {
+    header('Location: ' . $appUrl . '/blog/' . rawurlencode($slug), true, 301);
+    exit;
+}
+
 $stmt = $pdo->prepare('SELECT b.*, a.name as author_name, a.avatar_url as author_avatar, a.bio as author_bio, c.name as category_name, c.slug as category_slug FROM blogs b LEFT JOIN blog_authors a ON b.author_id=a.id LEFT JOIN blog_categories c ON b.category_id=c.id WHERE b.slug=? AND b.status="published"');
 $stmt->execute([$slug]);
 $blog = $stmt->fetch(PDO::FETCH_ASSOC);

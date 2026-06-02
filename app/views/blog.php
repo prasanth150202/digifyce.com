@@ -221,7 +221,7 @@ include __DIR__ . '/header.php';
                         <ul class="space-y-4">
                             <?php foreach ($blog['tags'] as $tag): ?>
                                 <li class="text-slate-400 text-sm leading-relaxed border-l-2 border-primary/20 pl-4 py-1 hover:border-primary transition-colors">
-                                    <a href="<?= $appUrl ?>/blog_list.php?tag=<?= htmlspecialchars($tag['slug']) ?>" class="hover:text-white">
+                                    <a href="<?= $appUrl ?>/blog_list/tag/<?= htmlspecialchars($tag['slug']) ?>" class="hover:text-white">
                                         <?= htmlspecialchars($tag['name']) ?>
                                     </a>
                                 </li>
@@ -277,12 +277,12 @@ include __DIR__ . '/header.php';
                 <div class="flex gap-4">
                     <span class="text-slate-500 text-xs font-bold uppercase tracking-widest">Filed under:</span>
                     <?php if (!empty($categoryName)): ?>
-                        <a class="text-primary text-xs font-bold uppercase tracking-widest hover:underline" href="<?= $appUrl ?>/blog_list.php?category=<?= htmlspecialchars($categorySlug) ?>">
+                        <a class="text-primary text-xs font-bold uppercase tracking-widest hover:underline" href="<?= $appUrl ?>/blog_list/category/<?= htmlspecialchars($categorySlug) ?>">
                             <?= htmlspecialchars($categoryName) ?>
                         </a>
                     <?php endif; ?>
                     <?php foreach ($blog['tags'] as $tag): ?>
-                        <a class="text-primary text-xs font-bold uppercase tracking-widest hover:underline" href="<?= $appUrl ?>/blog_list.php?tag=<?= htmlspecialchars($tag['slug']) ?>">
+                        <a class="text-primary text-xs font-bold uppercase tracking-widest hover:underline" href="<?= $appUrl ?>/blog_list/tag/<?= htmlspecialchars($tag['slug']) ?>">
                             <?= htmlspecialchars($tag['name']) ?>
                         </a>
                     <?php endforeach; ?>

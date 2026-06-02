@@ -300,7 +300,7 @@ include __DIR__ . '/../views/admin_header.php';
                     </tr>
                     <?php endforeach; ?>
                     <?php if (empty($blogs)): ?>
-                    <tr><td colspan="8" class="text-center text-muted py-5">No blog posts yet.</td></tr>
+                    <tr><td colspan="<?= $sort === 'manual' ? 8 : 7 ?>" class="text-center text-muted py-5">No blog posts yet.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>

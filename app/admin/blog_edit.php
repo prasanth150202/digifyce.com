@@ -87,6 +87,13 @@ document.addEventListener('DOMContentLoaded', function () {
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 <?php endif; ?>
+<?php if (isset($_GET['img_err']) && !empty($_SESSION['upload_error'])): ?>
+<div class="alert alert-warning alert-dismissible fade show mb-3" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    <strong>Image not saved:</strong> <?= htmlspecialchars($_SESSION['upload_error']) ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+<?php unset($_SESSION['upload_error']); endif; ?>
 
 <div class="card border-0">
     <div class="card-header">

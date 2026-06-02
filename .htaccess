@@ -1,3 +1,16 @@
+# ── PHP upload limits (Apache + mod_php) ────────────────────────────────────
+<IfModule mod_php.c>
+    php_value upload_max_filesize 20M
+    php_value post_max_size 25M
+    php_value memory_limit 256M
+</IfModule>
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 20M
+    php_value post_max_size 25M
+    php_value memory_limit 256M
+</IfModule>
+# ────────────────────────────────────────────────────────────────────────────
+
 <IfModule mod_rewrite.c>
 RewriteEngine On
 
@@ -5,6 +18,21 @@ RewriteEngine On
 RewriteCond %{REQUEST_METHOD} !POST
 RewriteCond %{THE_REQUEST} /([^.]+)\.php [NC]
 RewriteRule ^ /%1 [R=301,L,NE]
+
+# ── Blog clean URL routes ────────────────────────────────────────────────────
+# Blog list: category + page
+RewriteRule ^blog_list/category/([^/]+)/page/([0-9]+)/?$ blog_list.php?category=$1&page=$2 [L,QSA,NC]
+# Blog list: category only
+RewriteRule ^blog_list/category/([^/]+)/?$ blog_list.php?category=$1 [L,QSA,NC]
+# Blog list: tag + page
+RewriteRule ^blog_list/tag/([^/]+)/page/([0-9]+)/?$ blog_list.php?tag=$1&page=$2 [L,QSA,NC]
+# Blog list: tag only
+RewriteRule ^blog_list/tag/([^/]+)/?$ blog_list.php?tag=$1 [L,QSA,NC]
+# Blog list: page only
+RewriteRule ^blog_list/page/([0-9]+)/?$ blog_list.php?page=$1 [L,QSA,NC]
+# Individual blog post: /blog/slug → blog.php?slug=slug
+RewriteRule ^blog/([^/]+)/?$ blog.php?slug=$1 [L,NC]
+# ────────────────────────────────────────────────────────────────────────────
 
 # Internally serve .php files for clean URLs (any depth)
 RewriteCond %{REQUEST_FILENAME} !-f
