@@ -195,7 +195,7 @@ include __DIR__ . '/header.php';
 
     <section class="relative min-h-[40vh] md:min-h-screen flex items-end grainy-overlay overflow-hidden">
         <?php if (!empty($featuredImage)): ?>
-            <div class="absolute inset-0 z-0 grayscale bg-auto bg-[center_top] bg-no-repeat mt-[100px]"
+            <div class="absolute inset-0 z-0 grayscale bg-[80%] bg-[center_top] bg-no-repeat mt-[100px]"
                 style="background-image: url('<?= $appUrl ?>/storage/uploads/<?= htmlspecialchars($featuredImage) ?>'); filter: contrast(1.2) brightness(0.4);"></div>
         <?php else: ?>
             <div class="absolute inset-0 z-0 bg-gradient-to-br from-background-dark via-black to-slate-900"></div>
