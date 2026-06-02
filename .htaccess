@@ -32,6 +32,8 @@ RewriteRule ^blog_list/tag/([^/]+)/?$ blog_list.php?tag=$1 [L,QSA,NC]
 RewriteRule ^blog_list/page/([0-9]+)/?$ blog_list.php?page=$1 [L,QSA,NC]
 # Individual blog post: /blog/slug → blog.php?slug=slug
 RewriteRule ^blog/([^/]+)/?$ blog.php?slug=$1 [L,NC]
+# Pages: /pages/slug -> pages.php?slug=slug
+RewriteRule ^pages/([^/]+)/?$ pages.php?slug=$1 [L,QSA,NC]
 # ────────────────────────────────────────────────────────────────────────────
 
 # Internally serve .php files for clean URLs (any depth)
@@ -39,11 +41,6 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}.php -f
 RewriteRule ^(.+)$ $1.php [L,NC]
-
-# Pages: /pages/slug -> pages.php?slug=slug
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^pages/([^/]+)/?$ pages.php?slug=$1 [L,QSA,NC]
 
 # Custom slug router: handles user-defined slugs set in admin SEO Settings
 RewriteCond %{REQUEST_FILENAME} !-f

@@ -195,7 +195,7 @@ include __DIR__ . '/header.php';
 
     <section class="relative min-h-[40vh] md:min-h-screen flex items-end grainy-overlay overflow-hidden">
         <?php if (!empty($featuredImage)): ?>
-            <div class="absolute inset-0 z-0 grayscale bg-contain bg-center bg-no-repeat mt-[100px]"
+            <div class="absolute inset-0 z-0 grayscale bg-auto bg-[center_top] bg-no-repeat mt-[100px]"
                 style="background-image: url('<?= $appUrl ?>/storage/uploads/<?= htmlspecialchars($featuredImage) ?>'); filter: contrast(1.2) brightness(0.4);"></div>
         <?php else: ?>
             <div class="absolute inset-0 z-0 bg-gradient-to-br from-background-dark via-black to-slate-900"></div>
@@ -299,7 +299,7 @@ include __DIR__ . '/header.php';
                     <h2 class="text-white text-3xl md:text-4xl font-bold leading-tight tracking-tight uppercase">
                         <?= htmlspecialchars($nextBlog['title']) ?>
                     </h2>
-                    <a class="flex items-center gap-4 text-white font-bold group mt-4" href="<?= $appUrl ?>/blog.php?slug=<?= htmlspecialchars($nextBlog['slug']) ?>">
+                    <a class="flex items-center gap-4 text-white font-bold group mt-4" href="<?= $appUrl ?>/blog/<?= htmlspecialchars($nextBlog['slug']) ?>">
                         READ NEXT INTEL
                         <span class="material-symbols-outlined group-hover:translate-x-2 transition-transform">arrow_right_alt</span>
                     </a>
