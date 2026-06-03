@@ -17,7 +17,7 @@ try {
     $email = isset($_POST['email']) ? trim($_POST['email']) : '';
     $portfolioUrl = isset($_POST['portfolio_url']) ? trim($_POST['portfolio_url']) : '';
     $coverLetter = isset($_POST['cover_letter']) ? trim($_POST['cover_letter']) : '';
-    $jobOpeningId = isset($_POST['job_opening_id']) ? intval($_POST['job_opening_id']) : null;
+    $jobOpeningId = (isset($_POST['job_opening_id']) && intval($_POST['job_opening_id']) > 0) ? intval($_POST['job_opening_id']) : null;
     
     // Validate required fields
     if (empty($fullName) || empty($email) || empty($portfolioUrl) || empty($coverLetter)) {

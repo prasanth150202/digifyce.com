@@ -36,15 +36,8 @@ RewriteRule ^blog/([^/]+)/?$ blog.php?slug=$1 [L,NC]
 RewriteRule ^pages/([^/]+)/?$ pages.php?slug=$1 [L,QSA,NC]
 # ────────────────────────────────────────────────────────────────────────────
 
-# Internally serve .php files for clean URLs (any depth)
+# Slug router: handles all clean URL routing, slug redirects, and PHP file fallback
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME}.php -f
-RewriteRule ^(.+)$ $1.php [L,NC]
-
-# Custom slug router: handles user-defined slugs set in admin SEO Settings
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME}.php !-f
 RewriteRule ^(.+)$ slug_router.php?uri=$1 [L,QSA]
 </IfModule>

@@ -221,7 +221,7 @@ include __DIR__ . '/../views/admin_header.php';
                         <input type="text" name="slug" id="editSlug" class="form-control font-monospace"
                                placeholder="/page-url-here">
                         <div class="form-text">
-                            Changing the slug creates a new URL route for this page. The original URL continues to work.
+                            Changing the slug updates the URL. The old URL will return 404 Not Found.
                         </div>
                     </div>
 

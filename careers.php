@@ -226,6 +226,7 @@ include __DIR__ . '/app/views/header.php';
 				</div>
 				<div class="md:w-2/3">
 					<form id="jobApplicationForm" class="space-y-8" enctype="multipart/form-data">
+						
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<div class="space-y-2">
 								<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Full Name *</label>
@@ -235,6 +236,18 @@ include __DIR__ . '/app/views/header.php';
 								<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Email Address *</label>
 								<input name="email" class="w-full bg-white/5 border border-white/10 px-4 py-4 text-white placeholder:text-slate-700 input-glow transition-all rounded-none" placeholder="john.smith@example.com" type="email" required/>
 							</div>
+						</div>
+						<div class="space-y-2">
+							<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Position Applying For *</label>
+							<select name="job_opening_id" id="jobOpeningSelect" class="w-full bg-white/5 border border-white/10 px-4 py-4 text-white input-glow transition-all rounded-none appearance-none cursor-pointer" required style="background-color: rgba(255,255,255,0.05);">
+								<option value="" disabled selected class="bg-background-dark text-slate-500">— Select a position —</option>
+								<?php foreach ($jobOpenings as $job): ?>
+								<option value="<?= $job['id'] ?>" class="bg-[#0a0a0a] text-white">
+									<?= htmlspecialchars($job['title']) ?><?= !empty($job['division']) ? ' · ' . htmlspecialchars($job['division']) : '' ?>
+								</option>
+								<?php endforeach; ?>
+								<option value="0" class="bg-[#0a0a0a] text-slate-400">Other / Spontaneous Application</option>
+							</select>
 						</div>
 						<div class="space-y-2">
 							<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Portfolio / LinkedIn URL *</label>
@@ -306,7 +319,10 @@ include __DIR__ . '/app/views/header.php';
 </div>
 
 <script>
+let currentJob = null;
+
 function viewJobDetails(job) {
+	currentJob = job;
 	document.getElementById('modalTitle').textContent = job.title;
 	document.getElementById('modalDivision').textContent = job.division || 'General';
 	document.getElementById('modalLocation').textContent = job.location || 'Remote';
@@ -338,8 +354,11 @@ function closeJobModal(event) {
 }
 
 function applyForJob() {
-	// Close the modal and scroll to application form
 	document.getElementById('jobDetailsModal').classList.add('hidden');
+	if (currentJob) {
+		const select = document.getElementById('jobOpeningSelect');
+		if (select) select.value = currentJob.id;
+	}
 	const applicationSection = document.getElementById('application-section');
 	if (applicationSection) {
 		applicationSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
