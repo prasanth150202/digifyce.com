@@ -22,6 +22,12 @@ if (file_exists($envFile)) {
 
 $pdo = Database::getInstance();
 
+// Redirect /blog?slug=X to /blog/X (old query-string blog post links)
+if (!empty($_GET['slug'])) {
+    header('Location: ' . $appUrl . '/blog/' . rawurlencode($_GET['slug']), true, 301);
+    exit;
+}
+
 // Redirect old ?-style URLs to clean path-based URLs
 $requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 if (!preg_match('#/blog_list/(category|tag|page)/#', $requestPath)) {

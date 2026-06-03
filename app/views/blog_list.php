@@ -75,11 +75,17 @@ include __DIR__ . '/header.php';
     </section>
 
     <?php
-        // Sort helper — build current query string without sort/page
         $sortLabelsPublic = ['new-old'=>'Latest First','old-new'=>'Oldest First','a-z'=>'A → Z','z-a'=>'Z → A'];
-        $sortBase = '';
-        if (!empty($currentCategory)) $sortBase .= '&category=' . urlencode($currentCategory);
-        if (!empty($currentTag))      $sortBase .= '&tag='      . urlencode($currentTag);
+
+        // Clean base URL for the current filter context (no page, no sort)
+        if (!empty($currentCategory)) {
+            $cleanBase = $appUrl . '/blog_list/category/' . rawurlencode($currentCategory);
+        } elseif (!empty($currentTag)) {
+            $cleanBase = $appUrl . '/blog_list/tag/' . rawurlencode($currentTag);
+        } else {
+            $cleanBase = $appUrl . '/blog';
+        }
+        $sortQs = ($sort !== $defaultSort) ? ('?sort=' . urlencode($sort)) : '';
     ?>
 
     <!-- Filters / Chips or Category Title -->
@@ -98,11 +104,11 @@ include __DIR__ . '/header.php';
             <div class="mb-8">
                 <h3 class="text-xs font-bold tracking-widest uppercase text-white/60 mb-4">Categories</h3>
                 <div class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
-                    <a href="<?= $appUrl ?>/blog_list.php<?= $sort !== $defaultSort ? '?sort=' . urlencode($sort) : '' ?>" class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full <?= empty($currentTag) && empty($currentCategory) ? 'bg-primary' : 'bg-white/5 border border-white/10 hover:bg-white/10' ?> px-6 transition-all cursor-pointer relative z-10">
+                    <a href="<?= $appUrl ?>/blog<?= $sort !== $defaultSort ? '?sort=' . urlencode($sort) : '' ?>" class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full <?= empty($currentTag) && empty($currentCategory) ? 'bg-primary' : 'bg-white/5 border border-white/10 hover:bg-white/10' ?> px-6 transition-all cursor-pointer relative z-10">
                         <p class="<?= empty($currentTag) && empty($currentCategory) ? 'text-white' : 'text-white/60' ?> text-xs font-bold tracking-widest uppercase">ALL INTEL</p>
                     </a>
                     <?php foreach ($categories as $cat): ?>
-                        <a href="<?= $appUrl ?>/blog_list.php?category=<?= htmlspecialchars($cat['slug']) ?><?= $sort !== $defaultSort ? '&sort=' . urlencode($sort) : '' ?>" class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full <?= $currentCategory === $cat['slug'] ? 'bg-primary' : 'bg-white/5 border border-white/10 hover:bg-white/10' ?> px-6 transition-all cursor-pointer relative z-10">
+                        <a href="<?= $appUrl ?>/blog_list/category/<?= rawurlencode($cat['slug']) ?><?= $sort !== $defaultSort ? '?sort=' . urlencode($sort) : '' ?>" class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full <?= $currentCategory === $cat['slug'] ? 'bg-primary' : 'bg-white/5 border border-white/10 hover:bg-white/10' ?> px-6 transition-all cursor-pointer relative z-10">
                             <p class="<?= $currentCategory === $cat['slug'] ? 'text-white' : 'text-white/60' ?> text-xs font-bold tracking-widest uppercase"><?= htmlspecialchars($cat['name']) ?></p>
                         </a>
                     <?php endforeach; ?>
@@ -114,7 +120,7 @@ include __DIR__ . '/header.php';
                 <h3 class="text-xs font-bold tracking-widest uppercase text-white/60 mb-4">Tags</h3>
                 <div class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
                     <?php foreach ($tags as $tag): ?>
-                        <a href="<?= $appUrl ?>/blog_list.php?tag=<?= htmlspecialchars($tag['slug']) ?><?= $sort !== $defaultSort ? '&sort=' . urlencode($sort) : '' ?>" class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full <?= $currentTag === $tag['slug'] ? 'bg-primary' : 'bg-white/5 border border-white/10 hover:bg-white/10' ?> px-6 transition-all cursor-pointer relative z-10">
+                        <a href="<?= $appUrl ?>/blog_list/tag/<?= rawurlencode($tag['slug']) ?><?= $sort !== $defaultSort ? '?sort=' . urlencode($sort) : '' ?>" class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full <?= $currentTag === $tag['slug'] ? 'bg-primary' : 'bg-white/5 border border-white/10 hover:bg-white/10' ?> px-6 transition-all cursor-pointer relative z-10">
                             <p class="<?= $currentTag === $tag['slug'] ? 'text-white' : 'text-white/60' ?> text-xs font-bold tracking-widest uppercase"><?= htmlspecialchars($tag['name']) ?></p>
                         </a>
                     <?php endforeach; ?>
@@ -127,7 +133,7 @@ include __DIR__ . '/header.php';
                 <h3 class="text-xs font-bold tracking-widest uppercase text-white/60 mb-4">Sort By</h3>
                 <div class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
                     <?php foreach ($sortLabelsPublic as $sKey => $sLabel): ?>
-                    <a href="<?= $appUrl ?>/blog_list.php?sort=<?= urlencode($sKey) ?><?= $sortBase ?>"
+                    <a href="<?= $cleanBase ?>?sort=<?= urlencode($sKey) ?>"
                        class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full <?= $sort === $sKey ? 'bg-primary' : 'bg-white/5 border border-white/10 hover:bg-white/10' ?> px-6 transition-all cursor-pointer relative z-10">
                         <p class="<?= $sort === $sKey ? 'text-white' : 'text-white/60' ?> text-xs font-bold tracking-widest uppercase"><?= htmlspecialchars($sLabel) ?></p>
                     </a>
@@ -147,7 +153,7 @@ include __DIR__ . '/header.php';
             <?php else: ?>
                 <?php foreach ($blogs as $index => $blog): ?>
                     <div class="list-item-hover group relative flex flex-col md:flex-row gap-8 py-16 border-b border-white/10 cursor-pointer transition-colors duration-500 hover:bg-white/[0.02]">
-                        <a href="<?= $appUrl ?>/blog.php?slug=<?= htmlspecialchars($blog['slug']) ?>" class="absolute inset-0 z-20"></a>
+                        <a href="<?= $appUrl ?>/blog/<?= rawurlencode($blog['slug']) ?>" class="absolute inset-0 z-20"></a>
                         <div class="flex items-start gap-8 flex-1 relative z-10 pointer-events-none">
                             <span class="post-number text-white/20 text-4xl md:text-6xl font-black italic"><?= str_pad($index + 1, 2, '0', STR_PAD_LEFT) ?></span>
                             <div class="flex flex-col gap-4">
@@ -178,16 +184,29 @@ include __DIR__ . '/header.php';
 
         <!-- Pagination -->
         <?php
-            // Build a query string that carries current filters + sort across pages
-            $pageQs = '';
-            if (!empty($currentTag))      $pageQs .= '&tag='      . urlencode($currentTag);
-            if (!empty($currentCategory)) $pageQs .= '&category=' . urlencode($currentCategory);
-            if ($sort !== $defaultSort)   $pageQs .= '&sort='     . urlencode($sort);
+            // Build a clean-URL page link for the current filter context
+            function blogPageUrl($appUrl, $p, $currentCategory, $currentTag, $sort, $defaultSort) {
+                $qs = ($sort !== $defaultSort) ? ('?sort=' . urlencode($sort)) : '';
+                if (!empty($currentCategory)) {
+                    $base = $p > 1
+                        ? $appUrl . '/blog_list/category/' . rawurlencode($currentCategory) . '/page/' . $p
+                        : $appUrl . '/blog_list/category/' . rawurlencode($currentCategory);
+                } elseif (!empty($currentTag)) {
+                    $base = $p > 1
+                        ? $appUrl . '/blog_list/tag/' . rawurlencode($currentTag) . '/page/' . $p
+                        : $appUrl . '/blog_list/tag/' . rawurlencode($currentTag);
+                } else {
+                    $base = $p > 1
+                        ? $appUrl . '/blog_list/page/' . $p
+                        : $appUrl . '/blog';
+                }
+                return $base . $qs;
+            }
         ?>
         <?php if ($totalPages > 1): ?>
             <div class="mt-24 flex justify-center gap-4">
                 <?php if ($page > 1): ?>
-                    <a href="<?= $appUrl ?>/blog_list.php?page=<?= $page - 1 ?><?= $pageQs ?>" class="flex items-center gap-4 px-10 py-5 rounded-full border border-white/10 hover:border-primary/50 transition-all text-white font-bold group">
+                    <a href="<?= blogPageUrl($appUrl, $page - 1, $currentCategory, $currentTag, $sort, $defaultSort) ?>" class="flex items-center gap-4 px-10 py-5 rounded-full border border-white/10 hover:border-primary/50 transition-all text-white font-bold group">
                         <span class="material-symbols-outlined group-hover:-translate-y-1 transition-transform">expand_less</span>
                         PREVIOUS
                     </a>
@@ -195,14 +214,14 @@ include __DIR__ . '/header.php';
 
                 <div class="flex items-center gap-2">
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <a href="<?= $appUrl ?>/blog_list.php?page=<?= $i ?><?= $pageQs ?>" class="w-10 h-10 flex items-center justify-center rounded-full <?= $page === $i ? 'bg-primary text-white' : 'border border-white/10 text-white hover:border-primary/50' ?> transition-all">
+                        <a href="<?= blogPageUrl($appUrl, $i, $currentCategory, $currentTag, $sort, $defaultSort) ?>" class="w-10 h-10 flex items-center justify-center rounded-full <?= $page === $i ? 'bg-primary text-white' : 'border border-white/10 text-white hover:border-primary/50' ?> transition-all">
                             <?= $i ?>
                         </a>
                     <?php endfor; ?>
                 </div>
 
                 <?php if ($page < $totalPages): ?>
-                    <a href="<?= $appUrl ?>/blog_list.php?page=<?= $page + 1 ?><?= $pageQs ?>" class="flex items-center gap-4 px-10 py-5 rounded-full border border-white/10 hover:border-primary/50 transition-all text-white font-bold group">
+                    <a href="<?= blogPageUrl($appUrl, $page + 1, $currentCategory, $currentTag, $sort, $defaultSort) ?>" class="flex items-center gap-4 px-10 py-5 rounded-full border border-white/10 hover:border-primary/50 transition-all text-white font-bold group">
                         LOAD MORE INTEL
                         <span class="material-symbols-outlined group-hover:translate-y-1 transition-transform">expand_more</span>
                     </a>
