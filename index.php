@@ -22,11 +22,11 @@ $hero = [
     'headline' => $homeContent['hero_title'] ?? 'TRANSFORM <br/><span class="text-white/20">DIGITAL PRESENCE</span> <br/>INTO REVENUE.',
     'subtext' => $homeContent['hero_subtext'] ?? 'We scale high-growth brands through hyper-precision data and minimalist strategy. No noise, just performance.',
     'cta_label' => $homeContent['hero_cta_text'] ?? 'Get Free Audit',
-    'cta_url' => $homeContent['hero_cta_url'] ?? '#'
+    'cta_url' => $homeContent['hero_cta_url'] ?? 'leadform'
 ];
 
 $homeCtaLabel = $homeContent['last_cta_text'] ?? 'Let\'s work together';
-$homeCtaUrl = $homeContent['last_cta_url'] ?? '#';
+$homeCtaUrl = $homeContent['last_cta_url'] ?? 'leadform';
 $homeCtaNote = $homeContent['last_subtext'] ?? 'We\'ll respond within 24 hours';
 $homeCtaHref = trim($homeCtaUrl);
 $homeCtaTarget = '';
@@ -1258,7 +1258,7 @@ if ($homeCtaHref !== '') {
 
                         <div class="flex flex-wrap gap-3 sm:gap-4 justify-end">
 
-                            <a href="<?= htmlspecialchars($homeContent['serv1_url'] ?? 'leadform.php') ?>"
+                            <a href="<?= htmlspecialchars($homeContent['serv1_url'] ?? 'leadform') ?>"
                                 class="ml-2 mt-2 inline-block bg-[var(--electric-blue)] text-white text-sm font-bold px-4 py-2 rounded hover:bg-blue-600 transition-all text-center"
                                 style="height:44px; line-height:40px; min-width:180px; display:flex; align-items:center; justify-content:center;"><?= $homeContent['serv1_cta'] ?? 'Build Your Brand' ?></a>
                         </div>
@@ -1287,7 +1287,7 @@ if ($homeCtaHref !== '') {
 
                         <div class="flex flex-wrap gap-3 sm:gap-4 justify-end">
 
-                            <a href="<?= htmlspecialchars($homeContent['serv2_url'] ?? 'leadform.php') ?>"
+                            <a href="<?= htmlspecialchars($homeContent['serv2_url'] ?? 'leadform') ?>"
                                 class="ml-2 mt-2 inline-block bg-[var(--electric-blue)] text-white text-sm font-bold px-4 py-2 rounded hover:bg-blue-600 transition-all text-center"
                                 style="height:44px; line-height:40px; min-width:180px; display:flex; align-items:center; justify-content:center;"><?= $homeContent['serv2_cta'] ?? 'Make Your Brand Stand Out' ?></a>
                         </div>
@@ -1317,7 +1317,7 @@ if ($homeCtaHref !== '') {
 
                         <div class="flex flex-wrap gap-3 sm:gap-4 justify-end">
 
-                            <a href="<?= htmlspecialchars($homeContent['serv3_url'] ?? 'leadform.php') ?>"
+                            <a href="<?= htmlspecialchars($homeContent['serv3_url'] ?? 'leadform') ?>"
                                 class="ml-2 mt-2 inline-block bg-[var(--electric-blue)] text-white text-sm font-bold px-4 py-2 rounded hover:bg-blue-600 transition-all text-center"
                                 style="height:44px; line-height:40px; min-width:180px; display:flex; align-items:center; justify-content:center;"><?= $homeContent['serv3_cta'] ?? 'Scale Your Business' ?></a>
                         </div>
@@ -1347,7 +1347,7 @@ if ($homeCtaHref !== '') {
 
                         <div class="flex flex-wrap gap-3 sm:gap-4 justify-end">
 
-                            <a href="<?= htmlspecialchars($homeContent['serv4_url'] ?? 'leadform.php') ?>"
+                            <a href="<?= htmlspecialchars($homeContent['serv4_url'] ?? 'leadform') ?>"
                                 class="ml-2 mt-2 inline-block bg-[var(--electric-blue)] text-white text-sm font-bold px-4 py-2 rounded hover:bg-blue-600 transition-all text-center"
                                 style="height:44px; line-height:40px; min-width:180px; display:flex; align-items:center; justify-content:center;"><?= $homeContent['serv4_cta'] ?? 'Build a Store That Sells' ?></a>
                         </div>
@@ -1376,7 +1376,7 @@ if ($homeCtaHref !== '') {
 
                         <div class="flex flex-wrap gap-3 sm:gap-4 justify-end">
 
-                            <a href="<?= htmlspecialchars($homeContent['serv5_url'] ?? 'leadform.php') ?>"
+                            <a href="<?= htmlspecialchars($homeContent['serv5_url'] ?? 'leadform') ?>"
                                 class="ml-2 mt-2 inline-block bg-[var(--electric-blue)] text-white text-sm font-bold px-4 py-2 rounded hover:bg-blue-600 transition-all text-center"
                                 style="height:44px; line-height:40px; min-width:180px; display:flex; align-items:center; justify-content:center;"><?= $homeContent['serv5_cta'] ?? 'Grow Your Marketplace Sales' ?></a>
                         </div>
@@ -1405,7 +1405,7 @@ if ($homeCtaHref !== '') {
 
                         <div class="flex flex-wrap gap-3 sm:gap-4 justify-end">
 
-                            <a href="<?= htmlspecialchars($homeContent['serv6_url'] ?? 'leadform.php') ?>"
+                            <a href="<?= htmlspecialchars($homeContent['serv6_url'] ?? 'leadform') ?>"
                                 class="ml-2 mt-2 inline-block bg-[var(--electric-blue)] text-white text-sm font-bold px-4 py-2 rounded hover:bg-blue-600 transition-all text-center"
                                 style="height:44px; line-height:40px; min-width:180px; display:flex; align-items:center; justify-content:center;"><?= $homeContent['serv6_cta'] ?? 'Create Content That Converts' ?></a>
                         </div>
@@ -1434,7 +1434,7 @@ if ($homeCtaHref !== '') {
 
                         <div class="flex flex-wrap gap-3 sm:gap-4 justify-end">
 
-                            <a href="<?= htmlspecialchars($homeContent['serv7_url'] ?? 'leadform.php') ?>"
+                            <a href="<?= htmlspecialchars($homeContent['serv7_url'] ?? 'leadform') ?>"
                                 class="ml-2 mt-2 inline-block bg-[var(--electric-blue)] text-white text-sm font-bold px-4 py-2 rounded hover:bg-blue-600 transition-all text-center"
                                 style="height:44px; line-height:40px; min-width:180px; display:flex; align-items:center; justify-content:center;"><?= $homeContent['serv7_cta'] ?? 'Create High-Impact Visuals' ?></a>
                         </div>

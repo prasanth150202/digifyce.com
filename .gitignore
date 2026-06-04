@@ -16,9 +16,11 @@
 /storage/cache/
 /storage/sessions/
 
-# Uploads and generated files
-/storage/uploads/
-/public/uploads/
+# Uploads and generated files — track folder structure, ignore file contents
+/storage/uploads/*
+!/storage/uploads/.gitkeep
+/public/uploads/*
+!/public/uploads/.gitkeep
 
 # OS / editor files
 .DS_Store

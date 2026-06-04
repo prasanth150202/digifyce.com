@@ -28,9 +28,25 @@ try {
     // fall through
 }
 
-// 3. PHP file fallback — only for sub-directory paths (admin, config, etc.)
-// Top-level slugs are DB-managed; if not found above they are 404, not served by filename.
 $uri_clean = ltrim($_GET['uri'] ?? '', '/');
+
+// 3. Whitelisted top-level public pages
+$publicPages = [
+    'leadform', 'thankyou', 'about-us', 'about-us-new',
+    'brand-shoot', 'careers', 'content-marketing', 'creative-dev',
+    'd2c-branding', 'd2c', 'e-com-marketing', 'instavideos',
+    'market-manage', 'performance-marketing', 'products',
+    'service', 'technology', 'testimonial',
+];
+if (in_array($uri_clean, $publicPages, true)) {
+    $phpFile = __DIR__ . '/' . $uri_clean . '.php';
+    if (file_exists($phpFile) && is_file($phpFile)) {
+        include $phpFile;
+        exit;
+    }
+}
+
+// 4. PHP file fallback — only for sub-directory paths (admin, config, etc.)
 if (substr_count($uri_clean, '/') > 0 && strpos($uri_clean, '..') === false && strpos($uri_clean, "\0") === false) {
     $phpFile = __DIR__ . '/' . $uri_clean . '.php';
     if (file_exists($phpFile) && is_file($phpFile)) {

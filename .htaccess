@@ -36,6 +36,27 @@ RewriteRule ^blog/([^/]+)/?$ blog.php?slug=$1 [L,NC]
 RewriteRule ^pages/([^/]+)/?$ pages.php?slug=$1 [L,QSA,NC]
 # ────────────────────────────────────────────────────────────────────────────
 
+# ── Public page clean URL routes ────────────────────────────────────────────
+RewriteRule ^leadform/?$ leadform.php [L,QSA,NC]
+RewriteRule ^thankyou/?$ thankyou.php [L,QSA,NC]
+RewriteRule ^about-us/?$ about-us.php [L,QSA,NC]
+RewriteRule ^about-us-new/?$ about-us-new.php [L,QSA,NC]
+RewriteRule ^brand-shoot/?$ brand-shoot.php [L,QSA,NC]
+RewriteRule ^careers/?$ careers.php [L,QSA,NC]
+RewriteRule ^content-marketing/?$ content-marketing.php [L,QSA,NC]
+RewriteRule ^creative-dev/?$ creative-dev.php [L,QSA,NC]
+RewriteRule ^d2c-branding/?$ d2c-branding.php [L,QSA,NC]
+RewriteRule ^d2c/?$ d2c.php [L,QSA,NC]
+RewriteRule ^e-com-marketing/?$ e-com-marketing.php [L,QSA,NC]
+RewriteRule ^instavideos/?$ instavideos.php [L,QSA,NC]
+RewriteRule ^market-manage/?$ market-manage.php [L,QSA,NC]
+RewriteRule ^performance-marketing/?$ performance-marketing.php [L,QSA,NC]
+RewriteRule ^products/?$ products.php [L,QSA,NC]
+RewriteRule ^service/?$ service.php [L,QSA,NC]
+RewriteRule ^technology/?$ technology.php [L,QSA,NC]
+RewriteRule ^testimonial/?$ testimonial.php [L,QSA,NC]
+# ────────────────────────────────────────────────────────────────────────────
+
 # Slug router: handles all clean URL routing, slug redirects, and PHP file fallback
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
