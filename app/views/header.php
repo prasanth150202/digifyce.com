@@ -63,6 +63,18 @@ if ($navCtaHref !== '') {
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title><?= htmlspecialchars($pageTitle) ?></title>
     <meta name="description" content="<?= htmlspecialchars($pageDescription) ?>"/>
+    <?php
+    $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $isIndividualBlog = strpos($path, '/blog/') === 0;
+    if (!isset($canonicalUrl)) {
+        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http";
+        $domain = $_SERVER['HTTP_HOST'];
+        $canonicalUrl = $protocol . "://" . $domain . $path;
+    }
+    if (!$isIndividualBlog):
+    ?>
+    <link rel="canonical" href="<?= htmlspecialchars($canonicalUrl) ?>" />
+    <?php endif; ?>
     <meta name="keywords" content="web design, development, digital marketing agency in coimbatore, digifyce"/>
     <meta property="og:title" content="<?= htmlspecialchars($pageTitle) ?>"/>
     <meta property="og:description" content="<?= htmlspecialchars($pageDescription) ?>"/>
