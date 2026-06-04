@@ -65,7 +65,7 @@ if ($navCtaHref !== '') {
     <meta name="description" content="<?= htmlspecialchars($pageDescription) ?>"/>
     <?php
     $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-    $isIndividualBlog = strpos($path, '/blog/') === 0;
+    $isIndividualBlog = strpos($path, '/blog/') !== false;
     if (!isset($canonicalUrl)) {
         $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http";
         $domain = $_SERVER['HTTP_HOST'];
