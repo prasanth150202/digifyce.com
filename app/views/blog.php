@@ -186,6 +186,22 @@ $extraHead = '<style type="text/tailwindcss">
         background-color: #1e293b;
         font-weight: bold;
     }
+    .sidebar-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
+        transition: scrollbar-color 0.2s;
+    }
+    .sidebar-scroll:hover {
+        scrollbar-color: rgba(255,255,255,0.15) transparent;
+    }
+    .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+    .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+        background: transparent;
+        border-radius: 2px;
+        transition: background 0.2s;
+    }
+    .sidebar-scroll:hover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
 </style>';
 
 include __DIR__ . '/header.php';
@@ -215,7 +231,7 @@ include __DIR__ . '/header.php';
     <main class="relative px-6 md:px-20 lg:px-40 py-12 flex flex-col lg:flex-row gap-20">
         <aside class="hidden lg:block w-72 shrink-0">
             <!-- Sticky: tags + author + share -->
-            <div class="sticky top-24 space-y-12">
+            <div class="sticky top-24 space-y-12 sidebar-scroll overflow-y-auto max-h-[calc(100vh-7rem)] pr-2">
                 <?php if (!empty($blog['tags'])): ?>
                     <div>
                         <h4 class="text-primary text-[10px] font-bold tracking-[0.3em] uppercase mb-6">Key Takeaways</h4>
