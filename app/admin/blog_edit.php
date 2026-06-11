@@ -40,13 +40,13 @@ tinymce.init({
   height: 500,
 
   plugins: 'advlist autolink lists link image table code paste',
-  toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | table | code',
+  toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | table | code | insertcta',
 
   paste_as_text: false,
   paste_remove_spans: true,
   paste_strip_class_attributes: 'all',
 
-  valid_elements: 'p,h1,h2,h3,h4,h5,h6,ul,ol,li,strong,b,em,i,a[href],img[src|alt],br,' +
+  valid_elements: 'p,h1,h2,h3,h4,h5,h6,ul,ol,li,strong,b,em,i,a[href|style|target|rel],img[src|alt|style],br,div[style|class],' +
     'table[width|cellpadding|cellspacing|border|style],thead,tbody,tfoot,' +
     'tr,th[colspan|rowspan|scope|style|align],td[colspan|rowspan|style|align|width]',
 
@@ -65,6 +65,20 @@ tinymce.init({
   setup: function(editor) {
     editor.on('submit', function() {
       editor.save();
+    });
+
+    editor.ui.registry.addButton('insertcta', {
+      text: 'Add CTA',
+      tooltip: 'Insert a Call-to-Action button into the content',
+      onAction: function() {
+        var modal = new bootstrap.Modal(document.getElementById('ctaModal'));
+        document.getElementById('ctaModalText').value = '';
+        document.getElementById('ctaModalUrl').value = '';
+        document.getElementById('ctaAlignCenter').checked = true;
+        window._tinymceEditorForCta = editor;
+        modal.show();
+        setTimeout(function(){ document.getElementById('ctaModalText').focus(); }, 400);
+      }
     });
   }
 });
@@ -244,5 +258,99 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 </div>
 
+
+<!-- ── CTA Insert Modal ──────────────────────────────────────────────────────── -->
+<div class="modal fade" id="ctaModal" tabindex="-1" aria-labelledby="ctaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ctaModalLabel">
+                    <i class="fas fa-mouse-pointer me-2 text-primary"></i>Insert CTA Button
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Button Text <span class="text-danger">*</span></label>
+                    <input type="text" id="ctaModalText" class="form-control"
+                           placeholder="e.g. Get a Free Consultation" maxlength="100">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Button URL <span class="text-danger">*</span></label>
+                    <input type="text" id="ctaModalUrl" class="form-control"
+                           placeholder="e.g. /contact or https://example.com">
+                </div>
+                <div class="mb-1">
+                    <label class="form-label fw-semibold small">Alignment</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ctaAlign" id="ctaAlignLeft" value="left">
+                            <label class="form-check-label small" for="ctaAlignLeft">Left</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ctaAlign" id="ctaAlignCenter" value="center" checked>
+                            <label class="form-check-label small" for="ctaAlignCenter">Center</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ctaAlign" id="ctaAlignRight" value="right">
+                            <label class="form-check-label small" for="ctaAlignRight">Right</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="ctaInsertBtn">
+                    <i class="fas fa-plus me-1"></i> Insert CTA
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    function doInsertCta() {
+        var text  = document.getElementById('ctaModalText').value.trim();
+        var url   = document.getElementById('ctaModalUrl').value.trim();
+        var align = document.querySelector('input[name="ctaAlign"]:checked').value;
+
+        if (!text || !url) {
+            document.getElementById(text ? 'ctaModalUrl' : 'ctaModalText').classList.add('is-invalid');
+            return;
+        }
+
+        var safeText = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        var safeUrl  = url.replace(/"/g,'&quot;');
+
+        var html = '<div style="text-align:' + align + ';margin:2rem 0 2rem;">' +
+            '<a href="' + safeUrl + '" target="_blank" rel="noopener" ' +
+            'style="display:inline-block;background-color:#0d69f2;color:#ffffff;' +
+            'padding:14px 32px;border-radius:6px;font-weight:700;text-decoration:none;' +
+            'font-size:15px;letter-spacing:0.05em;text-transform:uppercase;">' +
+            safeText + '</a></div>';
+
+        if (window._tinymceEditorForCta) {
+            window._tinymceEditorForCta.insertContent(html);
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById('ctaModal')).hide();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('ctaInsertBtn').addEventListener('click', doInsertCta);
+
+        ['ctaModalText', 'ctaModalUrl'].forEach(function (id) {
+            var el = document.getElementById(id);
+            el.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') doInsertCta();
+            });
+            el.addEventListener('input', function () {
+                this.classList.remove('is-invalid');
+            });
+        });
+    });
+})();
+</script>
 
 <?php include __DIR__ . '/../views/admin_footer.php'; ?>

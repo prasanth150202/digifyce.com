@@ -214,6 +214,7 @@ include __DIR__ . '/header.php';
 
     <main class="relative px-6 md:px-20 lg:px-40 py-12 flex flex-col lg:flex-row gap-20">
         <aside class="hidden lg:block w-72 shrink-0">
+            <!-- Sticky: tags + author + share -->
             <div class="sticky top-24 space-y-12">
                 <?php if (!empty($blog['tags'])): ?>
                     <div>
@@ -259,6 +260,117 @@ include __DIR__ . '/header.php';
                     <button onclick="navigator.clipboard.writeText(window.location.href)" class="size-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-primary hover:border-primary transition-all group">
                         <span class="material-symbols-outlined text-sm text-slate-400 group-hover:text-white">content_copy</span>
                     </button>
+                </div>
+
+                <!-- Lead form below author -->
+                <div class="border-t border-white/10 pt-10">
+                    <h4 class="text-primary text-[10px] font-bold tracking-[0.3em] uppercase mb-6">Get In Touch</h4>
+                    <p class="text-slate-500 text-xs mb-6 leading-relaxed">Share a few details and we'll get back with a growth plan.</p>
+
+                    <div id="blog-lead-msg" class="hidden mb-5 rounded-lg p-4 text-xs font-medium text-center"></div>
+
+                    <form id="blog-lead-form" class="flex flex-col gap-4">
+                        <div>
+                            <label class="text-[9px] uppercase tracking-[0.3em] text-slate-500">Full Name *</label>
+                            <input name="full_name" required
+                                class="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-primary focus:outline-none"
+                                placeholder="Your name" />
+                        </div>
+                        <div>
+                            <label class="text-[9px] uppercase tracking-[0.3em] text-slate-500">Email *</label>
+                            <input type="email" name="email" required
+                                class="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-primary focus:outline-none"
+                                placeholder="you@company.com" />
+                        </div>
+                        <div>
+                            <label class="text-[9px] uppercase tracking-[0.3em] text-slate-500">Phone</label>
+                            <input type="tel" name="phone"
+                                class="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-primary focus:outline-none"
+                                placeholder="+91 00000 00000" />
+                        </div>
+                        <div>
+                            <label class="text-[9px] uppercase tracking-[0.3em] text-slate-500">Company</label>
+                            <input name="company"
+                                class="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-primary focus:outline-none"
+                                placeholder="Company name" />
+                        </div>
+                        <div>
+                            <label class="text-[9px] uppercase tracking-[0.3em] text-slate-500">Monthly Budget</label>
+                            <select name="budget"
+                                class="mt-2 w-full rounded-lg border border-white/10 bg-[#05070a] px-3 py-2.5 text-sm text-white focus:border-primary focus:outline-none">
+                                <option value="">Select budget</option>
+                                <option value="50k-1l">₹50k - ₹1L</option>
+                                <option value="1l-1.5l">₹1L - ₹1.5L</option>
+                                <option value="1.5l-2l">₹1.5L - ₹2L</option>
+                                <option value="2l-3l">₹2L - ₹3L</option>
+                                <option value="3l+">₹3L+</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[9px] uppercase tracking-[0.3em] text-slate-500">Website</label>
+                            <input name="website"
+                                class="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-primary focus:outline-none"
+                                placeholder="https://" />
+                        </div>
+                        <div>
+                            <label class="text-[9px] uppercase tracking-[0.3em] text-slate-500">Project Details *</label>
+                            <textarea name="message" rows="4" required
+                                class="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-primary focus:outline-none"
+                                placeholder="Tell us about your goals..."></textarea>
+                        </div>
+                        <button type="submit" id="blog-lead-btn"
+                            class="w-full bg-primary text-white py-3 font-bold uppercase tracking-widest text-xs hover:bg-white hover:text-[#05070a] transition-all rounded-lg">
+                            Submit Request
+                        </button>
+                        <p class="text-[9px] uppercase tracking-[0.2em] text-slate-600 text-center">We respond within 24 hours</p>
+                    </form>
+
+                    <script>
+                    (function () {
+                        var form = document.getElementById('blog-lead-form');
+                        var msg  = document.getElementById('blog-lead-msg');
+                        var btn  = document.getElementById('blog-lead-btn');
+                        form.addEventListener('submit', function (e) {
+                            e.preventDefault();
+                            btn.disabled = true;
+                            btn.textContent = 'Sending…';
+                            var data = {
+                                full_name: form.full_name.value.trim(),
+                                email:     form.email.value.trim(),
+                                phone:     form.phone.value.trim(),
+                                company:   form.company.value.trim(),
+                                budget:    form.budget.value,
+                                website:   form.website.value.trim(),
+                                message:   form.message.value.trim(),
+                            };
+                            fetch('<?= $appUrl ?>/app/api/lead_form_submit.php', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify(data),
+                            })
+                            .then(function(r){ return r.json(); })
+                            .then(function(res) {
+                                msg.className = 'mb-5 rounded-lg p-4 text-xs font-medium text-center border';
+                                if (res.success) {
+                                    msg.classList.add('border-green-500/30','bg-green-500/10','text-green-300');
+                                    msg.textContent = '✓ ' + res.message;
+                                    form.reset();
+                                } else {
+                                    msg.classList.add('border-red-500/30','bg-red-500/10','text-red-300');
+                                    msg.textContent = '⚠ ' + res.message;
+                                }
+                                btn.disabled = false;
+                                btn.textContent = 'Submit Request';
+                            })
+                            .catch(function() {
+                                msg.className = 'mb-5 rounded-lg p-4 text-xs font-medium text-center border border-red-500/30 bg-red-500/10 text-red-300';
+                                msg.textContent = '⚠ Something went wrong. Please try again.';
+                                btn.disabled = false;
+                                btn.textContent = 'Submit Request';
+                            });
+                        });
+                    })();
+                    </script>
                 </div>
             </div>
         </aside>
