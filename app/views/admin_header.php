@@ -1,7 +1,7 @@
 <?php
 // Bootstrap admin header include
 $dotenv = __DIR__ . '/../../.env';
-if (!isset($_ENV['APP_URL']) && file_exists($dotenv)) {
+if (file_exists($dotenv)) {
     $lines = file($dotenv, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
         if (strpos(trim($line), '#') === 0)
@@ -32,6 +32,7 @@ if (!isset($permissionManager) && isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="app-url" content="<?= htmlspecialchars(rtrim($appUrl ?? '', '/')) ?>">
     <title><?= isset($pageTitle) ? htmlspecialchars($pageTitle) : 'Admin Dashboard' ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">

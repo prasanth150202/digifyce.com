@@ -38,15 +38,16 @@ tinymce.init({
   license_key: 'gpl',
   selector: '#content',
   height: 500,
+  statusbar: false,
 
   plugins: 'advlist autolink lists link image table code paste',
-  toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | table | code | insertcta',
+  toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | table | code | insertcta insertpdf',
 
   paste_as_text: false,
   paste_remove_spans: true,
   paste_strip_class_attributes: 'all',
 
-  valid_elements: 'p,h1,h2,h3,h4,h5,h6,ul,ol,li,strong,b,em,i,a[href|style|target|rel],img[src|alt|style],br,div[style|class],' +
+  valid_elements: 'p[style],h1,h2,h3,h4,h5,h6,ul,ol,li,strong,b,em,i,a[href|style|target|rel|download],img[src|alt|style],br,div[style|class],' +
     'table[width|cellpadding|cellspacing|border|style],thead,tbody,tfoot,' +
     'tr,th[colspan|rowspan|scope|style|align],td[colspan|rowspan|style|align|width]',
 
@@ -78,6 +79,26 @@ tinymce.init({
         window._tinymceEditorForCta = editor;
         modal.show();
         setTimeout(function(){ document.getElementById('ctaModalText').focus(); }, 400);
+      }
+    });
+
+    editor.ui.registry.addButton('insertpdf', {
+      text: 'Add PDF',
+      tooltip: 'Insert a PDF download button into the content',
+      onAction: function() {
+        document.getElementById('pdfModalLabel').value = '';
+        document.getElementById('pdfModalDownloadName').value = '';
+        document.getElementById('pdfAlignCenter').checked = true;
+        document.getElementById('pdfModalStatus').textContent = '';
+        document.getElementById('pdfModalStatus').className = '';
+        window._pdfSelectedFile = null;
+        document.getElementById('pdfFileDisplay').textContent = 'No file chosen';
+        document.getElementById('pdfFileDisplay').style.color = '';
+        document.getElementById('pdfFileInvalid').style.display = 'none';
+        window._tinymceEditorForPdf = editor;
+        var modal = new bootstrap.Modal(document.getElementById('pdfModal'), { focus: false });
+        modal.show();
+        setTimeout(function(){ document.getElementById('pdfModalLabel').focus(); }, 400);
       }
     });
   }
@@ -309,6 +330,23 @@ document.addEventListener('DOMContentLoaded', function () {
 </div>
 
 <script>
+// Positions the TinyMCE cursor after the current top-level block before
+// inserting, so buttons are never nested inside existing content.
+function insertAtRootBlock(editor, html) {
+    var body = editor.getBody();
+    var node = editor.selection.getNode();
+    while (node && node.parentNode && node.parentNode !== body) {
+        node = node.parentNode;
+    }
+    if (node && node !== body) {
+        var rng = editor.dom.createRng();
+        rng.setStartAfter(node);
+        rng.setEndAfter(node);
+        editor.selection.setRng(rng);
+    }
+    editor.insertContent(html);
+}
+
 (function () {
     function doInsertCta() {
         var text  = document.getElementById('ctaModalText').value.trim();
@@ -323,15 +361,15 @@ document.addEventListener('DOMContentLoaded', function () {
         var safeText = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         var safeUrl  = url.replace(/"/g,'&quot;');
 
-        var html = '<div style="text-align:' + align + ';margin:2rem 0 2rem;">' +
+        var html = '<p style="text-align:' + align + ';margin:2rem 0;">' +
             '<a href="' + safeUrl + '" target="_blank" rel="noopener" ' +
             'style="display:inline-block;background-color:#0d69f2;color:#ffffff;' +
             'padding:14px 32px;border-radius:6px;font-weight:700;text-decoration:none;' +
             'font-size:15px;letter-spacing:0.05em;text-transform:uppercase;">' +
-            safeText + '</a></div>';
+            safeText + '</a></p>';
 
         if (window._tinymceEditorForCta) {
-            window._tinymceEditorForCta.insertContent(html);
+            insertAtRootBlock(window._tinymceEditorForCta, html);
         }
 
         bootstrap.Modal.getInstance(document.getElementById('ctaModal')).hide();
@@ -349,6 +387,177 @@ document.addEventListener('DOMContentLoaded', function () {
                 this.classList.remove('is-invalid');
             });
         });
+    });
+})();
+</script>
+
+<!-- ── PDF Download Insert Modal ────────────────────────────────────────────── -->
+<div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfModalHeading" aria-hidden="true" data-bs-focus="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pdfModalHeading">
+                    <i class="fas fa-file-pdf me-2 text-danger"></i>Insert PDF Download Button
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Button Label <span class="text-danger">*</span></label>
+                    <input type="text" id="pdfModalLabel" class="form-control"
+                           placeholder="e.g. Download Our Guide" maxlength="100">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">PDF File <span class="text-danger">*</span></label>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="pdfChooseFileBtn">
+                            <i class="fas fa-folder-open me-1"></i>Choose PDF…
+                        </button>
+                        <span id="pdfFileDisplay" class="small text-muted">No file chosen</span>
+                    </div>
+                    <div id="pdfFileInvalid" class="small text-danger mt-1" style="display:none">Please select a PDF file.</div>
+                    <small class="text-muted">Only PDF files are accepted.</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Downloaded File Name <span class="text-muted fw-normal">(optional)</span></label>
+                    <input type="text" id="pdfModalDownloadName" class="form-control"
+                           placeholder="e.g. digifyce-guide-2025.pdf" maxlength="200">
+                    <small class="text-muted">What the browser names the file when the user saves it.</small>
+                </div>
+                <div class="mb-1">
+                    <label class="form-label fw-semibold small">Alignment</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="pdfAlign" id="pdfAlignLeft" value="left">
+                            <label class="form-check-label small" for="pdfAlignLeft">Left</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="pdfAlign" id="pdfAlignCenter" value="center" checked>
+                            <label class="form-check-label small" for="pdfAlignCenter">Center</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="pdfAlign" id="pdfAlignRight" value="right">
+                            <label class="form-check-label small" for="pdfAlignRight">Right</label>
+                        </div>
+                    </div>
+                </div>
+                <div id="pdfModalStatus" class="mt-3 small"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="pdfInsertBtn">
+                    <i class="fas fa-upload me-1"></i> Upload &amp; Insert
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var appBase = <?= json_encode(rtrim($appUrl ?? '', '/')) ?>;
+
+    var insertBtn   = document.getElementById('pdfInsertBtn');
+    var statusEl    = document.getElementById('pdfModalStatus');
+    var fileDisplay = document.getElementById('pdfFileDisplay');
+    var fileInvalid = document.getElementById('pdfFileInvalid');
+
+    function setStatus(msg, type) {
+        statusEl.textContent = msg;
+        statusEl.className   = 'mt-3 small text-' + type;
+    }
+
+    function resetBtn() {
+        insertBtn.disabled  = false;
+        insertBtn.innerHTML = '<i class="fas fa-upload me-1"></i> Upload &amp; Insert';
+    }
+
+    // Create a fresh input element in document.body each time to avoid Windows file dialog freeze
+    document.getElementById('pdfChooseFileBtn').addEventListener('click', function () {
+        var inp    = document.createElement('input');
+        inp.type   = 'file';
+        inp.accept = '.pdf,application/pdf';
+        inp.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;width:0;height:0;';
+        document.body.appendChild(inp);
+
+        inp.addEventListener('change', function () {
+            if (inp.files.length) {
+                window._pdfSelectedFile = inp.files[0];
+                fileDisplay.textContent  = inp.files[0].name;
+                fileDisplay.style.color  = '';
+                fileInvalid.style.display = 'none';
+            }
+            if (document.body.contains(inp)) { document.body.removeChild(inp); }
+        });
+
+        inp.addEventListener('cancel', function () {
+            if (document.body.contains(inp)) { document.body.removeChild(inp); }
+        });
+
+        inp.click();
+    });
+
+    insertBtn.addEventListener('click', function () {
+        var label        = document.getElementById('pdfModalLabel').value.trim();
+        var downloadName = document.getElementById('pdfModalDownloadName').value.trim();
+        var align        = document.querySelector('input[name="pdfAlign"]:checked').value;
+
+        document.getElementById('pdfModalLabel').classList.remove('is-invalid');
+        fileInvalid.style.display = 'none';
+
+        if (!label) { document.getElementById('pdfModalLabel').classList.add('is-invalid'); return; }
+        if (!window._pdfSelectedFile) { fileInvalid.style.display = 'block'; return; }
+
+        if (!window._pdfSelectedFile.name.toLowerCase().endsWith('.pdf')) {
+            setStatus('Only PDF files are allowed.', 'danger');
+            return;
+        }
+
+        insertBtn.disabled  = true;
+        insertBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Uploading…';
+        setStatus('Uploading PDF, please wait…', 'muted');
+
+        var formData = new FormData();
+        formData.append('pdf', window._pdfSelectedFile);
+
+        fetch('blog_pdf_upload.php', { method: 'POST', body: formData })
+            .then(function (r) {
+                return r.text().then(function (text) {
+                    try { return JSON.parse(text); }
+                    catch (e) { throw new Error('Server returned: ' + text.substring(0, 120)); }
+                });
+            })
+            .then(function (data) {
+                if (!data.ok) {
+                    setStatus('Upload failed: ' + (data.error || 'Unknown error'), 'danger');
+                    resetBtn();
+                    return;
+                }
+
+                var safeLabel = label.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                var fileUrl   = appBase + '/pdf-download?file=' + encodeURIComponent(data.filename)
+                                       + (downloadName ? '&name=' + encodeURIComponent(downloadName) : '');
+
+                var html = '<p style="text-align:' + align + ';margin:2rem 0;">' +
+                    '<a href="' + fileUrl + '"' +
+                    ' style="display:inline-flex;align-items:center;gap:10px;' +
+                    'background-color:#1e293b;color:#e2e8f0;padding:14px 28px;border-radius:6px;' +
+                    'font-weight:700;text-decoration:none;font-size:14px;letter-spacing:0.05em;' +
+                    'text-transform:uppercase;border:2px solid #0d69f2;">' +
+                    '&#11015; ' + safeLabel + '</a></p>';
+
+                if (window._tinymceEditorForPdf) { insertAtRootBlock(window._tinymceEditorForPdf, html); }
+                bootstrap.Modal.getInstance(document.getElementById('pdfModal')).hide();
+                resetBtn();
+            })
+            .catch(function (err) {
+                setStatus(err.message || 'Network error — please try again.', 'danger');
+                resetBtn();
+            });
+    });
+
+    document.getElementById('pdfModalLabel').addEventListener('input', function () {
+        this.classList.remove('is-invalid');
     });
 })();
 </script>

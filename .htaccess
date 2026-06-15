@@ -14,6 +14,12 @@
 <IfModule mod_rewrite.c>
 RewriteEngine On
 
+# Serve static files from storage/ directly — bypass all routing
+RewriteRule ^storage/ - [L]
+
+# PDF download endpoint (bypasses slug router entirely)
+RewriteRule ^pdf-download/?$ pdf-download.php [L,QSA,NC]
+
 # Redirect .php URLs to clean URLs — GET only (POST must never be redirected: 301 drops POST body)
 RewriteCond %{REQUEST_METHOD} !POST
 RewriteCond %{THE_REQUEST} /([^.]+)\.php [NC]

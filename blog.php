@@ -53,10 +53,10 @@ $blog['tags'] = $tagsStmt->fetchAll(PDO::FETCH_ASSOC);
 $pageTitle = $blog['meta_title'] ?: ($blog['title'] . ' | Digifyce');
 $pageDescription = $blog['meta_description'] ?: (substr(strip_tags($blog['excerpt'] ?? $blog['content']), 0, 160));
 
-// Get related posts (same category, limit 3, exclude current)
-$relatedStmt = $pdo->prepare('SELECT b.id, b.title, b.slug, b.featured_image FROM blogs b WHERE b.category_id=? AND b.id != ? AND b.status="published" ORDER BY b.published_at DESC LIMIT 1');
-$relatedStmt->execute([$blog['category_id'], $blog['id']]);
-$nextBlog = $relatedStmt->fetch(PDO::FETCH_ASSOC);
+// Get 3 related posts — same category first, filled with recent others
+$relatedStmt = $pdo->prepare('SELECT b.id, b.title, b.slug, b.featured_image, c.name as category_name FROM blogs b LEFT JOIN blog_categories c ON b.category_id = c.id WHERE b.id != ? AND b.status = "published" ORDER BY (b.category_id = ?) DESC, b.published_at DESC LIMIT 3');
+$relatedStmt->execute([$blog['id'], $blog['category_id']]);
+$relatedBlogs = $relatedStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Increment view count
 $pdo->prepare('UPDATE blogs SET view_count=view_count+1 WHERE id=?')->execute([$blog['id']]);

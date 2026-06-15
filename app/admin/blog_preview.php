@@ -45,13 +45,10 @@ $estimatedRead = max(1, ceil(str_word_count(strip_tags($blog['content'])) / 200)
 $pageTitle     = $blog['meta_title'] ?: ($blog['title'] . ' | Preview');
 $pageDescription = $blog['meta_description'] ?: substr(strip_tags($blog['excerpt'] ?? $blog['content']), 0, 160);
 
-// Related post (blog view uses $nextBlog)
-$nextBlog = null;
-if (!empty($blog['category_id'])) {
-    $r = $pdo->prepare('SELECT id, title, slug, featured_image FROM blogs WHERE category_id=? AND id!=? AND status="published" ORDER BY published_at DESC LIMIT 1');
-    $r->execute([$blog['category_id'], $id]);
-    $nextBlog = $r->fetch(PDO::FETCH_ASSOC);
-}
+// Related posts (blog view uses $relatedBlogs)
+$relatedStmt = $pdo->prepare('SELECT b.id, b.title, b.slug, b.featured_image, c.name as category_name FROM blogs b LEFT JOIN blog_categories c ON b.category_id = c.id WHERE b.id != ? AND b.status = "published" ORDER BY (b.category_id = ?) DESC, b.published_at DESC LIMIT 3');
+$relatedStmt->execute([$id, $blog['category_id'] ?? 0]);
+$relatedBlogs = $relatedStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Preview bar HTML (injected after <body> via output buffering)
 $isDraft     = $blog['status'] !== 'published';

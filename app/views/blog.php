@@ -419,24 +419,39 @@ include __DIR__ . '/header.php';
         </article>
     </main>
 
-    <?php if ($nextBlog): ?>
+    <?php if (!empty($relatedBlogs)): ?>
         <section class="mt-20 border-t border-white/10">
-            <div class="grid md:grid-cols-2 h-[600px]">
-                <div class="p-12 md:p-24 flex flex-col justify-center gap-6 border-r border-white/10 bg-black">
-                    <p class="text-primary text-xs font-bold tracking-[0.3em] uppercase">Up Next</p>
-                    <h2 class="text-white text-3xl md:text-4xl font-bold leading-tight tracking-tight uppercase">
-                        <?= htmlspecialchars($nextBlog['title']) ?>
-                    </h2>
-                    <a class="flex items-center gap-4 text-white font-bold group mt-4" href="<?= $appUrl ?>/blog/<?= htmlspecialchars($nextBlog['slug']) ?>">
-                        READ NEXT INTEL
-                        <span class="material-symbols-outlined group-hover:translate-x-2 transition-transform">arrow_right_alt</span>
+            <div class="px-6 md:px-20 lg:px-40 py-16">
+                <p class="text-primary text-xs font-bold tracking-[0.3em] uppercase mb-10">You Might Also Like</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <?php foreach ($relatedBlogs as $rel): ?>
+                    <a href="<?= $appUrl ?>/blog/<?= htmlspecialchars($rel['slug']) ?>"
+                       class="group block border border-white/10 hover:border-primary/40 transition-colors overflow-hidden">
+                        <div class="relative h-48 bg-slate-900 overflow-hidden">
+                            <?php if (!empty($rel['featured_image'])): ?>
+                                <div class="absolute inset-0 bg-cover bg-center grayscale group-hover:grayscale-0 transition-all duration-700"
+                                     style="background-image:url('<?= $appUrl ?>/storage/uploads/<?= htmlspecialchars($rel['featured_image']) ?>')"></div>
+                            <?php else: ?>
+                                <div class="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800"></div>
+                            <?php endif; ?>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        </div>
+                        <div class="p-6">
+                            <?php if (!empty($rel['category_name'])): ?>
+                                <span class="text-primary text-[10px] font-bold tracking-[0.2em] uppercase mb-3 block">
+                                    <?= htmlspecialchars($rel['category_name']) ?>
+                                </span>
+                            <?php endif; ?>
+                            <h3 class="text-white font-bold text-base leading-snug tracking-tight uppercase mb-5 line-clamp-3">
+                                <?= htmlspecialchars($rel['title']) ?>
+                            </h3>
+                            <span class="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest group-hover:text-primary group-hover:gap-4 transition-all duration-200">
+                                Read More
+                                <span class="material-symbols-outlined text-sm">arrow_right_alt</span>
+                            </span>
+                        </div>
                     </a>
-                </div>
-                <div class="relative grainy-overlay grayscale hover:grayscale-0 transition-all duration-700 cursor-pointer hidden md:block">
-                    <?php if (!empty($nextBlog['featured_image'])): ?>
-                        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('<?= $appUrl ?>/storage/uploads/<?= htmlspecialchars($nextBlog['featured_image']) ?>');"></div>
-                    <?php endif; ?>
-                    <div class="absolute inset-0 bg-primary/20 mix-blend-overlay"></div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </section>
