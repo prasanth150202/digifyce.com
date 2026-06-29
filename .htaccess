@@ -45,6 +45,7 @@ RewriteRule ^pages/([^/]+)/?$ pages.php?slug=$1 [L,QSA,NC]
 # ────────────────────────────────────────────────────────────────────────────
 
 # ── Public page clean URL routes ────────────────────────────────────────────
+RewriteRule ^lead_generations/?$ lead_generations.php [L,QSA,NC]
 RewriteRule ^leadform/?$ leadform.php [L,QSA,NC]
 RewriteRule ^thankyou/?$ thankyou.php [L,QSA,NC]
 RewriteRule ^about-us/?$ about-us.php [L,QSA,NC]

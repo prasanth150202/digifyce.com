@@ -35,7 +35,7 @@ $publicPages = [
     'leadform', 'thankyou', 'about-us', 'about-us-new',
     'brand-shoot', 'careers', 'content-marketing', 'creative-dev',
     'd2c-branding', 'd2c', 'e-com-marketing', 'instavideos',
-    'market-manage', 'performance-marketing', 'products',
+    'lead_generations', 'market-manage', 'performance-marketing', 'products',
     'service', 'technology', 'testimonial',
     'blog_list',
 ];
