@@ -4,34 +4,119 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
 
-
+<!-- Homepage -->
 <url>
   <loc>https://digifyce.com/</loc>
-  <lastmod>2025-07-29T12:54:02+00:00</lastmod>
+  <lastmod>2026-06-29</lastmod>
   <priority>1.00</priority>
 </url>
+
+<!-- Company -->
 <url>
-  <loc>https://digifyce.com/index.php?page=category&amp;id=5</loc>
-  <lastmod>2025-07-29T12:54:02+00:00</lastmod>
+  <loc>https://digifyce.com/about-us</loc>
+  <lastmod>2026-06-29</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>https://digifyce.com/index.php?page=preview_post&amp;id=26</loc>
-  <lastmod>2025-07-29T12:54:02+00:00</lastmod>
+  <loc>https://digifyce.com/careers</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.70</priority>
+</url>
+
+<!-- Services -->
+<url>
+  <loc>https://digifyce.com/service</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.90</priority>
+</url>
+<url>
+  <loc>https://digifyce.com/d2c-branding</loc>
+  <lastmod>2026-06-29</lastmod>
   <priority>0.80</priority>
 </url>
+<url>
+  <loc>https://digifyce.com/brand-shoot</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://digifyce.com/creative-dev</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://digifyce.com/performance-marketing</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://digifyce.com/e-com-marketing</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://digifyce.com/market-manage</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://digifyce.com/content-marketing</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://digifyce.com/lead_generations</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://digifyce.com/instavideos</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.70</priority>
+</url>
+
+<!-- Products & Technology -->
+<url>
+  <loc>https://digifyce.com/products</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://digifyce.com/technology</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.80</priority>
+</url>
+
+<!-- Other public pages -->
+<url>
+  <loc>https://digifyce.com/testimonial</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://digifyce.com/d2c</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.70</priority>
+</url>
+
+<!-- Blog -->
+<url>
+  <loc>https://digifyce.com/blog_list</loc>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.80</priority>
+</url>
+
+<!-- Legal -->
 <url>
   <loc>https://digifyce.com/privacy.html</loc>
-  <lastmod>2025-05-15T05:20:02+00:00</lastmod>
-  <priority>0.80</priority>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.50</priority>
 </url>
 <url>
   <loc>https://digifyce.com/termsandconditions.html</loc>
-  <lastmod>2025-05-15T05:20:02+00:00</lastmod>
-  <priority>0.80</priority>
+  <lastmod>2026-06-29</lastmod>
+  <priority>0.50</priority>
 </url>
-
 
 </urlset>
