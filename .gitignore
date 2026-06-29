@@ -16,11 +16,11 @@
 /storage/cache/
 /storage/sessions/
 
-# Uploads and generated files — track folder structure, ignore file contents
-/storage/uploads/*
-!/storage/uploads/.gitkeep
-/public/uploads/*
-!/public/uploads/.gitkeep
+# CVs are sensitive — keep gitignored. Blog images and PDFs are tracked so deploys don't wipe them.
+/storage/uploads/cv/*
+!/storage/uploads/cv/.gitkeep
+/public/uploads/cv/*
+!/public/uploads/cv/.gitkeep
 
 # OS / editor files
 .DS_Store
