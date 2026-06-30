@@ -586,13 +586,9 @@ include __DIR__ . '/header.php';
         .then(function (res) {
             if (res.success) {
                 closeModal();
-                // Trigger PDF download
-                var a = document.createElement('a');
-                a.href = currentBtn.getAttribute('href');
-                a.download = '';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                // Navigate to the download URL — pdf-download.php sends
+                // Content-Disposition: attachment so the page stays put
+                window.location.href = currentBtn.getAttribute('href');
             } else {
                 errorEl.textContent = res.message || 'An error occurred. Please try again.';
                 errorEl.style.display = 'block';
