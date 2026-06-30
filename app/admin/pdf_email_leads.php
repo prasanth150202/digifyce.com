@@ -19,18 +19,24 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])
     exit;
 }
 
-// Fetch all PDF email leads
+// Ensure created_at column exists (table was created without it originally)
 $pdo = Database::getInstance();
+$col = $pdo->query("SHOW COLUMNS FROM pdf_email_leads LIKE 'created_at'")->fetch();
+if (!$col) {
+    $pdo->exec("ALTER TABLE pdf_email_leads ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+}
+
+// Fetch all PDF email leads
 $stmt = $pdo->query("SELECT * FROM pdf_email_leads ORDER BY created_at DESC");
 $leads = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get stats
 $totalLeads = count($leads);
 $todayLeads = count(array_filter($leads, function($lead) {
-    return date('Y-m-d', strtotime($lead['created_at'])) === date('Y-m-d');
+    return isset($lead['created_at']) && date('Y-m-d', strtotime($lead['created_at'])) === date('Y-m-d');
 }));
 $weekLeads = count(array_filter($leads, function($lead) {
-    return strtotime($lead['created_at']) >= strtotime('-7 days');
+    return isset($lead['created_at']) && strtotime($lead['created_at']) >= strtotime('-7 days');
 }));
 
 include __DIR__ . '/../views/admin_header.php';
@@ -129,8 +135,12 @@ include __DIR__ . '/../views/admin_header.php';
                     <?php foreach ($leads as $lead): ?>
                     <tr>
                         <td class="text-muted">
-                            <?= date('M d, Y', strtotime($lead['created_at'])) ?><br>
-                            <small><?= date('g:i A', strtotime($lead['created_at'])) ?></small>
+                            <?php if (!empty($lead['created_at'])): ?>
+                                <?= date('M d, Y', strtotime($lead['created_at'])) ?><br>
+                                <small><?= date('g:i A', strtotime($lead['created_at'])) ?></small>
+                            <?php else: ?>
+                                <span class="text-muted small">—</span>
+                            <?php endif; ?>
                         </td>
                         <td>
                             <a href="mailto:<?= htmlspecialchars($lead['email']) ?>">

@@ -86,7 +86,22 @@ tinymce.init({
       text: 'Add PDF',
       tooltip: 'Insert a PDF download button into the content',
       onAction: function() {
-        if (window._resetPdfModal) window._resetPdfModal();
+        document.getElementById('pdfModalLabel').value = '';
+        document.getElementById('pdfModalDownloadName').value = '';
+        document.getElementById('pdfAlignCenter').checked = true;
+        document.getElementById('pdfModalStatus').textContent = '';
+        document.getElementById('pdfModalStatus').className = '';
+        window._pdfSelectedFile = null;
+        document.getElementById('pdfFileDisplay').textContent = 'No file chosen';
+        document.getElementById('pdfFileDisplay').style.color = '';
+        document.getElementById('pdfFileInvalid').style.display = 'none';
+        document.getElementById('pdfBtnBg').value     = '#1e293b';
+        document.getElementById('pdfBtnText').value   = '#e2e8f0';
+        document.getElementById('pdfBtnBorder').value = '#0d69f2';
+        document.getElementById('pdfBtnSize').value   = 'md';
+        document.getElementById('pdfBtnShape').value  = 'rounded';
+        document.getElementById('pdfBtnIcon').value   = '⬇';
+        if (window._updatePdfPreview) window._updatePdfPreview();
         window._tinymceEditorForPdf = editor;
         var modal = new bootstrap.Modal(document.getElementById('pdfModal'), { focus: false });
         modal.show();
@@ -417,33 +432,6 @@ function insertAtRootBlock(editor, html) {
                     <small class="text-muted">What the browser names the file when the user saves it.</small>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-semibold small">Button Style</label>
-                    <div class="d-flex gap-2 flex-wrap" id="pdfStylePicker">
-                        <button type="button" class="pdf-style-swatch" data-style="dark"  title="Dark"   style="width:28px;height:28px;border-radius:4px;background:#1e293b;border:2px solid #0d69f2;cursor:pointer;"></button>
-                        <button type="button" class="pdf-style-swatch" data-style="blue"  title="Blue"   style="width:28px;height:28px;border-radius:4px;background:#0d69f2;border:2px solid #0d69f2;cursor:pointer;"></button>
-                        <button type="button" class="pdf-style-swatch" data-style="green" title="Green"  style="width:28px;height:28px;border-radius:4px;background:#16a34a;border:2px solid #16a34a;cursor:pointer;"></button>
-                        <button type="button" class="pdf-style-swatch" data-style="red"   title="Red"    style="width:28px;height:28px;border-radius:4px;background:#dc2626;border:2px solid #dc2626;cursor:pointer;"></button>
-                        <button type="button" class="pdf-style-swatch" data-style="orange" title="Orange" style="width:28px;height:28px;border-radius:4px;background:#ea580c;border:2px solid #ea580c;cursor:pointer;"></button>
-                        <button type="button" class="pdf-style-swatch" data-style="white" title="White"  style="width:28px;height:28px;border-radius:4px;background:#ffffff;border:2px solid #cbd5e1;cursor:pointer;"></button>
-                    </div>
-                </div>
-                <div class="mb-3 d-flex align-items-center gap-4">
-                    <div>
-                        <label class="form-label fw-semibold small mb-1">Size</label>
-                        <select id="pdfSizeSelect" class="form-select form-select-sm" style="width:auto">
-                            <option value="sm">Small</option>
-                            <option value="md" selected>Medium</option>
-                            <option value="lg">Large</option>
-                        </select>
-                    </div>
-                    <div class="mt-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="pdfShowIcon" checked>
-                            <label class="form-check-label small" for="pdfShowIcon">Show icon</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-3">
                     <label class="form-label fw-semibold small">Alignment</label>
                     <div class="d-flex gap-3">
                         <div class="form-check">
@@ -460,10 +448,63 @@ function insertAtRootBlock(editor, html) {
                         </div>
                     </div>
                 </div>
-                <div class="mb-2 p-3 rounded" style="background:#f1f5f9;border:1px solid #e2e8f0;">
-                    <div class="small text-muted fw-semibold mb-2">Preview</div>
-                    <div id="pdfBtnPreview" style="text-align:center;min-height:40px"></div>
+
+                <hr class="my-2">
+                <p class="fw-semibold small mb-2">Button Style</p>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-4">
+                        <label class="form-label small text-muted mb-1">Background</label>
+                        <input type="color" id="pdfBtnBg" class="form-control form-control-color w-100" value="#1e293b" title="Button background colour">
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label small text-muted mb-1">Text</label>
+                        <input type="color" id="pdfBtnText" class="form-control form-control-color w-100" value="#e2e8f0" title="Button text colour">
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label small text-muted mb-1">Border</label>
+                        <input type="color" id="pdfBtnBorder" class="form-control form-control-color w-100" value="#0d69f2" title="Button border colour">
+                    </div>
                 </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-4">
+                        <label class="form-label small text-muted mb-1">Size</label>
+                        <select id="pdfBtnSize" class="form-select form-select-sm">
+                            <option value="sm">Small</option>
+                            <option value="md" selected>Medium</option>
+                            <option value="lg">Large</option>
+                        </select>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label small text-muted mb-1">Shape</label>
+                        <select id="pdfBtnShape" class="form-select form-select-sm">
+                            <option value="square">Square</option>
+                            <option value="rounded" selected>Rounded</option>
+                            <option value="pill">Pill</option>
+                        </select>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label small text-muted mb-1">Icon</label>
+                        <select id="pdfBtnIcon" class="form-select form-select-sm">
+                            <option value="&#11015;">⬇ Arrow</option>
+                            <option value="&#128196;">📄 PDF</option>
+                            <option value="&#128229;">📥 Inbox</option>
+                            <option value="">None</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label small text-muted mb-1">Preview</label>
+                    <div style="padding:14px;background:#f1f5f9;border-radius:6px;text-align:center">
+                        <a id="pdfBtnPreview" href="#" onclick="return false"
+                           style="display:inline-flex;align-items:center;gap:10px;background-color:#1e293b;color:#e2e8f0;padding:14px 28px;border-radius:6px;font-weight:700;text-decoration:none;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;border:2px solid #0d69f2;">
+                            ⬇ Download
+                        </a>
+                    </div>
+                </div>
+
                 <div id="pdfModalStatus" class="mt-2 small"></div>
             </div>
             <div class="modal-footer">
@@ -484,91 +525,63 @@ function insertAtRootBlock(editor, html) {
     var statusEl    = document.getElementById('pdfModalStatus');
     var fileDisplay = document.getElementById('pdfFileDisplay');
     var fileInvalid = document.getElementById('pdfFileInvalid');
+    var preview     = document.getElementById('pdfBtnPreview');
 
-    var STYLES = {
-        dark:   { bg: '#1e293b', color: '#e2e8f0', border: '#0d69f2' },
-        blue:   { bg: '#0d69f2', color: '#ffffff',  border: '#0d69f2' },
-        green:  { bg: '#16a34a', color: '#ffffff',  border: '#16a34a' },
-        red:    { bg: '#dc2626', color: '#ffffff',  border: '#dc2626' },
-        orange: { bg: '#ea580c', color: '#ffffff',  border: '#ea580c' },
-        white:  { bg: '#ffffff',  color: '#1e293b', border: '#cbd5e1' },
-    };
-    var SIZES = {
-        sm: { padding: '8px 18px',  fontSize: '12px' },
-        md: { padding: '14px 28px', fontSize: '14px' },
-        lg: { padding: '18px 36px', fontSize: '16px' },
-    };
-    var currentStyle = STYLES.dark;
+    var SIZES  = { sm: { padding: '8px 18px',  fontSize: '12px' },
+                   md: { padding: '14px 28px', fontSize: '14px' },
+                   lg: { padding: '18px 36px', fontSize: '17px' } };
+    var SHAPES = { square: '0px', rounded: '6px', pill: '50px' };
 
-    function setActiveSwatch(key) {
-        document.querySelectorAll('.pdf-style-swatch').forEach(function (s) {
-            s.style.outline = '';
-            s.style.outlineOffset = '';
-        });
-        var el = document.querySelector('.pdf-style-swatch[data-style="' + key + '"]');
-        if (el) { el.style.outline = '3px solid #334155'; el.style.outlineOffset = '2px'; }
-        currentStyle = STYLES[key] || STYLES.dark;
+    function getBtnStyles() {
+        return {
+            bg:     document.getElementById('pdfBtnBg').value,
+            text:   document.getElementById('pdfBtnText').value,
+            border: document.getElementById('pdfBtnBorder').value,
+            size:   document.getElementById('pdfBtnSize').value,
+            shape:  document.getElementById('pdfBtnShape').value,
+            icon:   document.getElementById('pdfBtnIcon').value
+        };
     }
-
-    document.querySelectorAll('.pdf-style-swatch').forEach(function (swatch) {
-        swatch.addEventListener('click', function () {
-            setActiveSwatch(this.dataset.style);
-            updatePreview();
-        });
-    });
-    setActiveSwatch('dark');
 
     function updatePreview() {
-        var label    = document.getElementById('pdfModalLabel').value.trim() || 'Button Label';
-        var showIcon = document.getElementById('pdfShowIcon').checked;
-        var size     = SIZES[document.getElementById('pdfSizeSelect').value] || SIZES.md;
-        var alignEl  = document.querySelector('input[name="pdfAlign"]:checked');
-        var align    = alignEl ? alignEl.value : 'center';
-        var safe     = label.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        var s = 'display:inline-flex;align-items:center;gap:10px;' +
-            'background-color:' + currentStyle.bg + ';color:' + currentStyle.color + ';' +
-            'padding:' + size.padding + ';border-radius:6px;font-weight:700;' +
-            'text-decoration:none;font-size:' + size.fontSize + ';' +
-            'letter-spacing:0.05em;text-transform:uppercase;border:2px solid ' + currentStyle.border + ';';
-        var preview = document.getElementById('pdfBtnPreview');
-        preview.style.textAlign = align;
-        preview.innerHTML = '<a style="' + s + '">' + (showIcon ? '&#11015; ' : '') + safe + '</a>';
+        var s      = getBtnStyles();
+        var sz     = SIZES[s.size]  || SIZES.md;
+        var radius = SHAPES[s.shape] || SHAPES.rounded;
+        var label  = document.getElementById('pdfModalLabel').value.trim() || 'Download';
+        var icon   = s.icon ? s.icon + ' ' : '';
+        preview.style.cssText = [
+            'display:inline-flex', 'align-items:center', 'gap:10px',
+            'background-color:' + s.bg, 'color:' + s.text,
+            'padding:' + sz.padding, 'border-radius:' + radius,
+            'font-weight:700', 'text-decoration:none', 'font-size:' + sz.fontSize,
+            'letter-spacing:0.05em', 'text-transform:uppercase',
+            'border:2px solid ' + s.border
+        ].join(';');
+        preview.textContent = icon + label;
     }
 
-    document.getElementById('pdfModalLabel').addEventListener('input', updatePreview);
-    document.getElementById('pdfShowIcon').addEventListener('change', updatePreview);
-    document.getElementById('pdfSizeSelect').addEventListener('change', updatePreview);
-    document.querySelectorAll('input[name="pdfAlign"]').forEach(function (r) {
-        r.addEventListener('change', updatePreview);
-    });
-    updatePreview();
+    window._updatePdfPreview = updatePreview;
 
-    window._resetPdfModal = function () {
-        window._pdfSelectedFile   = null;
-        fileDisplay.textContent    = 'No file chosen';
-        fileDisplay.style.color    = '';
-        fileInvalid.style.display  = 'none';
-        document.getElementById('pdfModalLabel').value        = '';
-        document.getElementById('pdfModalDownloadName').value  = '';
-        document.getElementById('pdfAlignCenter').checked     = true;
-        document.getElementById('pdfSizeSelect').value        = 'md';
-        document.getElementById('pdfShowIcon').checked        = true;
-        statusEl.textContent = '';
-        statusEl.className   = '';
-        setActiveSwatch('dark');
-        updatePreview();
-    };
+    // Live-update preview on any style or label change
+    ['pdfBtnBg','pdfBtnText','pdfBtnBorder','pdfBtnSize','pdfBtnShape','pdfBtnIcon','pdfModalLabel']
+        .forEach(function (id) {
+            document.getElementById(id).addEventListener('input', updatePreview);
+            document.getElementById(id).addEventListener('change', updatePreview);
+        });
+
+    updatePreview();
 
     function setStatus(msg, type) {
         statusEl.textContent = msg;
         statusEl.className   = 'mt-2 small text-' + type;
     }
+
     function resetBtn() {
         insertBtn.disabled  = false;
         insertBtn.innerHTML = '<i class="fas fa-upload me-1"></i> Upload &amp; Insert';
     }
 
-    // Fresh file input each click — avoids Windows file dialog freeze inside Bootstrap modal
+    // Fresh file input in document.body each time to avoid Windows file dialog freeze
     document.getElementById('pdfChooseFileBtn').addEventListener('click', function () {
         var inp    = document.createElement('input');
         inp.type   = 'file';
@@ -577,15 +590,15 @@ function insertAtRootBlock(editor, html) {
         document.body.appendChild(inp);
         inp.addEventListener('change', function () {
             if (inp.files.length) {
-                window._pdfSelectedFile   = inp.files[0];
-                fileDisplay.textContent    = inp.files[0].name;
-                fileDisplay.style.color    = '';
-                fileInvalid.style.display  = 'none';
+                window._pdfSelectedFile  = inp.files[0];
+                fileDisplay.textContent  = inp.files[0].name;
+                fileDisplay.style.color  = '';
+                fileInvalid.style.display = 'none';
             }
-            if (document.body.contains(inp)) document.body.removeChild(inp);
+            if (document.body.contains(inp)) { document.body.removeChild(inp); }
         });
         inp.addEventListener('cancel', function () {
-            if (document.body.contains(inp)) document.body.removeChild(inp);
+            if (document.body.contains(inp)) { document.body.removeChild(inp); }
         });
         inp.click();
     });
@@ -593,10 +606,7 @@ function insertAtRootBlock(editor, html) {
     insertBtn.addEventListener('click', function () {
         var label        = document.getElementById('pdfModalLabel').value.trim();
         var downloadName = document.getElementById('pdfModalDownloadName').value.trim();
-        var alignEl      = document.querySelector('input[name="pdfAlign"]:checked');
-        var align        = alignEl ? alignEl.value : 'center';
-        var showIcon     = document.getElementById('pdfShowIcon').checked;
-        var size         = SIZES[document.getElementById('pdfSizeSelect').value] || SIZES.md;
+        var align        = document.querySelector('input[name="pdfAlign"]:checked').value;
 
         document.getElementById('pdfModalLabel').classList.remove('is-invalid');
         fileInvalid.style.display = 'none';
@@ -626,18 +636,29 @@ function insertAtRootBlock(editor, html) {
                     setStatus('Upload failed: ' + (data.error || 'Unknown error'), 'danger');
                     resetBtn(); return;
                 }
-                var safe    = label.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-                var fileUrl = appBase + '/pdf-download?file=' + encodeURIComponent(data.filename)
-                                      + (downloadName ? '&name=' + encodeURIComponent(downloadName) : '');
-                var btnStyle = 'display:inline-flex;align-items:center;gap:10px;' +
-                    'background-color:' + currentStyle.bg + ';color:' + currentStyle.color + ';' +
-                    'padding:' + size.padding + ';border-radius:6px;font-weight:700;' +
-                    'text-decoration:none;font-size:' + size.fontSize + ';' +
-                    'letter-spacing:0.05em;text-transform:uppercase;border:2px solid ' + currentStyle.border + ';';
+
+                var s         = getBtnStyles();
+                var sz        = SIZES[s.size]  || SIZES.md;
+                var radius    = SHAPES[s.shape] || SHAPES.rounded;
+                var icon      = s.icon ? s.icon + ' ' : '';
+                var safeLabel = label.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                var fileUrl   = appBase + '/pdf-download?file=' + encodeURIComponent(data.filename)
+                                       + (downloadName ? '&name=' + encodeURIComponent(downloadName) : '');
+
+                var btnStyle = [
+                    'display:inline-flex', 'align-items:center', 'gap:10px',
+                    'background-color:' + s.bg, 'color:' + s.text,
+                    'padding:' + sz.padding, 'border-radius:' + radius,
+                    'font-weight:700', 'text-decoration:none', 'font-size:' + sz.fontSize,
+                    'letter-spacing:0.05em', 'text-transform:uppercase',
+                    'border:2px solid ' + s.border
+                ].join(';');
+
                 var html = '<p style="text-align:' + align + ';margin:2rem 0;">' +
                     '<a href="' + fileUrl + '" style="' + btnStyle + '">' +
-                    (showIcon ? '&#11015; ' : '') + safe + '</a></p>';
-                if (window._tinymceEditorForPdf) insertAtRootBlock(window._tinymceEditorForPdf, html);
+                    icon + safeLabel + '</a></p>';
+
+                if (window._tinymceEditorForPdf) { insertAtRootBlock(window._tinymceEditorForPdf, html); }
                 bootstrap.Modal.getInstance(document.getElementById('pdfModal')).hide();
                 resetBtn();
             })
