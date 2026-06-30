@@ -561,9 +561,9 @@ include __DIR__ . '/header.php';
             if (el) customFields[f.label] = el.value.trim();
         });
 
-        // Parse PDF filename from href
+        // Parse PDF filename from href (handle both absolute and relative URLs)
         var pdfFile = '';
-        try { pdfFile = new URL(currentBtn.getAttribute('href')).searchParams.get('file') || ''; } catch (ex) {}
+        try { pdfFile = new URL(currentBtn.getAttribute('href'), window.location.href).searchParams.get('file') || ''; } catch (ex) {}
 
         submitEl.disabled     = true;
         submitEl.textContent  = 'Processing…';

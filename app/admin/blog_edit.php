@@ -43,6 +43,8 @@ tinymce.init({
   plugins: 'advlist autolink lists link image table code paste',
   toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | table | code | insertcta insertpdf',
 
+  convert_urls: false,
+
   paste_as_text: false,
   paste_remove_spans: true,
   paste_strip_class_attributes: 'all',
