@@ -49,7 +49,7 @@ tinymce.init({
   paste_remove_spans: true,
   paste_strip_class_attributes: 'all',
 
-  valid_elements: 'p[style],h1,h2,h3,h4,h5,h6,ul,ol,li,strong,b,em,i,a[href|style|target|rel|download|class|data-lead-capture|data-lead-email|data-lead-phone|data-lead-fields|data-pdf-label],img[src|alt|style],br,div[style|class],' +
+  valid_elements: 'p[style],h1,h2,h3,h4,h5,h6,ul,ol,li,strong,b,em,i,a[href|style|target|rel|download|class|data-lead-capture|data-lead-email|data-lead-phone|data-lead-fields|data-pdf-label|data-pdf-file],img[src|alt|style],br,div[style|class],' +
     'table[width|cellpadding|cellspacing|border|style],thead,tbody,tfoot,' +
     'tr,th[colspan|rowspan|scope|style|align],td[colspan|rowspan|style|align|width]',
 
@@ -718,7 +718,7 @@ function insertAtRootBlock(editor, html) {
                 ].join(';');
 
                 // Build lead-capture data attributes if enabled
-                var leadAttrs = '';
+                var leadAttrs = ' data-pdf-file="' + encodeURIComponent(data.filename) + '"';
                 if (document.getElementById('pdfLeadCapture').checked) {
                     var lEmail = document.getElementById('pdfLeadEmail').value;
                     var lPhone = document.getElementById('pdfLeadPhone').value;
@@ -729,7 +729,7 @@ function insertAtRootBlock(editor, html) {
                         var req = row.querySelector('.pdf-field-req').value;
                         if (lbl) cfList.push({ label: lbl, required: req === 'required' });
                     });
-                    leadAttrs = ' class="digifyce-pdf-cta"' +
+                    leadAttrs += ' class="digifyce-pdf-cta"' +
                         ' data-lead-capture="1"' +
                         (lEmail !== 'off' ? ' data-lead-email="' + lEmail + '"' : '') +
                         (lPhone !== 'off' ? ' data-lead-phone="' + lPhone + '"' : '') +

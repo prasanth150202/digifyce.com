@@ -561,9 +561,11 @@ include __DIR__ . '/header.php';
             if (el) customFields[f.label] = el.value.trim();
         });
 
-        // Parse PDF filename from href (handle both absolute and relative URLs)
-        var pdfFile = '';
-        try { pdfFile = new URL(currentBtn.getAttribute('href'), window.location.href).searchParams.get('file') || ''; } catch (ex) {}
+        // Read filename from data attribute (most reliable), fall back to URL parsing
+        var pdfFile = currentBtn.dataset.pdfFile ? decodeURIComponent(currentBtn.dataset.pdfFile) : '';
+        if (!pdfFile) {
+            try { pdfFile = new URL(currentBtn.getAttribute('href'), window.location.href).searchParams.get('file') || ''; } catch (ex) {}
+        }
 
         submitEl.disabled     = true;
         submitEl.textContent  = 'Processing…';
