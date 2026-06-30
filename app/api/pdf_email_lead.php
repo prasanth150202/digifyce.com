@@ -28,6 +28,14 @@ try {
     $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
     $pdo = Database::getInstance();
+    $pdo->exec("CREATE TABLE IF NOT EXISTS pdf_email_leads (
+        id         INT AUTO_INCREMENT PRIMARY KEY,
+        email      VARCHAR(255) NOT NULL,
+        source     VARCHAR(100) DEFAULT 'strategy_matrix',
+        ip_address VARCHAR(45),
+        user_agent TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     $stmt = $pdo->prepare("INSERT INTO pdf_email_leads (email, source, ip_address, user_agent) VALUES (?, ?, ?, ?)");
     $stmt->execute([$email, $source, $ipAddress, $userAgent]);
     // ---------------------------
