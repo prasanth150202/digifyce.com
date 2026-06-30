@@ -148,10 +148,18 @@ include __DIR__ . '/../views/admin_header.php';
                             <?php endif; ?>
                         </td>
                         <td>
-                            <?php if (!empty($lead['pdf_label'])): ?>
-                                <span class="badge bg-secondary"><?= htmlspecialchars($lead['pdf_label']) ?></span>
-                            <?php elseif (!empty($lead['pdf_filename'])): ?>
-                                <small class="text-muted"><?= htmlspecialchars($lead['pdf_filename']) ?></small>
+                            <?php if (!empty($lead['pdf_filename'])): ?>
+                                <?php
+                                    $dlUrl = $appUrl . '/pdf-download?file=' . urlencode($lead['pdf_filename'])
+                                           . (!empty($lead['pdf_label']) ? '&name=' . urlencode($lead['pdf_label']) : '');
+                                ?>
+                                <?php if (!empty($lead['pdf_label'])): ?>
+                                    <div class="fw-semibold small"><?= htmlspecialchars($lead['pdf_label']) ?></div>
+                                <?php endif; ?>
+                                <div class="text-muted" style="font-size:11px"><?= htmlspecialchars($lead['pdf_filename']) ?></div>
+                                <a href="<?= htmlspecialchars($dlUrl) ?>" class="btn btn-outline-primary btn-sm mt-1 py-0 px-2" style="font-size:11px">
+                                    <i class="fas fa-download me-1"></i>Download
+                                </a>
                             <?php else: ?>
                                 <span class="text-muted small">—</span>
                             <?php endif; ?>
