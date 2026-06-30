@@ -47,7 +47,7 @@ tinymce.init({
   paste_remove_spans: true,
   paste_strip_class_attributes: 'all',
 
-  valid_elements: 'p[style],h1,h2,h3,h4,h5,h6,ul,ol,li,strong,b,em,i,a[href|style|target|rel|download],img[src|alt|style],br,div[style|class],' +
+  valid_elements: 'p[style],h1,h2,h3,h4,h5,h6,ul,ol,li,strong,b,em,i,a[href|style|target|rel|download|class|data-lead-capture|data-lead-email|data-lead-phone|data-lead-fields|data-pdf-label],img[src|alt|style],br,div[style|class],' +
     'table[width|cellpadding|cellspacing|border|style],thead,tbody,tfoot,' +
     'tr,th[colspan|rowspan|scope|style|align],td[colspan|rowspan|style|align|width]',
 
@@ -101,6 +101,11 @@ tinymce.init({
         document.getElementById('pdfBtnSize').value   = 'md';
         document.getElementById('pdfBtnShape').value  = 'rounded';
         document.getElementById('pdfBtnIcon').value   = '⬇';
+        document.getElementById('pdfLeadCapture').checked = false;
+        document.getElementById('pdfLeadOptions').style.display = 'none';
+        document.getElementById('pdfLeadEmail').value = 'required';
+        document.getElementById('pdfLeadPhone').value = 'optional';
+        document.getElementById('pdfCustomFields').innerHTML = '';
         if (window._updatePdfPreview) window._updatePdfPreview();
         window._tinymceEditorForPdf = editor;
         var modal = new bootstrap.Modal(document.getElementById('pdfModal'), { focus: false });
@@ -505,6 +510,42 @@ function insertAtRootBlock(editor, html) {
                     </div>
                 </div>
 
+                <hr class="my-3">
+                <p class="fw-semibold small mb-2">Lead Capture <span class="badge bg-secondary ms-1" style="font-size:10px;font-weight:500">optional</span></p>
+
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="pdfLeadCapture" role="switch">
+                    <label class="form-check-label small" for="pdfLeadCapture">Require visitor details before download</label>
+                </div>
+
+                <div id="pdfLeadOptions" style="display:none">
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label class="form-label small text-muted mb-1">Email Field</label>
+                            <select id="pdfLeadEmail" class="form-select form-select-sm">
+                                <option value="off">Off</option>
+                                <option value="optional">Optional</option>
+                                <option value="required" selected>Required</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted mb-1">Phone Field</label>
+                            <select id="pdfLeadPhone" class="form-select form-select-sm">
+                                <option value="off">Off</option>
+                                <option value="optional" selected>Optional</option>
+                                <option value="required">Required</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label small text-muted mb-0">Custom Fields <span style="font-size:10px">(max 5)</span></label>
+                            <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" id="pdfAddField" style="font-size:11px">+ Add Field</button>
+                        </div>
+                        <div id="pdfCustomFields" class="d-flex flex-column gap-1"></div>
+                    </div>
+                </div>
+
                 <div id="pdfModalStatus" class="mt-2 small"></div>
             </div>
             <div class="modal-footer">
@@ -570,6 +611,25 @@ function insertAtRootBlock(editor, html) {
         });
 
     updatePreview();
+
+    // Lead capture toggle
+    document.getElementById('pdfLeadCapture').addEventListener('change', function () {
+        document.getElementById('pdfLeadOptions').style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Add custom field row (max 5)
+    document.getElementById('pdfAddField').addEventListener('click', function () {
+        var container = document.getElementById('pdfCustomFields');
+        if (container.children.length >= 5) return;
+        var row = document.createElement('div');
+        row.className = 'd-flex gap-1 align-items-center';
+        row.innerHTML = '<input type="text" class="form-control form-control-sm pdf-field-label" placeholder="Field label" maxlength="50">' +
+            '<select class="form-select form-select-sm pdf-field-req" style="width:95px;flex-shrink:0">' +
+            '<option value="optional">Optional</option><option value="required">Required</option></select>' +
+            '<button type="button" class="btn btn-outline-danger btn-sm py-0 px-2 pdf-field-remove" style="flex-shrink:0">×</button>';
+        row.querySelector('.pdf-field-remove').addEventListener('click', function () { row.remove(); });
+        container.appendChild(row);
+    });
 
     function setStatus(msg, type) {
         statusEl.textContent = msg;
@@ -642,6 +702,7 @@ function insertAtRootBlock(editor, html) {
                 var radius    = SHAPES[s.shape] || SHAPES.rounded;
                 var icon      = s.icon ? s.icon + ' ' : '';
                 var safeLabel = label.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                var attrLabel = label.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
                 var fileUrl   = appBase + '/pdf-download?file=' + encodeURIComponent(data.filename)
                                        + (downloadName ? '&name=' + encodeURIComponent(downloadName) : '');
 
@@ -654,8 +715,28 @@ function insertAtRootBlock(editor, html) {
                     'border:2px solid ' + s.border
                 ].join(';');
 
+                // Build lead-capture data attributes if enabled
+                var leadAttrs = '';
+                if (document.getElementById('pdfLeadCapture').checked) {
+                    var lEmail = document.getElementById('pdfLeadEmail').value;
+                    var lPhone = document.getElementById('pdfLeadPhone').value;
+                    var cfRows = document.querySelectorAll('#pdfCustomFields .d-flex');
+                    var cfList = [];
+                    cfRows.forEach(function (row) {
+                        var lbl = row.querySelector('.pdf-field-label').value.trim();
+                        var req = row.querySelector('.pdf-field-req').value;
+                        if (lbl) cfList.push({ label: lbl, required: req === 'required' });
+                    });
+                    leadAttrs = ' class="digifyce-pdf-cta"' +
+                        ' data-lead-capture="1"' +
+                        (lEmail !== 'off' ? ' data-lead-email="' + lEmail + '"' : '') +
+                        (lPhone !== 'off' ? ' data-lead-phone="' + lPhone + '"' : '') +
+                        (cfList.length ? ' data-lead-fields=\'' + JSON.stringify(cfList).replace(/'/g,'&#39;') + '\'' : '') +
+                        ' data-pdf-label="' + attrLabel + '"';
+                }
+
                 var html = '<p style="text-align:' + align + ';margin:2rem 0;">' +
-                    '<a href="' + fileUrl + '" style="' + btnStyle + '">' +
+                    '<a href="' + fileUrl + '"' + leadAttrs + ' style="' + btnStyle + '">' +
                     icon + safeLabel + '</a></p>';
 
                 if (window._tinymceEditorForPdf) { insertAtRootBlock(window._tinymceEditorForPdf, html); }

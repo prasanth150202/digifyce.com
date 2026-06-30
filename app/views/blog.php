@@ -457,4 +457,165 @@ include __DIR__ . '/header.php';
         </section>
     <?php endif; ?>
 
+<!-- PDF Lead Capture Modal -->
+<div id="pdfLeadModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;padding:1rem">
+    <div class="bg-[#0d1117] border border-white/10 rounded-xl w-full max-w-md p-7 relative shadow-2xl" style="max-height:90vh;overflow-y:auto">
+        <button id="pdfLeadClose" type="button" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:#94a3b8;font-size:1.25rem;cursor:pointer;line-height:1" aria-label="Close">&times;</button>
+        <h2 id="pdfLeadTitle" class="text-white font-bold text-xl mb-1 tracking-tight">Download PDF</h2>
+        <p class="text-slate-400 text-sm mb-5">Enter your details to access the PDF.</p>
+        <form id="pdfLeadForm" novalidate>
+            <div id="pdfLeadFields"></div>
+            <p id="pdfLeadError" class="text-red-400 text-sm mb-3" style="display:none"></p>
+            <button type="submit" id="pdfLeadSubmit"
+                class="w-full bg-primary text-white font-bold py-3 rounded text-sm tracking-widest uppercase transition-opacity hover:opacity-90">
+                Download PDF
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    var apiUrl  = <?= json_encode(rtrim($appUrl ?? '', '/') . '/app/api/blog_pdf_lead.php') ?>;
+    var blogCtx = {
+        id:    <?= intval($blog['id'] ?? 0) ?>,
+        slug:  <?= json_encode($blog['slug'] ?? '') ?>,
+        title: <?= json_encode($blog['title'] ?? '') ?>
+    };
+
+    var modal    = document.getElementById('pdfLeadModal');
+    var form     = document.getElementById('pdfLeadForm');
+    var fieldsEl = document.getElementById('pdfLeadFields');
+    var errorEl  = document.getElementById('pdfLeadError');
+    var submitEl = document.getElementById('pdfLeadSubmit');
+    var currentBtn = null;
+
+    function openModal(btn) {
+        currentBtn = btn;
+        fieldsEl.innerHTML = '';
+        errorEl.style.display = 'none';
+        form.reset();
+
+        var emailMode  = btn.dataset.leadEmail  || 'off';
+        var phoneMode  = btn.dataset.leadPhone  || 'off';
+        var cfConfig   = [];
+        try { cfConfig = JSON.parse(btn.dataset.leadFields || '[]'); } catch (e) {}
+
+        if (emailMode !== 'off') addField('lf_email', 'Email Address', 'email', emailMode === 'required');
+        if (phoneMode !== 'off') addField('lf_phone', 'Phone Number', 'tel', phoneMode === 'required');
+        cfConfig.forEach(function (f, i) {
+            addField('lf_cf_' + i, f.label, 'text', f.required);
+        });
+
+        document.getElementById('pdfLeadTitle').textContent = btn.dataset.pdfLabel || 'Download PDF';
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    function addField(name, label, type, required) {
+        var wrap  = document.createElement('div');
+        wrap.className = 'mb-4';
+        var lbl   = document.createElement('label');
+        lbl.setAttribute('for', name);
+        lbl.className = 'block text-sm text-slate-300 mb-1.5';
+        lbl.innerHTML = label + (required ? ' <span style="color:#f87171">*</span>' : '');
+        var inp   = document.createElement('input');
+        inp.type  = type;
+        inp.name  = name;
+        inp.id    = name;
+        inp.autocomplete = type === 'email' ? 'email' : type === 'tel' ? 'tel' : 'off';
+        if (required) inp.required = true;
+        inp.style.cssText = 'width:100%;background:#1e293b;border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:6px;padding:10px 14px;font-size:14px;outline:none;box-sizing:border-box';
+        inp.addEventListener('focus',  function(){ this.style.borderColor='#0d69f2'; });
+        inp.addEventListener('blur',   function(){ this.style.borderColor='rgba(255,255,255,0.15)'; });
+        wrap.appendChild(lbl);
+        wrap.appendChild(inp);
+        fieldsEl.appendChild(wrap);
+    }
+
+    document.getElementById('pdfLeadClose').addEventListener('click', closeModal);
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.style.display !== 'none') closeModal(); });
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        errorEl.style.display = 'none';
+
+        if (!form.checkValidity()) { form.reportValidity(); return; }
+
+        var emailMode  = currentBtn.dataset.leadEmail  || 'off';
+        var phoneMode  = currentBtn.dataset.leadPhone  || 'off';
+        var cfConfig   = [];
+        try { cfConfig = JSON.parse(currentBtn.dataset.leadFields || '[]'); } catch (ex) {}
+
+        var email = emailMode !== 'off' ? (form.lf_email ? form.lf_email.value.trim() : '') : '';
+        var phone = phoneMode !== 'off' ? (form.lf_phone ? form.lf_phone.value.trim() : '') : '';
+        var customFields = {};
+        cfConfig.forEach(function (f, i) {
+            var el = form['lf_cf_' + i];
+            if (el) customFields[f.label] = el.value.trim();
+        });
+
+        // Parse PDF filename from href
+        var pdfFile = '';
+        try { pdfFile = new URL(currentBtn.getAttribute('href')).searchParams.get('file') || ''; } catch (ex) {}
+
+        submitEl.disabled     = true;
+        submitEl.textContent  = 'Processing…';
+
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email:        email,
+                phone:        phone,
+                custom_fields: customFields,
+                pdf_filename: pdfFile,
+                pdf_label:    currentBtn.dataset.pdfLabel || '',
+                blog_id:      blogCtx.id,
+                blog_slug:    blogCtx.slug,
+                blog_title:   blogCtx.title
+            })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            if (res.success) {
+                closeModal();
+                // Trigger PDF download
+                var a = document.createElement('a');
+                a.href = currentBtn.getAttribute('href');
+                a.download = '';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                errorEl.textContent = res.message || 'An error occurred. Please try again.';
+                errorEl.style.display = 'block';
+            }
+        })
+        .catch(function () {
+            errorEl.textContent = 'Network error. Please try again.';
+            errorEl.style.display = 'block';
+        })
+        .finally(function () {
+            submitEl.disabled    = false;
+            submitEl.textContent = 'Download PDF';
+        });
+    });
+
+    // Intercept clicks on lead-capture PDF buttons
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('a.digifyce-pdf-cta[data-lead-capture="1"]');
+        if (!btn) return;
+        e.preventDefault();
+        openModal(btn);
+    });
+})();
+</script>
+
 <?php include __DIR__ . '/footer.php'; ?>

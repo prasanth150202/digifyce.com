@@ -524,6 +524,12 @@ if (!isset($permissionManager) && isset($_SESSION['user_id'])) {
                             <i class="fas fa-file-pdf"></i> PDF Leads
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link<?= in_array(basename($_SERVER['PHP_SELF']), ['blog_pdf_leads.php']) ? ' active' : '' ?>"
+                            href="<?= $appUrl ?>/app/admin/blog_pdf_leads.php">
+                            <i class="fas fa-file-download"></i> Blog PDF Leads
+                        </a>
+                    </li>
                 <?php endif; ?>
 
                 <?php if (isset($permissionManager) && $permissionManager->hasAnyPermission(['user.view', 'role.view'])): ?>
