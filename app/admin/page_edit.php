@@ -76,7 +76,7 @@ include __DIR__ . '/../views/admin_header.php';
     </div>
 </div>
 
-<script src="<?= $appUrl ?>/assest/tinymce/js/tinymce/tinymce.min.js"></script>
+<script src="assest/tinymce/js/tinymce/tinymce.min.js"></script>
 <script>
 tinymce.init({
     license_key: 'gpl',

@@ -86,10 +86,15 @@ include __DIR__ . '/app/views/header.php';
             $content = $page['content'];
             // If no HTML tags present, content is plain text/markdown — convert to HTML
             if (strip_tags($content) === $content) {
-                // Headings
+                // Normalize Windows line endings
+                $content = str_replace("\r\n", "\n", $content);
+                $content = str_replace("\r", "\n", $content);
+                // Markdown headings
                 $content = preg_replace('/^### (.+)$/m', '<h3>$1</h3>', $content);
                 $content = preg_replace('/^## (.+)$/m',  '<h2>$1</h2>', $content);
                 $content = preg_replace('/^# (.+)$/m',   '<h2>$1</h2>', $content);
+                // Numbered section headings: "1. Heading Text" on its own line
+                $content = preg_replace('/^(\d+\.\s+[A-Z][^\n]{3,60})$/m', '<h2>$1</h2>', $content);
                 // Markdown links [text](url)
                 $content = preg_replace('/\[([^\]]+)\]\(([^)]+)\)/', '<a href="$2">$1</a>', $content);
                 // Bold **text**
@@ -97,18 +102,19 @@ include __DIR__ . '/app/views/header.php';
                 // Bullet lines starting with * or -
                 $content = preg_replace('/^[\*\-] (.+)$/m', '<li>$1</li>', $content);
                 // Wrap consecutive <li> in <ul>
-                $content = preg_replace('/(<li>.*?<\/li>(\s*<li>.*?<\/li>)*)/s', '<ul>$1</ul>', $content);
-                // Double newlines → paragraph breaks; single newlines → space
+                $content = preg_replace('/(<li>(?:.|\n)*?<\/li>)/s', '<ul>$0</ul>', $content);
+                $content = preg_replace('/<\/ul>\s*<ul>/', '', $content);
+                // Split on double newlines into paragraphs
                 $paragraphs = preg_split('/\n{2,}/', trim($content));
                 $content = '';
                 foreach ($paragraphs as $para) {
                     $para = trim($para);
                     if (!$para) continue;
-                    // Don't wrap headings or lists in <p>
-                    if (preg_match('/^<(h[1-6]|ul|ol|li)/', $para)) {
+                    if (preg_match('/^<(h[1-6]|ul|ol)/', $para)) {
                         $content .= $para . "\n";
                     } else {
-                        $content .= '<p>' . str_replace("\n", ' ', $para) . '</p>' . "\n";
+                        // Single newlines within a paragraph become spaces
+                        $content .= '<p>' . preg_replace('/\n/', ' ', $para) . '</p>' . "\n";
                     }
                 }
             }
