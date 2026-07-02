@@ -406,6 +406,12 @@ if (!isset($permissionManager) && isset($_SESSION['user_id'])) {
                                     <a class="nav-link<?= basename($_SERVER['PHP_SELF']) === 'page_about_us.php' ? ' active fw-bold' : '' ?>"
                                         href="<?= $appUrl ?>/app/admin/page_about_us.php">About Us</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link<?= in_array(basename($_SERVER['PHP_SELF']), ['pages.php','page_edit.php','page_save.php']) ? ' active fw-bold' : '' ?>"
+                                        href="<?= $appUrl ?>/app/admin/pages.php">
+                                        <i class="fas fa-file-alt me-1" style="font-size:11px"></i> Policies / Pages
+                                    </a>
+                                </li>
                                 <li class="nav-item border-top mt-1 pt-1">
                                     <a class="nav-link<?= basename($_SERVER['PHP_SELF']) === 'page_seo.php' ? ' active fw-bold' : '' ?>"
                                         href="<?= $appUrl ?>/app/admin/page_seo.php">
