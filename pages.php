@@ -82,7 +82,38 @@ include __DIR__ . '/app/views/header.php';
             <?= htmlspecialchars($page['title']) ?>
         </h1>
         <div class="page-content">
-            <?= $page['content'] ?>
+            <?php
+            $content = $page['content'];
+            // If no HTML tags present, content is plain text/markdown — convert to HTML
+            if (strip_tags($content) === $content) {
+                // Headings
+                $content = preg_replace('/^### (.+)$/m', '<h3>$1</h3>', $content);
+                $content = preg_replace('/^## (.+)$/m',  '<h2>$1</h2>', $content);
+                $content = preg_replace('/^# (.+)$/m',   '<h2>$1</h2>', $content);
+                // Markdown links [text](url)
+                $content = preg_replace('/\[([^\]]+)\]\(([^)]+)\)/', '<a href="$2">$1</a>', $content);
+                // Bold **text**
+                $content = preg_replace('/\*\*(.+?)\*\*/', '<strong>$1</strong>', $content);
+                // Bullet lines starting with * or -
+                $content = preg_replace('/^[\*\-] (.+)$/m', '<li>$1</li>', $content);
+                // Wrap consecutive <li> in <ul>
+                $content = preg_replace('/(<li>.*?<\/li>(\s*<li>.*?<\/li>)*)/s', '<ul>$1</ul>', $content);
+                // Double newlines → paragraph breaks; single newlines → space
+                $paragraphs = preg_split('/\n{2,}/', trim($content));
+                $content = '';
+                foreach ($paragraphs as $para) {
+                    $para = trim($para);
+                    if (!$para) continue;
+                    // Don't wrap headings or lists in <p>
+                    if (preg_match('/^<(h[1-6]|ul|ol|li)/', $para)) {
+                        $content .= $para . "\n";
+                    } else {
+                        $content .= '<p>' . str_replace("\n", ' ', $para) . '</p>' . "\n";
+                    }
+                }
+            }
+            echo $content;
+            ?>
         </div>
     </div>
 </main>
