@@ -59,17 +59,31 @@ $extraHead = '';
 include __DIR__ . '/app/views/header.php';
 ?>
 
+<style>
+.page-content { color: #cbd5e1; line-height: 1.8; font-size: 1rem; }
+.page-content h1,.page-content h2,.page-content h3,.page-content h4 {
+    color: #f1f5f9; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; line-height: 1.3;
+}
+.page-content h1 { font-size: 2rem; }
+.page-content h2 { font-size: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem; }
+.page-content h3 { font-size: 1.2rem; color: #94a3b8; }
+.page-content p  { margin-bottom: 1.1rem; }
+.page-content ul,.page-content ol { padding-left: 1.5rem; margin-bottom: 1.1rem; }
+.page-content li { margin-bottom: 0.4rem; }
+.page-content a  { color: #0d69f2; text-decoration: underline; }
+.page-content strong,.page-content b { color: #f1f5f9; font-weight: 600; }
+.page-content hr { border-color: rgba(255,255,255,0.1); margin: 2rem 0; }
+.page-content blockquote { border-left: 3px solid #0d69f2; padding-left: 1rem; color: #94a3b8; margin: 1.5rem 0; }
+</style>
+
 <main class="min-h-screen py-32 px-4 sm:px-6 lg:px-8 bg-background-dark">
     <div class="max-w-4xl mx-auto">
-        <article class="prose prose-invert max-w-none">
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tighter mb-8 text-white">
-                <?= htmlspecialchars($page['title']) ?>
-            </h1>
-            
-            <div class="prose prose-invert max-w-none mt-8 text-slate-300 leading-relaxed">
-                <?= $page['content'] ?>
-            </div>
-        </article>
+        <h1 class="text-4xl sm:text-5xl font-bold tracking-tighter mb-10 text-white border-b border-white/10 pb-6">
+            <?= htmlspecialchars($page['title']) ?>
+        </h1>
+        <div class="page-content">
+            <?= $page['content'] ?>
+        </div>
     </div>
 </main>
 

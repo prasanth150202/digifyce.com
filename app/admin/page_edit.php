@@ -52,7 +52,7 @@ include __DIR__ . '/../views/admin_header.php';
                 
                 <div class="col-12">
                     <label class="form-label">Content</label>
-                    <textarea name="content" class="form-control" rows="15" required><?= htmlspecialchars($page['content'] ?? '') ?></textarea>
+                    <textarea name="content" id="pageContent" class="form-control" rows="15" required><?= htmlspecialchars($page['content'] ?? '') ?></textarea>
                 </div>
                 
                 <div class="col-md-6">
@@ -75,5 +75,27 @@ include __DIR__ . '/../views/admin_header.php';
         </div>
     </div>
 </div>
+
+<script src="<?= $appUrl ?>/assest/tinymce/js/tinymce/tinymce.min.js"></script>
+<script>
+tinymce.init({
+    license_key: 'gpl',
+    selector: '#pageContent',
+    height: 500,
+    statusbar: false,
+    convert_urls: false,
+    plugins: 'advlist autolink lists link code paste',
+    toolbar: 'undo redo | formatselect | bold italic | alignleft aligncenter alignright | bullist numlist | link | code',
+    formats: {
+        h2: { block: 'h2' },
+        h3: { block: 'h3' },
+    },
+    content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.7; } h1,h2,h3 { margin-top: 1.5em; margin-bottom: 0.5em; } p { margin-bottom: 1em; } ul,ol { padding-left: 1.5em; margin-bottom: 1em; }',
+    valid_elements: 'p[style],h1,h2,h3,h4,h5,h6,ul,ol,li,strong,b,em,i,a[href|target|rel],br,hr,blockquote',
+    setup: function(editor) {
+        editor.on('submit', function() { editor.save(); });
+    }
+});
+</script>
 
 <?php include __DIR__ . '/../views/admin_footer.php'; ?>
