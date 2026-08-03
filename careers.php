@@ -218,6 +218,7 @@ include __DIR__ . '/app/views/header.php';
 						<p class="text-slate-400 text-lg font-light leading-relaxed">
 							Don\'t see your specific designation? <span class="text-white font-medium">Pitch us.</span> We are always architecting space for elite outliers who break conventional growth models.
 						</p>
+						<p>HR: +91 9344406861</p>
 						<div class="flex items-start gap-4 p-4 border-l-2 border-primary bg-white/5">
 							<span class="material-symbols-outlined text-primary">tips_and_updates</span>
 							<p class="text-xs text-slate-300 uppercase tracking-widest font-bold">Show us the technical leverage you bring to the command center.</p>
