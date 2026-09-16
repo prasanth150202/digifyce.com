@@ -1634,15 +1634,17 @@ if ($homeCtaHref !== '') {
 </section>
 
 
-<!-- We Got Recognized In Section -->
+<!-- Ad Platforms We Run Campaigns On (renders logos from public/assets/toolslogo/ads/ —
+     these are advertising channels, not third-party press mentions; do not relabel
+     as "Press & Recognition" unless real, verifiable press coverage backs it) -->
 <div class="mb-8 sm:mb-10 lg:mb-12">
     <div class="mb-6 sm:mb-8 lg:mb-12 text-center">
         <h2
             class="text-[10px] sm:text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-slate-500 mb-4 sm:mb-6 lg:mb-8">
-            Press & Recognition</h2>
+            Where We Run Campaigns</h2>
         <div class="text-2xl sm:text-3xl lg:text-4xl xl:text-6xl font-bold tracking-tighter px-4">
 
-            <?= htmlspecialchars($homeContent['press_title'] ?? 'We Got Recognized In') ?>
+            <?= htmlspecialchars($homeContent['press_title'] ?? 'Platforms We Advertise On') ?>
         </div>
     </div>
     <div class="relative overflow-hidden bg-white/[0.02] rounded-lg border border-white/10 p-4 sm:p-6 lg:p-8">

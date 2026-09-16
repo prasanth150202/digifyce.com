@@ -18,6 +18,7 @@ $siteLogo = '';
 $siteFavicon = '';
 $navCtaLabel = 'Audit';
 $navCtaUrl = '#';
+$orgSameAs = [];
 try {
     require_once __DIR__ . '/../../config/database.php';
     $pdo = Database::getInstance();
@@ -31,6 +32,20 @@ try {
             $navCtaLabel = $row['setting_value'] ?: $navCtaLabel;
         } elseif ($row['setting_key'] === 'nav_cta_url') {
             $navCtaUrl = $row['setting_value'] ?: $navCtaUrl;
+        }
+    }
+    // Pull known social-profile links out of the footer nav for Organization sameAs.
+    // Matched by domain rather than footer_group label, so it survives admin re-labeling.
+    $socialDomains = ['facebook.com', 'instagram.com', 'linkedin.com', 'twitter.com', 'x.com', 'youtube.com'];
+    $navUrls = $pdo->query("SELECT DISTINCT url FROM navigation WHERE is_footer = 1")->fetchAll(PDO::FETCH_COLUMN);
+    foreach ($navUrls as $navUrl) {
+        $host = parse_url(trim($navUrl), PHP_URL_HOST);
+        if (!$host) continue;
+        foreach ($socialDomains as $domain) {
+            if ($host === $domain || str_ends_with($host, '.' . $domain)) {
+                $orgSameAs[] = trim($navUrl);
+                break;
+            }
         }
     }
 } catch (Exception $e) {
@@ -84,6 +99,35 @@ if ($navCtaHref !== '') {
     <?php if (!empty($siteFavicon)): ?>
         <link rel="icon" href="<?= htmlspecialchars($appUrl . '/' . ltrim($siteFavicon, '/')) ?>">
     <?php endif; ?>
+    <?php
+    // Organization + WebSite JSON-LD (sitewide). Only verifiable, already-public
+    // facts are included here — no NAP/address/phone until real values exist,
+    // per SEO audit guidance not to fabricate business identity data.
+    $orgSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Organization',
+        '@id' => $appUrl . '/#organization',
+        'name' => 'Digifyce',
+        'url' => $appUrl . '/',
+        'description' => 'Digifyce is a digital marketing agency in India helping brands grow through performance marketing, branding, e-commerce marketing, marketplace management, creative development, content marketing, and lead generation services.',
+    ];
+    if (!empty($siteLogo)) {
+        $orgSchema['logo'] = $appUrl . '/' . ltrim($siteLogo, '/');
+    }
+    if (!empty($orgSameAs)) {
+        $orgSchema['sameAs'] = array_values(array_unique($orgSameAs));
+    }
+    $websiteSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'WebSite',
+        '@id' => $appUrl . '/#website',
+        'url' => $appUrl . '/',
+        'name' => 'Digifyce',
+        'publisher' => ['@id' => $appUrl . '/#organization'],
+    ];
+    ?>
+    <script type="application/ld+json"><?= json_encode($orgSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
+    <script type="application/ld+json"><?= json_encode($websiteSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <?= $tailwindConfig ?>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>

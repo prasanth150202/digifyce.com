@@ -14,6 +14,11 @@
 <IfModule mod_rewrite.c>
 RewriteEngine On
 
+# Canonicalize host: redirect www to the apex domain — GET only (POST must never be redirected: 301 drops POST body)
+RewriteCond %{REQUEST_METHOD} !POST
+RewriteCond %{HTTP_HOST} ^www\.digifyce\.com$ [NC]
+RewriteRule ^(.*)$ https://digifyce.com/$1 [R=301,L]
+
 # Serve static files from storage/ directly — bypass all routing
 RewriteRule ^storage/ - [L]
 
@@ -71,3 +76,17 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.+)$ slug_router.php?uri=$1 [L,QSA]
 </IfModule>
+
+# ── Security headers ─────────────────────────────────────────────────────────
+# NOTE: expose_php (the X-Powered-By source) is PHP_INI_SYSTEM scope and cannot
+# be set from .htaccess/php_flag — that would 500 the site. Suppress it in
+# php.ini (expose_php = Off) instead; Header unset below strips it in transit
+# as a belt-and-suspenders measure if php.ini can't be touched.
+<IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    Header always unset X-Powered-By
+</IfModule>
+# ────────────────────────────────────────────────────────────────────────────

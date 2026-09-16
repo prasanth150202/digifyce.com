@@ -61,8 +61,8 @@ $relatedBlogs = $relatedStmt->fetchAll(PDO::FETCH_ASSOC);
 // Increment view count
 $pdo->prepare('UPDATE blogs SET view_count=view_count+1 WHERE id=?')->execute([$blog['id']]);
 
-// Format published date
-$publishedDate = date('M d, Y', strtotime($blog['published_at']));
+// Format published date (fall back to created_at when published_at wasn't set)
+$publishedDate = date('M d, Y', strtotime($blog['published_at'] ?: $blog['created_at']));
 $estimatedRead = max(1, ceil(str_word_count(strip_tags($blog['content'])) / 200));
 
 include __DIR__ . '/app/views/blog.php';

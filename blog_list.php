@@ -103,11 +103,11 @@ if (!empty($_GET['tag'])) {
     // Join with tags table
     $whereJoin = ' INNER JOIN blog_tag_map m ON b.id=m.blog_id INNER JOIN blog_tags t ON m.tag_id=t.id WHERE b.status="published" AND t.slug=?';
     $tagParams = [$_GET['tag']];
-    $sql = "SELECT DISTINCT b.id, b.title, b.slug, b.excerpt, b.featured_image, b.published_at, a.name as author_name, c.name as category_name FROM blogs b LEFT JOIN blog_authors a ON b.author_id=a.id LEFT JOIN blog_categories c ON b.category_id=c.id $whereJoin ORDER BY $orderBy LIMIT $perPage OFFSET $offset";
+    $sql = "SELECT DISTINCT b.id, b.title, b.slug, b.excerpt, b.featured_image, b.published_at, b.created_at, a.name as author_name, c.name as category_name FROM blogs b LEFT JOIN blog_authors a ON b.author_id=a.id LEFT JOIN blog_categories c ON b.category_id=c.id $whereJoin ORDER BY $orderBy LIMIT $perPage OFFSET $offset";
     $stmt = $pdo->prepare($sql);
     $stmt->execute($tagParams);
 } else {
-    $sql = "SELECT b.id, b.title, b.slug, b.excerpt, b.featured_image, b.published_at, a.name as author_name, c.name as category_name FROM blogs b LEFT JOIN blog_authors a ON b.author_id=a.id LEFT JOIN blog_categories c ON b.category_id=c.id $where ORDER BY $orderBy LIMIT $perPage OFFSET $offset";
+    $sql = "SELECT b.id, b.title, b.slug, b.excerpt, b.featured_image, b.published_at, b.created_at, a.name as author_name, c.name as category_name FROM blogs b LEFT JOIN blog_authors a ON b.author_id=a.id LEFT JOIN blog_categories c ON b.category_id=c.id $where ORDER BY $orderBy LIMIT $perPage OFFSET $offset";
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
 }
@@ -135,9 +135,9 @@ if (!empty($_GET['tag'])) {
 $totalBlogs = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
 $totalPages = ceil($totalBlogs / $perPage);
 
-// Format dates
+// Format dates (fall back to created_at when published_at wasn't set)
 foreach ($blogs as &$blog) {
-    $blog['publishedDate'] = date('M d, Y', strtotime($blog['published_at']));
+    $blog['publishedDate'] = date('M d, Y', strtotime($blog['published_at'] ?: $blog['created_at']));
     $blog['estimatedRead'] = max(1, ceil(str_word_count(strip_tags($blog['excerpt'])) / 100));
 }
 unset($blog);
