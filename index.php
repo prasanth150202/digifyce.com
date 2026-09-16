@@ -432,7 +432,7 @@ if ($homeCtaHref !== '') {
             <!-- 2025 Revenue -->
             <div class="flex flex-col justify-end">
                 <div class="text-3xl sm:text-4xl font-light text-slate-400 mb-2">
-                    <span class="counter" data-target="<?= $homeContent['rev1_title'] ?? '12M' ?>">0</span>
+                    <span class="counter" data-target="<?= $homeContent['rev1_title'] ?? '12M' ?>"><?= $homeContent['rev1_title'] ?? '12M' ?></span>
                 </div>
                 <div class="text-[10px] uppercase tracking-[0.2em] text-slate-500">
                     <?= $homeContent['rev1_sub'] ?? 'Revenue — FY2024' ?>
@@ -446,7 +446,7 @@ if ($homeCtaHref !== '') {
                 </div>
 
                 <div class="text-4xl sm:text-6xl font-semibold text-white mb-2">
-                    <span class="counter" data-target="<?= $homeContent['rev2_title'] ?? '160M' ?>">0</span>
+                    <span class="counter" data-target="<?= $homeContent['rev2_title'] ?? '160M' ?>"><?= $homeContent['rev2_title'] ?? '160M' ?></span>
                 </div>
 
                 <div class="text-[10px] uppercase tracking-[0.2em] text-slate-400">
@@ -457,7 +457,7 @@ if ($homeCtaHref !== '') {
             <!-- Growth -->
             <div class="flex flex-col justify-end">
                 <div class="text-3xl sm:text-5xl font-light text-white mb-2">
-                    <span class="counter" data-target="<?= $homeContent['rev3_title'] ?? '13.3X' ?>">0</span>
+                    <span class="counter" data-target="<?= $homeContent['rev3_title'] ?? '13.3X' ?>"><?= $homeContent['rev3_title'] ?? '13.3X' ?></span>
                 </div>
                 <div class="text-[10px] uppercase tracking-[0.2em] text-slate-600">
                     <?= $homeContent['rev3_sub'] ?? 'Growth' ?>
@@ -467,7 +467,7 @@ if ($homeCtaHref !== '') {
             <!-- Retention -->
             <div class="flex flex-col justify-end">
                 <div class="text-3xl sm:text-5xl font-light text-white mb-2">
-                    <span class="counter" data-target="<?= $homeContent['rev4_title'] ?? '82%' ?>">0</span>
+                    <span class="counter" data-target="<?= $homeContent['rev4_title'] ?? '82%' ?>"><?= $homeContent['rev4_title'] ?? '82%' ?></span>
                 </div>
                 <div class="text-[10px] uppercase tracking-[0.2em] text-slate-600">
                     <?= $homeContent['rev4_sub'] ?? 'Retention Rate' ?>
@@ -477,7 +477,7 @@ if ($homeCtaHref !== '') {
             <!-- Brands Served -->
             <div class="flex flex-col justify-end col-span-2 lg:col-span-1 justify-self-center">
                 <div class="text-3xl sm:text-5xl font-light text-white mb-2">
-                    <span class="counter" data-target="<?= $homeContent['rev5_title'] ?? '120+' ?>">0</span>
+                    <span class="counter" data-target="<?= $homeContent['rev5_title'] ?? '120+' ?>"><?= $homeContent['rev5_title'] ?? '120+' ?></span>
                 </div>
                 <div class="text-[10px] uppercase tracking-[0.2em] text-slate-600">
                     <?= $homeContent['rev5_sub'] ?? 'Brands Served' ?>
@@ -505,6 +505,11 @@ if ($homeCtaHref !== '') {
 
             let startValue = 0;
             const increment = numericValue / (duration / 16);
+
+            // Progressive enhancement: the span already renders the real target value
+            // in markup (for no-JS visitors and crawlers). Only reset to 0 here, right
+            // as the count-up animation begins, so JS users still see the animated effect.
+            counter.textContent = '0';
 
             function updateCounter() {
                 startValue += increment;

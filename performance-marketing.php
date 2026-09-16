@@ -1799,8 +1799,8 @@ include __DIR__ . '/app/views/header.php';
 			<div class="timeline space-y-4 reveal-right">
 				<?php foreach ($pm_steps as $st): ?>
 				<div class="step">
-					<h4 class="text-xl font-bold mb-2"><span class="material-symbols-outlined text-[var(--pm-accent)] align-middle mr-1"><?= htmlspecialchars($st['icon']) ?></span>
-						<?= htmlspecialchars($st['heading']) ?></h4>
+					<h4 class="text-xl font-bold mb-2"><span class="material-symbols-outlined text-[var(--pm-accent)] align-middle mr-1" aria-hidden="true"><?= htmlspecialchars($st['icon']) ?></span>
+						<span><?= htmlspecialchars($st['heading']) ?></span></h4>
 					<p><?= htmlspecialchars($st['description']) ?></p>
 				</div>
 				<?php endforeach; ?>

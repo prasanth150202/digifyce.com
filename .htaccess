@@ -45,6 +45,11 @@ RewriteRule ^blog_list/tag/([^/]+)/?$ blog_list.php?tag=$1 [L,QSA,NC]
 RewriteRule ^blog_list/page/([0-9]+)/?$ blog_list.php?page=$1 [L,QSA,NC]
 # Individual blog post: /blog/slug → blog.php?slug=slug
 RewriteRule ^blog/([^/]+)/?$ blog.php?slug=$1 [L,NC]
+# Canonicalize bare /blog to /blog_list — a page_seo DB alias also serves /blog directly,
+# creating a duplicate self-canonicalizing listing page; redirect here so it never reaches
+# that lookup. GET only (POST must never be redirected: 301 drops POST body).
+RewriteCond %{REQUEST_METHOD} !POST
+RewriteRule ^blog/?$ /blog_list [R=301,L,NC]
 # Pages: /pages/slug -> pages.php?slug=slug
 RewriteRule ^pages/([^/]+)/?$ pages.php?slug=$1 [L,QSA,NC]
 # ────────────────────────────────────────────────────────────────────────────
