@@ -5,6 +5,7 @@ $_seoPdo = Database::getInstance();
 $_seo = load_page_seo($_seoPdo, 'd2c-branding');
 $pageTitle = $_seo['meta_title'] ?: 'D2C Branding Services in India - Digifyce';
 $pageDescription = $_seo['meta_description'] ?: 'Build a Scalable Brand That Drives Growth and Customer Loyalty with Digifyce\'s strategic D2C branding services.';
+$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'd2c-branding', 'D2C Branding', $pageTitle, $pageDescription);
 $bodyClass = 'd2c-branding';
 $appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
 require_once __DIR__ . '/config/database.php';

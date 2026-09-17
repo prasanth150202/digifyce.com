@@ -5,6 +5,7 @@ $_seoPdo = Database::getInstance();
 $_seo = load_page_seo($_seoPdo, 'market-manage');
 $pageTitle = $_seo['meta_title'] ?: 'Marketplace Management Services in India – Digifyce';
 $pageDescription = $_seo['meta_description'] ?: 'Scale Your Brand on Amazon, Flipkart, and Leading Online Marketplaces. Complete marketplace management, SEO, and ads.';
+$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'market-manage', 'Marketplace Management', $pageTitle, $pageDescription);
 $bodyClass = 'market-manage-page';
 $appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
 require_once __DIR__ . '/config/database.php';

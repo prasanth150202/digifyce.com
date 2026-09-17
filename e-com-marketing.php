@@ -5,6 +5,7 @@ $_seoPdo = Database::getInstance();
 $_seo = load_page_seo($_seoPdo, 'e-com-marketing');
 $pageTitle = $_seo['meta_title'] ?: 'E-Commerce Marketing Services in India – Digifyce';
 $pageDescription = $_seo['meta_description'] ?: 'Build High-Performing Online Stores That Convert Visitors into Customers with Digifyce. Shopify, WooCommerce, and custom e-commerce development.';
+$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'e-com-marketing', 'E-Commerce Marketing', $pageTitle, $pageDescription);
 $bodyClass = 'ecom-unique-page';
 $appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
 require_once __DIR__ . '/config/database.php';
