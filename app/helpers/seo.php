@@ -36,3 +36,58 @@ function service_schema(string $appUrl, string $pageSlug, string $serviceType, s
         . json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
         . '</script>';
 }
+
+/**
+ * Build a Schema.org BlogPosting JSON-LD block for a blog post. Pass the
+ * raw $blog row (as fetched by blog.php, PDO::FETCH_ASSOC) plus the
+ * description already computed for the page's meta tag.
+ *
+ * If the post's author_name is empty, or is just the org name reused as a
+ * byline (seen live as "Digifyce" with a "Contributor" label -- not a real
+ * named person), attribute authorship to the Organization instead of
+ * emitting a Person entity that would misrepresent the org as an
+ * individual. A genuinely different author_name is used as a real Person.
+ */
+function blog_posting_schema(string $appUrl, array $blog, string $description): string {
+    $appUrl = rtrim($appUrl, '/');
+    $url = $appUrl . '/blog/' . $blog['slug'];
+    $published = $blog['published_at'] ?: $blog['created_at'];
+    $orgId = ['@id' => $appUrl . '/#organization'];
+
+    $schema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'BlogPosting',
+        'headline' => $blog['title'],
+        'description' => $description,
+        'url' => $url,
+        'mainEntityOfPage' => ['@type' => 'WebPage', '@id' => $url],
+        'datePublished' => date('c', strtotime($published)),
+        'publisher' => $orgId,
+    ];
+
+    if (!empty($blog['updated_at'])) {
+        $schema['dateModified'] = date('c', strtotime($blog['updated_at']));
+    }
+    if (!empty($blog['featured_image'])) {
+        $schema['image'] = $appUrl . '/storage/uploads/' . $blog['featured_image'];
+    }
+
+    $authorName = trim((string) ($blog['author_name'] ?? ''));
+    $isRealPerson = $authorName !== '' && strcasecmp($authorName, 'Digifyce') !== 0;
+    if ($isRealPerson) {
+        $author = ['@type' => 'Person', 'name' => $authorName];
+        if (!empty($blog['author_avatar'])) {
+            $author['image'] = $appUrl . '/storage/uploads/' . $blog['author_avatar'];
+        }
+        if (!empty($blog['author_bio'])) {
+            $author['description'] = $blog['author_bio'];
+        }
+        $schema['author'] = $author;
+    } else {
+        $schema['author'] = $orgId;
+    }
+
+    return '<script type="application/ld+json">'
+        . json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+        . '</script>';
+}
