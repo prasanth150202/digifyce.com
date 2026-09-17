@@ -5,6 +5,7 @@ $_seoPdo = Database::getInstance();
 $_seo = load_page_seo($_seoPdo, 'content-marketing');
 $pageTitle = $_seo['meta_title'] ?: 'Content Marketing Services in India - Digifyce';
 $pageDescription = $_seo['meta_description'] ?: 'Strategic content marketing services including blog writing, website content, social media content, and SEO-focused writing that build trust and drive growth.';
+$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'content-marketing', 'Content Marketing', $pageTitle, $pageDescription);
 $bodyClass = 'content-marketing';
 $appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
 require_once __DIR__ . '/config/database.php';

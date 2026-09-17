@@ -5,6 +5,7 @@ $_seoPdo = Database::getInstance();
 $_seo = load_page_seo($_seoPdo, 'creative-dev');
 $pageTitle = $_seo['meta_title'] ?: 'Creative Development Services in India - Digifyce';
 $pageDescription = $_seo['meta_description'] ?: 'Professional creative development services — graphic design, video editing, ad creatives, brand visuals and AI-powered creatives that drive engagement and conversions.';
+$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'creative-dev', 'Creative Development', $pageTitle, $pageDescription);
 $bodyClass = 'creative-dev';
 $appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
 require_once __DIR__ . '/config/database.php';

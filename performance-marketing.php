@@ -5,6 +5,7 @@ $_seoPdo = Database::getInstance();
 $_seo = load_page_seo($_seoPdo, 'performance-marketing');
 $pageTitle = $_seo['meta_title'] ?: 'Performance Marketing Services in India – Digifyce | SEO, PPC, Meta Ads & Growth';
 $pageDescription = $_seo['meta_description'] ?: 'Data-driven performance marketing services in India by Digifyce. We build full-funnel growth systems across Meta Ads, Google Ads, SEO, PPC, CRO, retargeting, and automation.';
+$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'performance-marketing', 'Performance Marketing', $pageTitle, $pageDescription);
 $bodyClass = 'performance-marketing-page';
 $appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
 
@@ -25,7 +26,7 @@ $pm_seo_panels   = $_pdo->query("SELECT * FROM pm_seo_panels WHERE is_active=1 O
 $pm_steps        = $_pdo->query("SELECT * FROM pm_steps WHERE is_active=1 ORDER BY sort_order, id")->fetchAll(PDO::FETCH_ASSOC);
 $pm_impacts      = $_pdo->query("SELECT * FROM pm_impacts WHERE is_active=1 ORDER BY sort_order, id")->fetchAll(PDO::FETCH_ASSOC);
 
-$extraHead = <<<'HTML'
+$extraHead .= <<<'HTML'
 <style>
 	:root {
 		--pm-bg: #030508;

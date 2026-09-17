@@ -5,6 +5,7 @@ $_seoPdo = Database::getInstance();
 $_seo = load_page_seo($_seoPdo, 'brand-shoot');
 $pageTitle = $_seo['meta_title'] ?: 'Commercial Shoot Services – Digifyce | Product Photography, Ad Films & Brand Storytelling';
 $pageDescription = $_seo['meta_description'] ?: 'Commercial shoot services by Digifyce: product photography, ad films, brand storytelling, social reels, and performance-ready visual content built to drive trust and conversions.';
+$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'brand-shoot', 'Commercial Shoot & Brand Photography', $pageTitle, $pageDescription);
 $bodyClass = 'brand-shoot-page';
 $appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
 require_once __DIR__ . '/config/database.php';
@@ -21,7 +22,7 @@ $cs_approach = $_pdo->query("SELECT * FROM cs_approach_panels WHERE is_active=1 
 $cs_why_bullets = $_pdo->query("SELECT * FROM cs_why_bullets WHERE is_active=1 ORDER BY sort_order")->fetchAll(PDO::FETCH_ASSOC);
 $cs_cta      = $_pdo->query("SELECT * FROM cs_cta WHERE id=1")->fetch(PDO::FETCH_ASSOC) ?: [];
 
-$extraHead = <<<'HTML'
+$extraHead .= <<<'HTML'
 <style>
 	:root {
 		--brand-bg: #05070a;
