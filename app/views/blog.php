@@ -10,6 +10,8 @@ $authorAvatar = $blog['author_avatar'] ?? '';
 $authorBio = $blog['author_bio'] ?? '';
 $shareTitle = htmlspecialchars($blog['title'] ?? 'Digifyce');
 
+$extraHead = ($extraHead ?? '') . blog_posting_schema($appUrl, $blog, $pageDescription ?? $excerpt);
+
 $tailwindConfig = '<script id="tailwind-config">
     tailwind.config = {
         darkMode: "class",
@@ -29,7 +31,7 @@ $tailwindConfig = '<script id="tailwind-config">
     }
 </script>';
 
-$extraHead = '<style type="text/tailwindcss">
+$extraHead .= '<style type="text/tailwindcss">
     @layer utilities {
         .grainy-overlay {
             position: relative;

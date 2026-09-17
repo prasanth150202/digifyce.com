@@ -1,6 +1,7 @@
 <?php
 // blog.php - Blog post entry point
 require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/app/helpers/seo.php';
 
 // Load environment variables
 $envFile = __DIR__ . '/.env';
