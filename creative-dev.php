@@ -2238,7 +2238,7 @@ include __DIR__ . '/app/views/header.php';
 </section>
 
 <script>
-  (function () {
+  document.addEventListener('DOMContentLoaded', function () {
     /* ── Scroll Reveals ─────────────────── */
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => {
@@ -2340,7 +2340,7 @@ include __DIR__ . '/app/views/header.php';
       });
     }
 
-  })();
+  });
 </script>
 
 <?php include __DIR__ . '/app/views/footer.php'; ?>
