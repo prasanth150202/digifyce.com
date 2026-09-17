@@ -104,6 +104,7 @@ include __DIR__ . '/app/views/header.php';
 		</section>
 
 <script>
+document.addEventListener('DOMContentLoaded', function () {
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -142,6 +143,7 @@ gsap.utils.toArray(".image-slider").forEach(slider => {
 
 });
 
+});
 </script>
 
 

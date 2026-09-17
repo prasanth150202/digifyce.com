@@ -7,10 +7,10 @@ $pageTitle = $_seo['meta_title'] ?: 'Marketing Technology & Automation Solutions
 $pageDescription = $_seo['meta_description'] ?: 'Leverage advanced marketing technology, automation tools, and analytics solutions to improve performance tracking and business growth.';
 $bodyClass = 'bg-[#05070a] text-white';
 include __DIR__ . '/app/views/header.php';
+// GSAP + ScrollTrigger are already loaded (deferred) by header.php -- no need
+// to load a second copy here; this page's usage below runs inside
+// DOMContentLoaded, after header.php's deferred scripts have executed.
 ?>
-
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 
 <style>
 @media (max-width: 1024px) {
