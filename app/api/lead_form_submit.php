@@ -34,16 +34,24 @@ try {
     $fullName = trim($data['full_name']);
     $phone = isset($data['phone']) ? trim($data['phone']) : null;
     $company = isset($data['company']) ? trim($data['company']) : null;
+    $mainObjective = isset($data['main_objective']) ? trim($data['main_objective']) : null;
+    $businessType = isset($data['business_type']) ? trim($data['business_type']) : null;
+    $industryType = isset($data['industry_type']) ? trim($data['industry_type']) : null;
     $budget = isset($data['budget']) ? trim($data['budget']) : null;
     $website = isset($data['website']) ? trim($data['website']) : null;
     $message = trim($data['message']);
     $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
-    
+
+    // Qualification: Sales(website) objective + Own Manufacturer/Wholesale + budget of 1Lakh or above
+    $isQualified = ($mainObjective === 'sales_website')
+        && in_array($businessType, ['own_manufacturer', 'wholesale'], true)
+        && in_array($budget, ['1lakh', 'above_1lakh'], true);
+
     $pdo = Database::getInstance();
-    $stmt = $pdo->prepare("INSERT INTO lead_form_submissions (full_name, email, phone, company, budget, website, message, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$fullName, $email, $phone, $company, $budget, $website, $message, $ipAddress, $userAgent]);
-    
+    $stmt = $pdo->prepare("INSERT INTO lead_form_submissions (full_name, email, phone, company, main_objective, business_type, industry, budget, is_qualified, website, message, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$fullName, $email, $phone, $company, $mainObjective, $businessType, $industryType, $budget, $isQualified ? 1 : 0, $website, $message, $ipAddress, $userAgent]);
+
     $leadId = $pdo->lastInsertId();
     
     // Send lead to CRM webhook
@@ -55,7 +63,11 @@ try {
         'email' => $email,
         'phone' => $phone,
         'company' => $company,
+        'main_objective' => $mainObjective,
+        'business_type' => $businessType,
+        'industry_type' => $industryType,
         'budget' => $budget,
+        'is_qualified' => $isQualified,
         'website' => $website,
         'message' => $message,
         'ip_address' => $ipAddress,

@@ -21,11 +21,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = isset($_POST['email']) ? trim($_POST['email']) : '';
         $phone = isset($_POST['phone']) ? trim($_POST['phone']) : null;
         $company = isset($_POST['company']) ? trim($_POST['company']) : null;
-        $budget = isset($_POST['budget']) ? trim($_POST['budget']) : null;
+        $mainObjective = isset($_POST['main_objective']) ? trim($_POST['main_objective']) : '';
+        $businessType = isset($_POST['business_type']) ? trim($_POST['business_type']) : '';
+        $industryType = isset($_POST['industry_type']) ? trim($_POST['industry_type']) : '';
+        $budget = isset($_POST['budget']) ? trim($_POST['budget']) : '';
         $website = isset($_POST['website']) ? trim($_POST['website']) : null;
         $message = isset($_POST['message']) ? trim($_POST['message']) : '';
 
-        if (empty($fullName) || empty($email) || empty($message)) {
+        $objectiveOptions = ['leads' => 'Leads', 'sales_website' => 'Sales (Website)'];
+        $businessTypeOptions = ['own_manufacturer' => 'Own Manufacturer', 'reseller_retailer' => 'Reseller/Retailer (Outsource Products)', 'wholesale' => 'Wholesale'];
+        $industryOptions = ['fmcg' => 'FMCG', 'textile' => 'Textile', 'cosmetic' => 'Cosmetic', 'others' => 'Others'];
+        $budgetOptions = ['50000' => '₹50,000', '1lakh' => '₹1 Lakh', 'above_1lakh' => 'Above ₹1 Lakh'];
+
+        if (empty($fullName) || empty($email) || empty($message) || empty($mainObjective) || empty($businessType) || empty($industryType) || empty($budget)) {
             $errorMessage = 'Please fill in all required fields.';
         } else {
             $email = filter_var($email, FILTER_VALIDATE_EMAIL);
@@ -35,9 +43,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
                 $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
 
+                // Qualification: Sales(website) objective + Own Manufacturer/Wholesale + budget of 1Lakh or above
+                $isQualified = ($mainObjective === 'sales_website')
+                    && in_array($businessType, ['own_manufacturer', 'wholesale'], true)
+                    && in_array($budget, ['1lakh', 'above_1lakh'], true);
+
                 $pdo = Database::getInstance();
-                $stmt = $pdo->prepare("INSERT INTO lead_form_submissions (full_name, email, phone, company, budget, website, message, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$fullName, $email, $phone, $company, $budget, $website, $message, $ipAddress, $userAgent]);
+                $stmt = $pdo->prepare("INSERT INTO lead_form_submissions (full_name, email, phone, company, main_objective, business_type, industry, budget, is_qualified, website, message, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$fullName, $email, $phone, $company, $mainObjective, $businessType, $industryType, $budget, $isQualified ? 1 : 0, $website, $message, $ipAddress, $userAgent]);
 
                 $leadId = $pdo->lastInsertId();
 
@@ -50,7 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'email' => $email,
                     'phone' => $phone,
                     'company' => $company,
-                    'budget' => $budget,
+                    'main_objective' => $objectiveOptions[$mainObjective] ?? $mainObjective,
+                    'business_type' => $businessTypeOptions[$businessType] ?? $businessType,
+                    'industry_type' => $industryOptions[$industryType] ?? $industryType,
+                    'budget' => $budgetOptions[$budget] ?? $budget,
+                    'is_qualified' => $isQualified,
                     'website' => $website,
                     'message' => $message,
                     'ip_address' => $ipAddress,
@@ -130,19 +147,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     placeholder="Company name" />
             </div>
             <div>
-                <label class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Monthly Budget</label>
-                <select name="budget"
+                <label class="text-[10px] uppercase tracking-[0.3em] text-slate-500">What is your main objective?</label>
+                <select name="main_objective" required
                     class="mt-3 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-[var(--electric-blue)] focus:outline-none">
-
-                    <option value="" class="bg-[#030508]">Select budget</option>
-                    <option value="50k-1l" class="bg-[#030508]">₹50k - ₹1L</option>
-                    <option value="1l-1.5l" class="bg-[#030508]">₹1L - ₹1.5L</option>
-                    <option value="1.5l-2l" class="bg-[#030508]">₹1.5L - ₹2L</option>
-                    <option value="2l-3l" class="bg-[#030508]">₹2L - ₹3L</option>
-                    <option value="3l+" class="bg-[#030508]">₹3L+</option>
-
+                    <option value="" class="bg-[#030508]">Select objective</option>
+                    <option value="leads" class="bg-[#030508]">Leads</option>
+                    <option value="sales_website" class="bg-[#030508]">Sales (Website)</option>
                 </select>
-
+            </div>
+            <div>
+                <label class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Does your business have its own manufacturing facility?</label>
+                <select name="business_type" required
+                    class="mt-3 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-[var(--electric-blue)] focus:outline-none">
+                    <option value="" class="bg-[#030508]">Select an option</option>
+                    <option value="own_manufacturer" class="bg-[#030508]">Own Manufacturer</option>
+                    <option value="reseller_retailer" class="bg-[#030508]">Reseller/Retailer (Outsource Products)</option>
+                    <option value="wholesale" class="bg-[#030508]">Wholesale</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-[10px] uppercase tracking-[0.3em] text-slate-500">What type of industry is your business?</label>
+                <select name="industry_type" required
+                    class="mt-3 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-[var(--electric-blue)] focus:outline-none">
+                    <option value="" class="bg-[#030508]">Select industry</option>
+                    <option value="fmcg" class="bg-[#030508]">FMCG</option>
+                    <option value="textile" class="bg-[#030508]">Textile</option>
+                    <option value="cosmetic" class="bg-[#030508]">Cosmetic</option>
+                    <option value="others" class="bg-[#030508]">Others</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Estimated monthly marketing budget</label>
+                <select name="budget" required
+                    class="mt-3 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-[var(--electric-blue)] focus:outline-none">
+                    <option value="" class="bg-[#030508]">Select budget</option>
+                    <option value="50000" class="bg-[#030508]">₹50,000</option>
+                    <option value="1lakh" class="bg-[#030508]">₹1 Lakh</option>
+                    <option value="above_1lakh" class="bg-[#030508]">Above ₹1 Lakh</option>
+                </select>
             </div>
             <div>
                 <label class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Website</label>

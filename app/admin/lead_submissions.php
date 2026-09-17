@@ -32,6 +32,14 @@ $todayLeads = count(array_filter($leads, function($lead) {
 $weekLeads = count(array_filter($leads, function($lead) {
     return strtotime($lead['created_at']) >= strtotime('-7 days');
 }));
+$qualifiedLeads = count(array_filter($leads, function($lead) {
+    return !empty($lead['is_qualified']);
+}));
+
+$objectiveLabels = ['leads' => 'Leads', 'sales_website' => 'Sales (Website)'];
+$businessTypeLabels = ['own_manufacturer' => 'Own Manufacturer', 'reseller_retailer' => 'Reseller/Retailer', 'wholesale' => 'Wholesale'];
+$industryLabels = ['fmcg' => 'FMCG', 'textile' => 'Textile', 'cosmetic' => 'Cosmetic', 'others' => 'Others'];
+$budgetLabels = ['50000' => '₹50,000', '1lakh' => '₹1 Lakh', 'above_1lakh' => 'Above ₹1 Lakh'];
 
 include __DIR__ . '/../views/admin_header.php';
 ?>
@@ -54,7 +62,7 @@ include __DIR__ . '/../views/admin_header.php';
 
 <!-- Stats Cards -->
 <div class="row g-3 mb-4">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card border-0 bg-primary text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
@@ -67,7 +75,7 @@ include __DIR__ . '/../views/admin_header.php';
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card border-0 bg-success text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
@@ -80,7 +88,7 @@ include __DIR__ . '/../views/admin_header.php';
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card border-0 bg-info text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
@@ -89,6 +97,19 @@ include __DIR__ . '/../views/admin_header.php';
                         <h2 class="mb-0"><?= $weekLeads ?></h2>
                     </div>
                     <i class="fas fa-chart-line fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50 text-uppercase mb-2">Qualified</h6>
+                        <h2 class="mb-0"><?= $qualifiedLeads ?></h2>
+                    </div>
+                    <i class="fas fa-star fa-2x opacity-50"></i>
                 </div>
             </div>
         </div>
@@ -116,7 +137,11 @@ include __DIR__ . '/../views/admin_header.php';
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Company</th>
+                        <th>Objective</th>
+                        <th>Business Type</th>
+                        <th>Industry</th>
                         <th>Budget</th>
+                        <th>Qualified</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -145,15 +170,25 @@ include __DIR__ . '/../views/admin_header.php';
                             <?php endif; ?>
                         </td>
                         <td><?= $lead['company'] ? htmlspecialchars($lead['company']) : '<span class="text-muted">-</span>' ?></td>
+                        <td><?= !empty($lead['main_objective']) ? htmlspecialchars($objectiveLabels[$lead['main_objective']] ?? $lead['main_objective']) : '<span class="text-muted">-</span>' ?></td>
+                        <td><?= !empty($lead['business_type']) ? htmlspecialchars($businessTypeLabels[$lead['business_type']] ?? $lead['business_type']) : '<span class="text-muted">-</span>' ?></td>
+                        <td><?= !empty($lead['industry']) ? htmlspecialchars($industryLabels[$lead['industry']] ?? $lead['industry']) : '<span class="text-muted">-</span>' ?></td>
                         <td>
                             <?php if ($lead['budget']): ?>
-                                <span class="badge bg-success"><?= htmlspecialchars($lead['budget']) ?></span>
+                                <span class="badge bg-success"><?= htmlspecialchars($budgetLabels[$lead['budget']] ?? $lead['budget']) ?></span>
                             <?php else: ?>
                                 <span class="text-muted">-</span>
                             <?php endif; ?>
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary" 
+                            <?php if (!empty($lead['is_qualified'])): ?>
+                                <span class="badge bg-warning text-dark"><i class="fas fa-star me-1"></i>Qualified</span>
+                            <?php else: ?>
+                                <span class="badge bg-secondary">No</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary"
                                     onclick="viewLead(<?= htmlspecialchars(json_encode($lead)) ?>)">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -203,6 +238,26 @@ include __DIR__ . '/../views/admin_header.php';
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
+                        <label class="text-muted small">Main Objective</label>
+                        <p id="modal-objective"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Business Type</label>
+                        <p id="modal-business-type"></p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">Industry</label>
+                        <p id="modal-industry"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Qualified</label>
+                        <p id="modal-qualified"></p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
                         <label class="text-muted small">Budget</label>
                         <p id="modal-budget"></p>
                     </div>
@@ -234,13 +289,24 @@ include __DIR__ . '/../views/admin_header.php';
 </div>
 
 <script>
+const objectiveLabels = <?= json_encode($objectiveLabels) ?>;
+const businessTypeLabels = <?= json_encode($businessTypeLabels) ?>;
+const industryLabels = <?= json_encode($industryLabels) ?>;
+const budgetLabels = <?= json_encode($budgetLabels) ?>;
+
 function viewLead(lead) {
     document.getElementById('modal-name').textContent = lead.full_name;
     document.getElementById('modal-email').textContent = lead.email;
     document.getElementById('modal-phone').textContent = lead.phone || '-';
     document.getElementById('modal-company').textContent = lead.company || '-';
-    document.getElementById('modal-budget').textContent = lead.budget || '-';
-    document.getElementById('modal-website').innerHTML = lead.website ? 
+    document.getElementById('modal-objective').textContent = objectiveLabels[lead.main_objective] || lead.main_objective || '-';
+    document.getElementById('modal-business-type').textContent = businessTypeLabels[lead.business_type] || lead.business_type || '-';
+    document.getElementById('modal-industry').textContent = industryLabels[lead.industry] || lead.industry || '-';
+    document.getElementById('modal-qualified').innerHTML = (lead.is_qualified == 1)
+        ? '<span class="badge bg-warning text-dark"><i class="fas fa-star me-1"></i>Qualified</span>'
+        : '<span class="badge bg-secondary">No</span>';
+    document.getElementById('modal-budget').textContent = budgetLabels[lead.budget] || lead.budget || '-';
+    document.getElementById('modal-website').innerHTML = lead.website ?
         `<a href="${lead.website}" target="_blank">${lead.website}</a>` : '-';
     document.getElementById('modal-message').textContent = lead.message;
     document.getElementById('modal-ip').textContent = lead.ip_address || '-';
