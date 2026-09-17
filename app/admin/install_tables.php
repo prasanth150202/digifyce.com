@@ -31,6 +31,8 @@ $sqlFiles = [
     'mktplace_section_headers.sql',
     'content_section_headers.sql',
     'about_us_tables.sql',
+    'website_audits_tables.sql',
+    'case_studies_tables.sql',
 ];
 
 $results = [];

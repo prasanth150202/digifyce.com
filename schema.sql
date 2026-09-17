@@ -235,11 +235,18 @@ CREATE TABLE pdf_email_leads (
 
 CREATE TABLE lead_form_submissions (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    status ENUM('draft','submitted') NOT NULL DEFAULT 'submitted',
     full_name VARCHAR(128) NOT NULL,
     email VARCHAR(255) NOT NULL,
     phone VARCHAR(32),
     company VARCHAR(128),
+    business_type VARCHAR(64),
+    industry VARCHAR(64),
     budget VARCHAR(32),
+    has_ads ENUM('yes','no'),
+    ad_spend VARCHAR(32),
+    roas VARCHAR(32),
+    has_website ENUM('yes','no'),
     website VARCHAR(255),
     message TEXT NOT NULL,
     ip_address VARCHAR(45),

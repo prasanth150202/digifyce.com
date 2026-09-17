@@ -20,6 +20,11 @@ RewriteRule ^storage/ - [L]
 # PDF download endpoint (bypasses slug router entirely)
 RewriteRule ^pdf-download/?$ pdf-download.php [L,QSA,NC]
 
+# Website audit status API: this is a GET endpoint, so the clean-URL rule
+# below will strip its .php on first request — map the clean path straight
+# back to the real file so it doesn't fall through to the slug router.
+RewriteRule ^app/api/website_audit_status/?$ app/api/website_audit_status.php [L,QSA,NC]
+
 # Redirect .php URLs to clean URLs — GET only (POST must never be redirected: 301 drops POST body)
 RewriteCond %{REQUEST_METHOD} !POST
 RewriteCond %{THE_REQUEST} /([^.]+)\.php [NC]
