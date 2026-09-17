@@ -34,3 +34,11 @@ Thumbs.db
 build/
 dist/
 *.tmp
+
+# Python (website audit tool)
+__pycache__/
+*.pyc
+venv/
+
+# Website audit generated output (screenshots, reports)
+/storage/audits/
