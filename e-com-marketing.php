@@ -854,6 +854,26 @@ include __DIR__ . '/app/views/header.php';
         </div>
     </section>
 
+    <!-- Case Study -->
+    <section class="py-20 border-t border-white/5">
+        <div class="max-w-[900px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-xs uppercase tracking-[0.4em] text-[var(--electric-blue)] mb-4">Case Study</h2>
+            <h3 class="text-3xl md:text-5xl font-black tracking-tighter mb-8">Retargeting Strategy That Increased Sales by 35%</h3>
+            <div class="p-8 border border-white/10 rounded-2xl bg-white/[0.02] text-left">
+                <p class="text-slate-400 leading-relaxed">
+                    A growing e-commerce brand selling fashion and lifestyle products was driving over 50,000 monthly visitors but converting well below industry benchmarks, with high cart abandonment eating into that traffic. Through audience segmentation, personalized retargeting ads, and abandoned cart recovery across channels, we increased online sales by 35% within four months.
+                </p>
+                <div class="mt-6">
+                    <a href="<?= htmlspecialchars($appUrl) ?>/blog/ecommerce-retargeting-strategy-that-increased-sales"
+                        class="inline-flex items-center gap-3 text-[var(--electric-blue)] font-bold uppercase tracking-widest text-sm hover:gap-4 transition-all">
+                        Read the Full Case Study
+                        <span class="material-symbols-outlined text-base" aria-hidden="true">arrow_forward</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- 7. Impact & CTA (converted to d2c-style full-bleed CTA) -->
     <section id="cta-final" class="py-20 md:py-32 bg-[#05070a] relative z-50 overflow-hidden">
         <!-- Abstract gradient -->

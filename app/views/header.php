@@ -398,7 +398,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <span class="text-xl sm:text-2xl font-bold tracking-tighter text-white">DIGIFYCE</span>
                 <?php endif; ?>
             </a>
-            <div class="hidden md:flex items-center gap-6 lg:gap-12 text-xs uppercase tracking-[0.2em] font-bold text-white/70">
+            <div class="hidden lg:flex items-center gap-6 lg:gap-12 text-xs uppercase tracking-[0.2em] font-bold text-white/70">
                 <?php 
                     $parents = [];
                     $children = [];
@@ -459,9 +459,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 ?>
                 <a class="px-4 lg:px-6 py-2 border border-white/20 hover:border-white transition-colors" href="<?= htmlspecialchars($navCtaHref) ?>"<?= $navCtaTarget ?>><?= htmlspecialchars($navCtaLabel) ?></a>
             </div>
-            <button id="mobileMenuBtn" class="md:hidden text-white/80 text-sm uppercase tracking-[0.2em] font-bold">Menu</button>
+            <button id="mobileMenuBtn" type="button" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open menu"
+                class="lg:hidden flex items-center justify-center w-12 h-12 rounded-lg border border-white/20 bg-white/5 text-white hover:border-white/40 hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined" id="mobileMenuIcon" aria-hidden="true">menu</span>
+            </button>
         </div>
-        <div id="mobileMenu" class="md:hidden hidden border-t border-white/10 bg-[#000000] mix-blend-normal opacity-100 backdrop-blur-none">
+        <div id="mobileMenu" class="lg:hidden hidden border-t border-white/10 bg-[#000000] mix-blend-normal opacity-100 backdrop-blur-none">
             <div class="max-w-[1440px] mx-auto px-6 py-6 flex flex-col gap-4 text-xs uppercase tracking-[0.2em] font-bold text-white">
                 <?php 
                     try {
@@ -505,9 +508,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <script>
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const mobileMenu = document.getElementById('mobileMenu');
+        const mobileMenuIcon = document.getElementById('mobileMenuIcon');
         if (mobileMenuBtn && mobileMenu) {
             mobileMenuBtn.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
+                const isOpen = mobileMenu.classList.toggle('hidden') === false;
+                mobileMenuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                mobileMenuBtn.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+                if (mobileMenuIcon) mobileMenuIcon.textContent = isOpen ? 'close' : 'menu';
             });
         }
         // Mobile submenu toggle
