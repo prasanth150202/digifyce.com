@@ -1850,6 +1850,25 @@ include __DIR__ . '/app/views/header.php';
 	</section>
 
 
+	<section class="pm-section tight">
+		<div class="pm-wrap px-4 sm:px-6 lg:px-8">
+			<div class="pm-kicker"><i></i>Case Study</div>
+			<h2 class="text-3xl sm:text-4xl font-black tracking-tight mt-4 mb-6 leading-tight">How We Cut CAC by 52% for a D2C Apparel Brand</h2>
+			<div class="panel">
+				<p class="pm-sub text-sm text-slate-300">
+					A D2C fashion and apparel brand selling men's and women's casual wear came to us with rising ad costs eating into profitability. Using first-party data segmentation, Meta Advantage+ Shopping Campaigns, and structured creative testing, we reduced their Customer Acquisition Cost by 52% in 90 days while maintaining sales volume.
+				</p>
+				<div class="mt-6">
+					<a href="<?= htmlspecialchars($appUrl) ?>/blog/how-we-cut-cac-by-52-for-a-d2c-apparel-brand"
+						class="pm-btn ghost relative z-50 transition-[transform,box-shadow,background-color] duration-300 cursor-pointer">
+						Read the Full Case Study
+						<span class="material-symbols-outlined text-base" aria-hidden="true">arrow_forward</span>
+					</a>
+				</div>
+			</div>
+		</div>
+	</section>
+
 	<section id="cta-final" class="pm-section">
 		<div class="cta-bg-text">GROW</div>
 		<div class="pm-wrap px-4 sm:px-6 lg:px-8">
