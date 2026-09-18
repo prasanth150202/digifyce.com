@@ -4,28 +4,8 @@ $_seo = load_page_seo($pdo, 'blog');
 $pageTitle = $_seo['meta_title'] ?: 'Digifyce Insights Index';
 $pageDescription = $_seo['meta_description'] ?: 'Explore insights, guides, and strategies from the Digifyce team on digital marketing, branding, and growth.';
 $bodyClass = 'bg-background-light dark:bg-background-dark font-display text-white selection:bg-primary/30';
-$tailwindConfig = <<<HTML
-<script id="tailwind-config">
-    tailwind.config = {
-        darkMode: "class",
-        theme: {
-            extend: {
-                colors: {
-                    "primary": "#0d69f2",
-                    "background-light": "#f5f7f8",
-                    "background-dark": "#05070a",
-                },
-                fontFamily: {
-                    "display": ["Space Grotesk", "sans-serif"]
-                },
-                borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
-            },
-        },
-    }
-</script>
-HTML;
 $extraHead = <<<HTML
-<style type="text/tailwindcss">
+<style>
     @layer utilities {
         .grainy-overlay {
             position: relative;

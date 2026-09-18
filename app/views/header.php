@@ -12,7 +12,6 @@ if (!isset($_ENV['APP_URL']) && file_exists($dotenv)) {
 $appUrl = rtrim($_ENV['APP_URL'] ?? '', '/');
 $pageTitle = $pageTitle ?? 'Digifyce | Minimalist High-End Home';
 $bodyClass = $bodyClass ?? '';
-$tailwindConfig = $tailwindConfig ?? '';
 $extraHead = $extraHead ?? '';
 $siteLogo = '';
 $siteFavicon = '';
@@ -133,8 +132,7 @@ if ($navCtaHref !== '') {
     ?>
     <script type="application/ld+json"><?= json_encode($orgSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
     <script type="application/ld+json"><?= json_encode($websiteSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <?= $tailwindConfig ?>
+    <link rel="stylesheet" href="<?= htmlspecialchars($appUrl . '/public/assets/css/tailwind.min.css') ?>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
     <script type="text/javascript">     (function(c,l,a,r,i,t,y){         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);     })(window, document, "clarity", "script", "w58ca53ero"); </script>
@@ -148,7 +146,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    <style type="text/tailwindcss">
+    <style>
         :root {
             --navy-black: #05070a;
             --electric-blue: #0066ff;

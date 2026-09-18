@@ -6,26 +6,7 @@ $_seo = load_page_seo($_seoPdo, 'careers');
 $pageTitle = $_seo['meta_title'] ?: 'Careers at Digifyce – Join Our Digital Marketing Team';
 $pageDescription = $_seo['meta_description'] ?: 'Explore career opportunities at Digifyce and join a performance-driven digital marketing team focused on innovation and growth.';
 $bodyClass = 'bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 selection:bg-primary selection:text-white';
-$tailwindConfig = '<script id="tailwind-config">
-		tailwind.config = {
-			darkMode: "class",
-			theme: {
-				extend: {
-					colors: {
-						"primary": "#0d69f2",
-						"background-light": "#f5f7f8",
-						"background-dark": "#0a0a0a",
-					},
-					fontFamily: {
-						"display": ["Space Grotesk", "sans-serif"]
-					},
-					borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
-				},
-			},
-		}
-	</script>';
-
-$extraHead = '<style type="text/tailwindcss">
+$extraHead = '<style>
 		body {
 			font-family: "Space Grotesk", sans-serif
 		}
