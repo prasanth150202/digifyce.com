@@ -36,24 +36,6 @@ $pageTitle = $page['meta_title'] ?: ($page['title'] . ' | Digifyce');
 $pageDescription = $page['meta_description'] ?: (substr(strip_tags($page['content']), 0, 160));
 $bodyClass = 'bg-background-dark font-display text-white';
 
-$tailwindConfig = '<script id="tailwind-config">
-    tailwind.config = {
-        darkMode: "class",
-        theme: {
-            extend: {
-                colors: {
-                    "primary": "#0d69f2",
-                    "background-light": "#f5f7f8",
-                    "background-dark": "#05070a",
-                },
-                fontFamily: {
-                    "display": ["Space Grotesk", "sans-serif"]
-                },
-            },
-        },
-    }
-</script>';
-
 $extraHead = '';
 
 include __DIR__ . '/app/views/header.php';

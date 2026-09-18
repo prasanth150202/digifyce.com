@@ -12,26 +12,7 @@ $shareTitle = htmlspecialchars($blog['title'] ?? 'Digifyce');
 
 $extraHead = ($extraHead ?? '') . blog_posting_schema($appUrl, $blog, $pageDescription ?? $excerpt);
 
-$tailwindConfig = '<script id="tailwind-config">
-    tailwind.config = {
-        darkMode: "class",
-        theme: {
-            extend: {
-                colors: {
-                    "primary": "#0d69f2",
-                    "background-light": "#f5f7f8",
-                    "background-dark": "#05070a",
-                },
-                fontFamily: {
-                    "display": ["Space Grotesk", "sans-serif"]
-                },
-                borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
-            },
-        },
-    }
-</script>';
-
-$extraHead .= '<style type="text/tailwindcss">
+$extraHead .= '<style>
     @layer utilities {
         .grainy-overlay {
             position: relative;
