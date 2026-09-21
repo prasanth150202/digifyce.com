@@ -236,7 +236,7 @@ include __DIR__ . '/header.php';
                         <div class="flex items-center gap-4 mb-3">
                             <div class="size-10 rounded-full bg-slate-800 flex items-center justify-center border border-white/10 overflow-hidden">
                                 <?php if (!empty($authorAvatar)): ?>
-                                    <img src="<?= $appUrl ?>/storage/uploads/<?= htmlspecialchars($authorAvatar) ?>" alt="<?= htmlspecialchars($authorName) ?>" class="w-full h-full object-cover">
+                                    <img src="<?= $appUrl ?>/storage/uploads/<?= htmlspecialchars($authorAvatar) ?>" alt="<?= htmlspecialchars($authorName) ?>" class="w-full h-full object-cover" loading="lazy"<?= image_dims_attr(__DIR__ . '/../..', 'storage/uploads/' . $authorAvatar) ?>>
                                 <?php else: ?>
                                     <span class="material-symbols-outlined text-slate-400">person</span>
                                 <?php endif; ?>

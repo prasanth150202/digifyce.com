@@ -20,6 +20,7 @@ $navCtaUrl = '#';
 $orgSameAs = [];
 try {
     require_once __DIR__ . '/../../config/database.php';
+    require_once __DIR__ . '/../helpers/seo.php';
     $pdo = Database::getInstance();
     $settings = $pdo->query("SELECT setting_key, setting_value FROM site_settings WHERE setting_key IN ('site_logo','site_favicon','nav_cta_label','nav_cta_url')")->fetchAll();
     foreach ($settings as $row) {
@@ -393,7 +394,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-24 flex items-center justify-between">
             <a class="flex items-center gap-2" href="<?= htmlspecialchars($appUrl) ?>">
                 <?php if (!empty($siteLogo)): ?>
-                    <img src="<?= htmlspecialchars($appUrl . '/' . ltrim($siteLogo, '/')) ?>" alt="Logo" class="h-16 sm:h-16 md:h-20 w-auto">
+                    <img src="<?= htmlspecialchars($appUrl . '/' . ltrim($siteLogo, '/')) ?>" alt="Logo" class="h-16 sm:h-16 md:h-20 w-auto"<?= image_dims_attr(__DIR__ . '/../..', $siteLogo) ?>>
                 <?php else: ?>
                     <span class="text-xl sm:text-2xl font-bold tracking-tighter text-white">DIGIFYCE</span>
                 <?php endif; ?>
