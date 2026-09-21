@@ -18,10 +18,13 @@ function getMediaItems($baseDir) {
                 $video = "$dir/$basename.mp4";
 
                 if (file_exists($thumb) && file_exists($video)) {
+                    $dims = @getimagesize($thumb);
                     $items[] = [
                         'thumb'  => $thumb,
                         'video'  => $video,
-                        'folder' => $folder
+                        'folder' => $folder,
+                        'width'  => $dims ? $dims[0] : null,
+                        'height' => $dims ? $dims[1] : null,
                     ];
                 }
             }
@@ -100,7 +103,7 @@ main {
     >
 
         <?php foreach ($mediaItems as $idx => $item): ?>
-            <img 
+            <img
                 src="<?= str_replace($_SERVER['DOCUMENT_ROOT'], '', $item['thumb']) ?>"
                 class="playlist-item
                        aspect-[9/16]
@@ -115,6 +118,8 @@ main {
                        border-2
                        border-transparent
                        flex-shrink-0"
+                loading="lazy"
+                <?php if ($item['width']): ?>width="<?= (int)$item['width'] ?>" height="<?= (int)$item['height'] ?>"<?php endif; ?>
                 onclick="selectVideo(<?= $idx ?>)"
             >
         <?php endforeach; ?>

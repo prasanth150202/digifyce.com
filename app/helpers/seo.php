@@ -38,6 +38,22 @@ function service_schema(string $appUrl, string $pageSlug, string $serviceType, s
 }
 
 /**
+ * Returns a ' width="W" height="H"' attribute string for an <img>, read from
+ * the real local file so declared dimensions can never drift from what's
+ * actually on disk. $docRoot is the absolute filesystem path the $srcPath is
+ * relative to; $srcPath is skipped (returns '') if empty or an external
+ * http(s) URL, since resolving those would mean a blocking network fetch on
+ * every page render.
+ */
+function image_dims_attr(string $docRoot, string $srcPath): string {
+    if ($srcPath === '' || preg_match('#^https?://#i', $srcPath)) return '';
+    $abs = rtrim($docRoot, '/') . '/' . ltrim($srcPath, '/');
+    $size = @getimagesize($abs);
+    if (!$size) return '';
+    return ' width="' . (int)$size[0] . '" height="' . (int)$size[1] . '"';
+}
+
+/**
  * Build a Schema.org BlogPosting JSON-LD block for a blog post. Pass the
  * raw $blog row (as fetched by blog.php, PDO::FETCH_ASSOC) plus the
  * description already computed for the page's meta tag.

@@ -50,7 +50,7 @@ if ($homeCtaHref !== '') {
     style="background: transparent;">
     <div class="absolute inset-0 w-full h-full -z-20 pointer-events-none select-none">
         <img src="public/assets/img/map.png" alt="Map Background"
-            class="w-full h-full object-cover opacity-90 object-[65%_center] sm:object-center" loading="eager">
+            class="w-full h-full object-cover opacity-90 object-[65%_center] sm:object-center" loading="eager"<?= image_dims_attr(__DIR__, 'public/assets/img/map.png') ?>>
     </div>
     <div class="absolute inset-0 w-full h-full -z-10 pointer-events-none select-none"
         style="background: linear-gradient(120deg, rgba(3,5,8,0.92) 0%, rgba(3,5,8,0.7) 60%, rgba(3,5,8,0.92) 100%);">
@@ -1056,7 +1056,8 @@ if ($homeCtaHref !== '') {
                         foreach ($files as $file) {
                             $toolLogos[] = [
                                 'name' => pathinfo($file, PATHINFO_FILENAME),
-                                'path' => 'public/assets/toolslogo/' . $file
+                                'path' => 'public/assets/toolslogo/' . $file,
+                                'dims' => image_dims_attr($toolPath, $file)
                             ];
                         }
                     }
@@ -1095,7 +1096,7 @@ if ($homeCtaHref !== '') {
                 foreach (array_merge($row1, $row1, $row1, $row1) as $tool) {
                     echo '<div class="h-16 sm:h-20 min-w-[110px] sm:min-w-[120px] lg:min-w-[140px] w-[110px] sm:w-[120px] lg:w-[140px] flex items-center justify-center border border-white/10 bg-white/5 rounded px-2 sm:px-3 lg:px-4 group hover:border-white/30 hover:bg-white transition-all flex-shrink-0">';
                     if ($tool['path']) {
-                        echo '<img src="' . htmlspecialchars($appUrl . '/' . $tool['path']) . '" alt="' . htmlspecialchars($tool['name']) . '" class="max-h-full max-w-full object-contain opacity-70 group-hover:opacity-100 transition-opacity logo-filtered">';
+                        echo '<img src="' . htmlspecialchars($appUrl . '/' . $tool['path']) . '" alt="' . htmlspecialchars($tool['name']) . '" class="max-h-full max-w-full object-contain opacity-70 group-hover:opacity-100 transition-opacity logo-filtered" loading="lazy"' . $tool['dims'] . '>';
                     } else {
                         echo '<span class="text-slate-600 text-[10px] sm:text-xs text-center">' . htmlspecialchars($tool['name']) . '</span>';
                     }
@@ -1109,7 +1110,7 @@ if ($homeCtaHref !== '') {
                 foreach (array_merge($row2, $row2, $row2, $row2) as $tool) {
                     echo '<div class="h-16 sm:h-20 min-w-[110px] sm:min-w-[120px] lg:min-w-[140px] w-[110px] sm:w-[120px] lg:w-[140px] flex items-center justify-center border border-white/10 bg-white/5 rounded px-2 sm:px-3 lg:px-4 group hover:border-white/30 hover:bg-white transition-all flex-shrink-0">';
                     if ($tool['path']) {
-                        echo '<img src="' . htmlspecialchars($appUrl . '/' . $tool['path']) . '" alt="' . htmlspecialchars($tool['name']) . '" class="max-h-full max-w-full object-contain opacity-70 group-hover:opacity-100 transition-opacity logo-filtered">';
+                        echo '<img src="' . htmlspecialchars($appUrl . '/' . $tool['path']) . '" alt="' . htmlspecialchars($tool['name']) . '" class="max-h-full max-w-full object-contain opacity-70 group-hover:opacity-100 transition-opacity logo-filtered" loading="lazy"' . $tool['dims'] . '>';
                     } else {
                         echo '<span class="text-slate-600 text-[10px] sm:text-xs text-center">' . htmlspecialchars($tool['name']) . '</span>';
                     }
@@ -1123,7 +1124,7 @@ if ($homeCtaHref !== '') {
                 foreach (array_merge($row3, $row3, $row3, $row3) as $tool) {
                     echo '<div class="h-16 sm:h-20 min-w-[110px] sm:min-w-[120px] lg:min-w-[140px] w-[110px] sm:w-[120px] lg:w-[140px] flex items-center justify-center border border-white/10 bg-white/5 rounded px-2 sm:px-3 lg:px-4 group hover:border-white/30 hover:bg-white transition-all flex-shrink-0">';
                     if ($tool['path']) {
-                        echo '<img src="' . htmlspecialchars($appUrl . '/' . $tool['path']) . '" alt="' . htmlspecialchars($tool['name']) . '" class="max-h-full max-w-full object-contain opacity-70 group-hover:opacity-100 transition-opacity logo-filtered">';
+                        echo '<img src="' . htmlspecialchars($appUrl . '/' . $tool['path']) . '" alt="' . htmlspecialchars($tool['name']) . '" class="max-h-full max-w-full object-contain opacity-70 group-hover:opacity-100 transition-opacity logo-filtered" loading="lazy"' . $tool['dims'] . '>';
                     } else {
                         echo '<span class="text-slate-600 text-[10px] sm:text-xs text-center">' . htmlspecialchars($tool['name']) . '</span>';
                     }
@@ -1666,7 +1667,8 @@ if ($homeCtaHref !== '') {
                     foreach ($files as $file) {
                         $recognitionLogos[] = [
                             'name' => pathinfo($file, PATHINFO_FILENAME),
-                            'path' => 'public/assets/toolslogo/ads/' . $file
+                            'path' => 'public/assets/toolslogo/ads/' . $file,
+                            'dims' => image_dims_attr($recognitionPath, $file)
                         ];
                     }
                 }
@@ -1680,7 +1682,7 @@ if ($homeCtaHref !== '') {
             } else {
                 foreach ($recognitionLogos as $logo) {
                     echo '<div class="h-16 sm:h-20 w-32 sm:w-40 flex items-center justify-center border border-white/10 bg-white/5 rounded px-3 sm:px-4 lg:px-6 group hover:border-white/30 hover:bg-white transition-all">';
-                    echo '<img src="' . htmlspecialchars($appUrl . '/' . $logo['path']) . '" alt="' . htmlspecialchars($logo['name']) . '" class="max-h-full max-w-[100px] sm:max-w-[120px] lg:max-w-[150px] object-contain opacity-70 group-hover:opacity-100 transition-opacity logo-filtered">';
+                    echo '<img src="' . htmlspecialchars($appUrl . '/' . $logo['path']) . '" alt="' . htmlspecialchars($logo['name']) . '" class="max-h-full max-w-[100px] sm:max-w-[120px] lg:max-w-[150px] object-contain opacity-70 group-hover:opacity-100 transition-opacity logo-filtered" loading="lazy"' . $logo['dims'] . '>';
                     echo '</div>';
                 }
             }
@@ -1881,8 +1883,9 @@ if ($homeCtaHref !== '') {
                     class="absolute inset-0 bg-[var(--electric-blue)]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
                 </div>
                 <div class=" bg-white/5 overflow-hidden">
-                    <img alt="Data Visualization" class=""
-                        src="<?= htmlspecialchars($homeContent['case_img_path'] ?? 'public/assets/img/graph.png') ?>" />
+                    <?php $caseImgPath = $homeContent['case_img_path'] ?? 'public/assets/img/graph.png'; ?>
+                    <img alt="Data Visualization" class="" loading="lazy"
+                        src="<?= htmlspecialchars($caseImgPath) ?>"<?= image_dims_attr(__DIR__, $caseImgPath) ?> />
                 </div>
             </div>
         </div>

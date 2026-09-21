@@ -943,7 +943,7 @@ include __DIR__ . '/app/views/header.php';
 				<article class="service-band reveal"<?= $delay ?>>
 					<div class="stripe">
 						<img src="<?= $appUrl ?>/<?= htmlspecialchars($svc['img_src']) ?>"
-							alt="<?= htmlspecialchars($svc['eyebrow']) ?>" loading="lazy">
+							alt="<?= htmlspecialchars($svc['eyebrow']) ?>" loading="lazy"<?= image_dims_attr(__DIR__, $svc['img_src']) ?>>
 					</div>
 					<div>
 						<div class="text-[10px] uppercase tracking-[0.3em] text-slate-500 mb-3"><?= htmlspecialchars($svc['eyebrow']) ?></div>

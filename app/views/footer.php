@@ -9,6 +9,7 @@ $footerPages = [];
 
 try {
     require_once __DIR__ . '/../../config/database.php';
+    require_once __DIR__ . '/../helpers/seo.php';
     $pdo = Database::getInstance();
     $settings = $pdo->query("SELECT setting_key, setting_value FROM site_settings WHERE setting_key IN ('footer_logo','footer_description','footer_copyright','site_logo')")->fetchAll();
     foreach ($settings as $row) {
@@ -32,9 +33,9 @@ try {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-12 lg:gap-16 mb-12 sm:mb-16 lg:mb-20">
             <div>
                 <?php if (!empty($footerLogo)): ?>
-                    <img src="<?= htmlspecialchars($appUrl . '/' . ltrim($footerLogo, '/')) ?>" alt="Footer Logo" class="h-16 sm:h-20 lg:h-24 w-auto mb-6 sm:mb-8">
+                    <img src="<?= htmlspecialchars($appUrl . '/' . ltrim($footerLogo, '/')) ?>" alt="Footer Logo" class="h-16 sm:h-20 lg:h-24 w-auto mb-6 sm:mb-8" loading="lazy"<?= image_dims_attr(__DIR__ . '/../..', $footerLogo) ?>>
                 <?php elseif (!empty($siteLogo)): ?>
-                    <img src="<?= htmlspecialchars($appUrl . '/' . ltrim($siteLogo, '/')) ?>" alt="Logo" class="h-16 sm:h-20 lg:h-24 w-auto mb-6 sm:mb-8">
+                    <img src="<?= htmlspecialchars($appUrl . '/' . ltrim($siteLogo, '/')) ?>" alt="Logo" class="h-16 sm:h-20 lg:h-24 w-auto mb-6 sm:mb-8" loading="lazy"<?= image_dims_attr(__DIR__ . '/../..', $siteLogo) ?>>
                 <?php else: ?>
                     <div class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter mb-6 sm:mb-8">DIGIFYCE.</div>
                 <?php endif; ?>

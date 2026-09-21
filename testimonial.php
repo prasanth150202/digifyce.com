@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="md:w-1/2 w-full flex items-center relative">
                         <div class="bg-[#181e2a] rounded-2xl p-10 shadow-2xl text-white relative overflow-visible">
                             <span class="testimonial-quote">"</span>
-                            <img src="/${t.logo_path}" alt="${t.client_name}" class="testimonial-avatar mx-auto md:mx-0">
+                            <img src="/${t.logo_path}" alt="${t.client_name}" class="testimonial-avatar mx-auto md:mx-0" width="64" height="64" loading="lazy">
                             <h3 class="text-2xl font-bold mb-2 tracking-tight">${t.client_name}</h3>
                             <p class="text-lg mb-4 italic relative z-2">${t.quote}</p>
                             <div class="text-sm text-blue-300 font-semibold">- ${t.story_label}</div>
