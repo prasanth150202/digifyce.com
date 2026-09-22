@@ -97,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     } catch (Exception $e) {
+        error_log('leadform.php submission failed: ' . $e->getMessage());
         $errorMessage = 'An error occurred. Please try again later.';
     }
 }

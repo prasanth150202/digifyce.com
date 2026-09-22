@@ -109,6 +109,7 @@ try {
     ]);
     
 } catch (Exception $e) {
+    error_log('lead_form_submit.php submission failed: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false,
