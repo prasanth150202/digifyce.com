@@ -1,18 +1,7 @@
 <?php
 // Bootstrap admin header include
-$dotenv = __DIR__ . '/../../.env';
-if (file_exists($dotenv)) {
-    $lines = file($dotenv, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0)
-            continue;
-        if (strpos($line, '=') === false)
-            continue;
-        list($key, $value) = array_map('trim', explode('=', $line, 2));
-        $_ENV[$key] = $value;
-    }
-}
-$appUrl = rtrim($_ENV['APP_URL'] ?? '', '/');
+require_once __DIR__ . '/../utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
 
 // Initialize PermissionManager
 if (!isset($permissionManager) && isset($_SESSION['user_id'])) {
@@ -147,8 +136,10 @@ if (!isset($permissionManager) && isset($_SESSION['user_id'])) {
 
         main {
             margin-left: 250px;
+            width: calc(100% - 250px);
             min-height: 100vh;
             background: var(--light);
+            overflow-x: hidden;
         }
 
         .admin-header {
@@ -287,6 +278,7 @@ if (!isset($permissionManager) && isset($_SESSION['user_id'])) {
 
             main {
                 margin-left: 0;
+                width: 100%;
             }
         }
     </style>
@@ -534,6 +526,24 @@ if (!isset($permissionManager) && isset($_SESSION['user_id'])) {
                         <a class="nav-link<?= in_array(basename($_SERVER['PHP_SELF']), ['blog_pdf_leads.php']) ? ' active' : '' ?>"
                             href="<?= $appUrl ?>/app/admin/blog_pdf_leads.php">
                             <i class="fas fa-file-download"></i> Blog PDF Leads
+                        </a>
+                    </li>
+                <?php endif; ?>
+
+                <?php if (isset($permissionManager) && $permissionManager->hasAnyPermission(['audit.view'])): ?>
+                    <li class="nav-item">
+                        <a class="nav-link<?= in_array(basename($_SERVER['PHP_SELF']), ['website_audits.php', 'website_audit_view.php']) ? ' active' : '' ?>"
+                            href="<?= $appUrl ?>/app/admin/website_audits.php">
+                            <i class="fas fa-magnifying-glass-chart"></i> Website Audits
+                        </a>
+                    </li>
+                <?php endif; ?>
+
+                <?php if (isset($permissionManager) && $permissionManager->hasAnyPermission(['case_study.view'])): ?>
+                    <li class="nav-item">
+                        <a class="nav-link<?= basename($_SERVER['PHP_SELF']) === 'case_studies.php' ? ' active' : '' ?>"
+                            href="<?= $appUrl ?>/app/admin/case_studies.php">
+                            <i class="fas fa-folder-open"></i> Case Studies
                         </a>
                     </li>
                 <?php endif; ?>
