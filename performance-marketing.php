@@ -5,9 +5,10 @@ $_seoPdo = Database::getInstance();
 $_seo = load_page_seo($_seoPdo, 'performance-marketing');
 $pageTitle = $_seo['meta_title'] ?: 'Performance Marketing Services in India – Digifyce | SEO, PPC, Meta Ads & Growth';
 $pageDescription = $_seo['meta_description'] ?: 'Data-driven performance marketing services in India by Digifyce. We build full-funnel growth systems across Meta Ads, Google Ads, SEO, PPC, CRO, retargeting, and automation.';
-$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'performance-marketing', 'Performance Marketing', $pageTitle, $pageDescription);
+$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'performance-marketing-service', 'Performance Marketing', $pageTitle, $pageDescription);
 $bodyClass = 'performance-marketing-page';
 $appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
+$canonicalUrl = $appUrl . '/performance-marketing-service';
 
 require_once __DIR__ . '/config/database.php';
 $_pdo            = Database::getInstance();
