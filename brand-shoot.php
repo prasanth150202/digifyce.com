@@ -1036,7 +1036,7 @@ include __DIR__ . '/app/views/header.php';
 	<section>
 		<div class="section-wrap px-4 sm:px-6 lg:px-8" style="max-width:900px;padding-top:5rem;padding-bottom:5rem;">
 			<div class="eyebrow" style="margin:0 auto 1.5rem;width:fit-content;"><span class="dot"></span>FAQ</div>
-			<h2 style="text-align:center;margin-bottom:2.5rem;">Common Questions</h2>
+			<h2 style="text-align:center;margin-bottom:2.5rem;">Frequently Asked Question</h2>
 			<div style="display:flex;flex-direction:column;gap:1rem;">
 				<?php foreach ($cs_faqs as $faq): ?>
 				<details class="impact-card">

@@ -1854,8 +1854,8 @@ $_mq_str = implode(' <span class="mq-sep">◆</span> ', array_map('htmlspecialch
   <div class="wrap">
     <div class="section-header" data-reveal>
       <div>
-        <div class="label" style="margin-bottom:.75rem;">Common Questions</div>
-        <h2>D2C Branding FAQ</h2>
+        <div class="label" style="margin-bottom:.75rem;">FAQ</div>
+        <h2>Frequently Asked Question</h2>
       </div>
     </div>
     <?php foreach ($d2c_faqs as $i => $faq): ?>

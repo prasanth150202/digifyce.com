@@ -888,7 +888,7 @@ include __DIR__ . '/app/views/header.php';
     <section class="py-20 border-t border-white/5">
         <div class="max-w-[900px] mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-xs uppercase tracking-[0.4em] text-[var(--electric-blue)] mb-4 text-center">FAQ</h2>
-            <h3 class="text-3xl md:text-5xl font-black tracking-tighter text-center mb-16">Common Questions</h3>
+            <h3 class="text-3xl md:text-5xl font-black tracking-tighter text-center mb-16">Frequently Asked Question</h3>
             <div class="space-y-4">
                 <?php foreach ($ecom_faqs as $faq): ?>
                 <details class="p-6 border border-white/10 rounded-2xl bg-white/[0.02]">
