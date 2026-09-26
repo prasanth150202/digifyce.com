@@ -1065,10 +1065,10 @@ include __DIR__ . '/app/views/header.php';
                 <h3 class="text-3xl md:text-5xl font-black tracking-tighter text-center mb-16">Common Questions</h3>
                 <div class="space-y-4">
                     <?php foreach ($mk_faqs as $faq): ?>
-                    <details class="group p-6 border border-white/10 rounded-2xl bg-white/[0.02]">
+                    <details class="p-6 border border-white/10 rounded-2xl bg-white/[0.02]">
                         <summary class="flex justify-between items-center cursor-pointer font-bold text-lg list-none text-white">
                             <?= htmlspecialchars($faq['q']) ?>
-                            <span class="material-symbols-outlined text-[var(--electric-blue)] group-open:rotate-45 transition-transform" aria-hidden="true">add</span>
+                            <span class="material-symbols-outlined text-[var(--electric-blue)] rotate-on-open" aria-hidden="true">add</span>
                         </summary>
                         <p class="text-slate-400 leading-relaxed mt-4"><?= htmlspecialchars($faq['a']) ?></p>
                     </details>
