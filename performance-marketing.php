@@ -1878,15 +1878,18 @@ include __DIR__ . '/app/views/header.php';
 		</div>
 	</section>
 
-	<section class="pm-section tight" id="faq">
-		<div class="pm-wrap px-4 sm:px-6 lg:px-8" style="max-width:900px;">
-			<div class="pm-kicker mx-auto"><i></i>FAQ</div>
-			<h2 class="text-3xl sm:text-4xl font-black tracking-tight mt-4 mb-10 leading-tight text-center">Frequently Asked Question</h2>
-			<div style="display:flex;flex-direction:column;gap:1rem;">
+	<section class="py-20 border-t border-white/5" id="faq">
+		<div class="max-w-[900px] mx-auto px-4 sm:px-6 lg:px-8">
+			<h2 class="text-xs uppercase tracking-[0.4em] text-[var(--electric-blue)] mb-4 text-center">FAQ</h2>
+			<h3 class="text-3xl md:text-5xl font-black tracking-tighter text-center mb-16">Frequently Asked Question</h3>
+			<div class="space-y-4">
 				<?php foreach ($pm_faqs as $faq): ?>
-				<details class="panel">
-					<summary style="cursor:pointer;font-weight:800;color:#fff;list-style:none;"><?= htmlspecialchars($faq['q']) ?></summary>
-					<p class="mt-4"><?= htmlspecialchars($faq['a']) ?></p>
+				<details class="p-6 border border-white/10 rounded-2xl bg-white/[0.02]">
+					<summary class="flex justify-between items-center cursor-pointer font-bold text-lg list-none text-white">
+						<?= htmlspecialchars($faq['q']) ?>
+						<span class="material-symbols-outlined text-[var(--electric-blue)] rotate-on-open" aria-hidden="true">add</span>
+					</summary>
+					<p class="text-slate-400 leading-relaxed mt-4"><?= htmlspecialchars($faq['a']) ?></p>
 				</details>
 				<?php endforeach; ?>
 			</div>
