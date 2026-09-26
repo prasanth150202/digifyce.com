@@ -24,6 +24,16 @@ $mk_svc_blocks = $_pdo->query("SELECT * FROM mktplace_service_blocks WHERE is_ac
 $mk_svc_cards_raw = $_pdo->query("SELECT * FROM mktplace_service_block_cards WHERE is_active=1 ORDER BY service_block_id, sort_order")->fetchAll(PDO::FETCH_ASSOC);
 $mk_svc_cards = [];
 foreach ($mk_svc_cards_raw as $_c) { $mk_svc_cards[$_c['service_block_id']][] = $_c; }
+
+$mk_faqs = [
+    ['q' => 'What does marketplace management include?', 'a' => 'Marketplace management covers listing optimization, marketplace SEO, ads, and ongoing account management across platforms like Amazon and Flipkart, built as a complete system rather than a one-off listing setup.'],
+    ['q' => 'How much does marketplace management cost in India?', 'a' => 'Costs depend on the number of marketplaces and SKUs involved, and whether ad management is included. Get a custom quote based on your specific setup for an accurate figure.'],
+    ['q' => 'Which marketplaces do you manage?', 'a' => 'We manage brands on Amazon, Flipkart, and other leading online marketplaces, with a consistent approach to listings, SEO, and ads across each platform.'],
+    ['q' => 'How do you improve marketplace visibility and sales?', 'a' => 'Through a combination of listing optimization, marketplace-specific SEO, and paid ads, tuned to how each platform actually ranks and surfaces products, rather than treating every marketplace the same way.'],
+    ['q' => 'Do you handle marketplace ads as well as organic listing work?', 'a' => 'Yes, marketplace ads are managed alongside listing optimization and SEO, so paid and organic visibility work together instead of competing for the same budget conversations.'],
+];
+$extraHead .= faq_schema($mk_faqs);
+
 include __DIR__ . '/app/views/header.php';
 ?>
 
@@ -1047,6 +1057,24 @@ include __DIR__ . '/app/views/header.php';
 
             </div>
         </div>
+        </div>
+
+        <div class="relative overflow-hidden w-full mt-12 md:mt-20 py-20">
+            <div class="max-w-[900px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <h2 class="text-xs uppercase tracking-[0.4em] text-[var(--electric-blue)] mb-4 text-center">FAQ</h2>
+                <h3 class="text-3xl md:text-5xl font-black tracking-tighter text-center mb-16">Common Questions</h3>
+                <div class="space-y-4">
+                    <?php foreach ($mk_faqs as $faq): ?>
+                    <details class="p-6 border border-white/10 rounded-2xl bg-white/[0.02]">
+                        <summary class="flex justify-between items-center cursor-pointer font-bold text-lg list-none text-white">
+                            <?= htmlspecialchars($faq['q']) ?>
+                            <span class="material-symbols-outlined text-[var(--electric-blue)] rotate-on-open" aria-hidden="true">add</span>
+                        </summary>
+                        <p class="text-slate-400 leading-relaxed mt-4"><?= htmlspecialchars($faq['a']) ?></p>
+                    </details>
+                    <?php endforeach; ?>
+                </div>
+            </div>
         </div>
 
         <div id="cta-final" class="relative overflow-hidden w-full mt-12 md:mt-20">

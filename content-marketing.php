@@ -23,6 +23,16 @@ $ct_chip_stats = array_values(array_filter($ct_stats, fn($s) => !empty($s['descr
 $ct_sh         = [];
 foreach ($_pdo->query("SELECT * FROM content_section_headers")->fetchAll(PDO::FETCH_ASSOC) as $_r) { $ct_sh[$_r['slug']] = $_r; }
 $ct_signal_pts = $_pdo->query("SELECT * FROM content_signal_points WHERE is_active=1 ORDER BY sort_order")->fetchAll(PDO::FETCH_ASSOC);
+
+$ct_faqs = [
+    ['q' => 'What does content marketing include?', 'a' => 'Content marketing covers blog writing, website content, social media content, and SEO-focused writing, planned as a system that builds organic trust and search visibility rather than one-off articles.'],
+    ['q' => 'How much does content marketing cost in India?', 'a' => 'Costs depend on volume and format, ongoing blog content is a different scope than a full website content build-out. Get a custom quote based on your specific requirements for an accurate figure.'],
+    ['q' => 'Do you write SEO-focused content, or just general blog posts?', 'a' => 'Content is written SEO-focused from the start, built around real keyword research and search intent, not general-purpose blog posts published without a ranking strategy behind them.'],
+    ['q' => 'How long does it take to see results from content marketing?', 'a' => 'Organic content typically takes a few months to build ranking momentum, since it compounds over time rather than producing an immediate spike the way paid ads do. Consistent publishing matters more than any single piece.'],
+    ['q' => 'Do you handle content strategy, or only the writing?', 'a' => 'Both. Content is planned around your audience and search intent first, then written, so each piece has a clear purpose in the broader content system rather than existing as a standalone article.'],
+];
+$extraHead .= faq_schema($ct_faqs);
+
 include __DIR__ . '/app/views/header.php';
 ?>
 
@@ -1004,6 +1014,25 @@ include __DIR__ . '/app/views/header.php';
                 </div>
             </div>
 
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="py-20 border-t border-white/5">
+    <div class="max-w-[900px] mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-xs uppercase tracking-[0.4em] text-[var(--electric-blue)] mb-4 text-center">FAQ</h2>
+        <h3 class="text-3xl md:text-5xl font-black tracking-tighter text-center mb-16">Common Questions</h3>
+        <div class="space-y-4">
+            <?php foreach ($ct_faqs as $faq): ?>
+            <details class="p-6 border border-white/10 rounded-2xl bg-white/[0.02]">
+                <summary class="flex justify-between items-center cursor-pointer font-bold text-lg list-none text-white">
+                    <?= htmlspecialchars($faq['q']) ?>
+                    <span class="material-symbols-outlined text-[var(--electric-blue)] rotate-on-open" aria-hidden="true">add</span>
+                </summary>
+                <p class="text-slate-400 leading-relaxed mt-4"><?= htmlspecialchars($faq['a']) ?></p>
+            </details>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>

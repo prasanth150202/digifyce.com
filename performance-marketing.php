@@ -26,6 +26,15 @@ $pm_seo_panels   = $_pdo->query("SELECT * FROM pm_seo_panels WHERE is_active=1 O
 $pm_steps        = $_pdo->query("SELECT * FROM pm_steps WHERE is_active=1 ORDER BY sort_order, id")->fetchAll(PDO::FETCH_ASSOC);
 $pm_impacts      = $_pdo->query("SELECT * FROM pm_impacts WHERE is_active=1 ORDER BY sort_order, id")->fetchAll(PDO::FETCH_ASSOC);
 
+$pm_faqs = [
+    ['q' => 'What is performance marketing?', 'a' => 'Performance marketing is a form of digital advertising where spend is tied directly to measurable outcomes, clicks, leads, or sales, rather than paying for impressions alone. It covers paid channels like Google Ads and Meta Ads alongside SEO, CRO, and retargeting, all optimized against a specific business result.'],
+    ['q' => 'How much does performance marketing cost in India?', 'a' => 'Costs vary by ad spend, industry, and competition, Indian market rates for a managed performance marketing engagement typically start in the range of a few tens of thousands of rupees per month in service fees, separate from ad spend itself. Get a custom quote based on your goals and budget for an accurate figure.'],
+    ['q' => 'Which platforms do you run performance marketing campaigns on?', 'a' => 'We run campaigns across Meta Ads, Google Ads, SEO, PPC, CRO, retargeting, and marketing automation, built as a connected system rather than isolated channel-by-channel spend.'],
+    ['q' => 'How long does it take to see results from performance marketing?', 'a' => 'Paid channels can show early signal within the first few weeks as campaigns exit the learning phase, but a stable, optimized system that reliably hits target CAC or ROAS typically takes 60-90 days to mature, especially where SEO and organic channels are part of the mix.'],
+    ['q' => 'Do you handle both paid and organic growth, or just ads?', 'a' => 'Both. Performance marketing here includes SEO and organic growth alongside paid channels, since relying on paid spend alone tends to keep customer acquisition cost high with no compounding effect over time.'],
+];
+$extraHead .= faq_schema($pm_faqs);
+
 $extraHead .= <<<'HTML'
 <style>
 	:root {
@@ -1865,6 +1874,21 @@ include __DIR__ . '/app/views/header.php';
 						<span class="material-symbols-outlined text-base" aria-hidden="true">arrow_forward</span>
 					</a>
 				</div>
+			</div>
+		</div>
+	</section>
+
+	<section class="pm-section tight" id="faq">
+		<div class="pm-wrap px-4 sm:px-6 lg:px-8" style="max-width:900px;">
+			<div class="pm-kicker mx-auto"><i></i>FAQ</div>
+			<h2 class="text-3xl sm:text-4xl font-black tracking-tight mt-4 mb-10 leading-tight text-center">Common Questions</h2>
+			<div style="display:flex;flex-direction:column;gap:1rem;">
+				<?php foreach ($pm_faqs as $faq): ?>
+				<details class="panel">
+					<summary style="cursor:pointer;font-weight:800;color:#fff;list-style:none;"><?= htmlspecialchars($faq['q']) ?></summary>
+					<p class="mt-4"><?= htmlspecialchars($faq['a']) ?></p>
+				</details>
+				<?php endforeach; ?>
 			</div>
 		</div>
 	</section>
