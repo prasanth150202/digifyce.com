@@ -77,12 +77,12 @@ function blog_posting_schema(string $appUrl, array $blog, string $description): 
         'description' => $description,
         'url' => $url,
         'mainEntityOfPage' => ['@type' => 'WebPage', '@id' => $url],
-        'datePublished' => date('c', strtotime($published)),
+        'datePublished' => date('Y-m-d', strtotime($published)),
         'publisher' => $orgId,
     ];
 
     if (!empty($blog['updated_at'])) {
-        $schema['dateModified'] = date('c', strtotime($blog['updated_at']));
+        $schema['dateModified'] = date('Y-m-d', strtotime($blog['updated_at']));
     }
     if (!empty($blog['featured_image'])) {
         $schema['image'] = $appUrl . '/storage/uploads/' . $blog['featured_image'];
