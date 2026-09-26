@@ -1881,7 +1881,7 @@ include __DIR__ . '/app/views/header.php';
 	<section class="pm-section tight" id="faq">
 		<div class="pm-wrap px-4 sm:px-6 lg:px-8" style="max-width:900px;">
 			<div class="pm-kicker mx-auto"><i></i>FAQ</div>
-			<h2 class="text-3xl sm:text-4xl font-black tracking-tight mt-4 mb-10 leading-tight text-center">Common Questions</h2>
+			<h2 class="text-3xl sm:text-4xl font-black tracking-tight mt-4 mb-10 leading-tight text-center">Frequently Asked Question</h2>
 			<div style="display:flex;flex-direction:column;gap:1rem;">
 				<?php foreach ($pm_faqs as $faq): ?>
 				<details class="panel">
