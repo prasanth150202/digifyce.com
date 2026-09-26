@@ -38,6 +38,7 @@ $publicPages = [
     'lead_generations', 'market-manage', 'performance-marketing', 'products',
     'service', 'technology', 'testimonial',
     'blog_list',
+    'migrate_blog_updated_at_fix', // TEMP: remove once the migration has been run
 ];
 if (in_array($uri_clean, $publicPages, true)) {
     $phpFile = __DIR__ . '/' . $uri_clean . '.php';
