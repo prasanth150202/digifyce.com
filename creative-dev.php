@@ -28,6 +28,16 @@ $cd_vcards = [1 => [], 2 => []];
 foreach ($cd_vcards_raw as $vc) {
   $cd_vcards[(int) $vc['track']][] = $vc;
 }
+
+$cd_faqs = [
+    ['q' => 'What does creative development include?', 'a' => 'Creative development covers graphic design, video editing, ad creatives, and brand visuals, produced as a connected set of assets rather than isolated one-off design requests.'],
+    ['q' => 'How much does creative development cost in India?', 'a' => 'Costs depend on format and volume, static ad creatives are a different scope than ongoing video editing work. Get a custom quote based on what you need for an accurate figure.'],
+    ['q' => 'Do you use AI tools for creative production?', 'a' => 'Yes, AI-powered creative tools are part of the workflow where they genuinely speed up production, alongside traditional design and editing, not as a replacement for human creative direction.'],
+    ['q' => 'How fast can you turn around ad creatives?', 'a' => 'Turnaround depends on volume and complexity, a batch of static ad variants moves faster than a full video edit. We scope a firm timeline during discovery based on your specific brief.'],
+    ['q' => 'Do you handle both static graphics and video content?', 'a' => 'Yes, the same team covers graphic design, video editing, and ad creatives, so visual output stays consistent across formats instead of looking like separate vendors handled each piece.'],
+];
+$extraHead .= faq_schema($cd_faqs);
+
 include __DIR__ . '/app/views/header.php';
 ?>
 <style>
@@ -2217,6 +2227,25 @@ include __DIR__ . '/app/views/header.php';
           <div class="wd-title"><?= htmlspecialchars($wd['title']) ?></div>
           <div class="wd-desc"><?= htmlspecialchars($wd['description']) ?></div>
         </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FAQ ═══════════════════════════════════════════════ -->
+<section>
+  <div class="max-w-[900px] mx-auto px-4 sm:px-6 lg:px-8" style="padding-top:5rem;padding-bottom:5rem;">
+    <h2 class="text-xs uppercase tracking-[0.4em] text-[var(--electric-blue)] mb-4 text-center">FAQ</h2>
+    <h3 class="text-3xl md:text-5xl font-black tracking-tighter text-center mb-16">Common Questions</h3>
+    <div class="space-y-4">
+      <?php foreach ($cd_faqs as $faq): ?>
+      <details class="group p-6 border border-white/10 rounded-2xl bg-white/[0.02]">
+        <summary class="flex justify-between items-center cursor-pointer font-bold text-lg list-none text-white">
+          <?= htmlspecialchars($faq['q']) ?>
+          <span class="material-symbols-outlined text-[var(--electric-blue)] group-open:rotate-45 transition-transform" aria-hidden="true">add</span>
+        </summary>
+        <p class="text-slate-400 leading-relaxed mt-4"><?= htmlspecialchars($faq['a']) ?></p>
+      </details>
       <?php endforeach; ?>
     </div>
   </div>
