@@ -9,7 +9,8 @@ include __DIR__ . '/app/views/header.php';
 ?>
 <?php
 require_once __DIR__ . '/db.php';
-$appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
+require_once __DIR__ . '/app/utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
 $homeContent = [];
 $contentQuery = $mysqli->query("SELECT section_key, content FROM page_content WHERE page_slug = 'home'");
 if ($contentQuery) {

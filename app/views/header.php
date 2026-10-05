@@ -9,7 +9,8 @@ if (!isset($_ENV['APP_URL']) && file_exists($dotenv)) {
         $_ENV[$key] = $value;
     }
 }
-$appUrl = rtrim($_ENV['APP_URL'] ?? '', '/');
+require_once __DIR__ . '/../utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
 $pageTitle = $pageTitle ?? 'Digifyce | Minimalist High-End Home';
 $bodyClass = $bodyClass ?? '';
 $extraHead = $extraHead ?? '';
@@ -87,7 +88,15 @@ if ($navCtaHref !== '') {
     $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $isIndividualBlog = strpos($path, '/blog/') !== false;
     if (!isset($canonicalUrl)) {
-        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http";
+        // Behind ngrok (and most reverse proxies) TLS ends at the proxy and
+        // this server only ever sees plain HTTP, so $_SERVER['HTTPS'] alone
+        // reports "http" even when the visitor is on https. X-Forwarded-Proto
+        // is what the proxy sets to say what the visitor actually used.
+        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            $protocol = strtolower(trim(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0]));
+        } else {
+            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http";
+        }
         $domain = $_SERVER['HTTP_HOST'];
         $canonicalUrl = $protocol . "://" . $domain . $path;
     }

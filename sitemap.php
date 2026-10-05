@@ -30,6 +30,7 @@ $staticPages = [
     ['/d2c-branding-service',            '2026-09-26', '0.80'],
     ['/commercial-shoot-service',        '2026-09-26', '0.80'],
     ['/creative-development',            '2026-09-26', '0.80'],
+    ['/shopify-development',             '2026-10-05', '0.80'],
     ['/performance-marketing-service',   '2026-09-26', '0.80'],
     ['/e-commerce-marketing-service',    '2026-09-26', '0.80'],
     ['/marketplace-management-service',  '2026-09-26', '0.80'],

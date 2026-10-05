@@ -31,7 +31,8 @@ if (!$page) {
     exit;
 }
 
-$appUrl = getenv('APP_URL') ?: 'http://localhost/digifyce2';
+require_once __DIR__ . '/app/utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
 $pageTitle = $page['meta_title'] ?: ($page['title'] . ' | Digifyce');
 $pageDescription = $page['meta_description'] ?: (substr(strip_tags($page['content']), 0, 160));
 $bodyClass = 'bg-background-dark font-display text-white';

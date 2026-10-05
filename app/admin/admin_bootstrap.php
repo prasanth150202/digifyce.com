@@ -9,9 +9,9 @@ if (file_exists($dotenv)) {
         $_ENV[$key] = $value;
     }
 }
-$appUrl = rtrim($_ENV['APP_URL'] ?? '', '/');
+require_once __DIR__ . '/../utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
 
 function admin_login_url(): string {
-    $base = rtrim($_ENV['APP_URL'] ?? '', '/');
-    return $base . '/app/admin/login.php';
+    return AppUrl::resolve() . '/app/admin/login.php';
 }

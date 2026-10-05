@@ -40,7 +40,8 @@ $pages = $pdo->query("
     ORDER BY p.updated_at DESC
 ")->fetchAll(PDO::FETCH_ASSOC);
 
-$appUrl   = rtrim($_ENV['APP_URL'] ?? '', '/');
+require_once __DIR__ . '/../utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
 $pageTitle = 'Page Builder';
 include __DIR__ . '/../views/admin_header.php';
 ?>

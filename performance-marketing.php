@@ -7,7 +7,8 @@ $pageTitle = $_seo['meta_title'] ?: 'Performance Marketing Services in India –
 $pageDescription = $_seo['meta_description'] ?: 'Data-driven performance marketing services in India by Digifyce. We build full-funnel growth systems across Meta Ads, Google Ads, SEO, PPC, CRO, retargeting, and automation.';
 $extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'performance-marketing-service', 'Performance Marketing', $pageTitle, $pageDescription);
 $bodyClass = 'performance-marketing-page';
-$appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
+require_once __DIR__ . '/app/utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
 $canonicalUrl = $appUrl . '/performance-marketing-service';
 
 require_once __DIR__ . '/config/database.php';

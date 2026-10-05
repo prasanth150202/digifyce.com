@@ -21,7 +21,8 @@ $sections = $rows->fetchAll(PDO::FETCH_ASSOC);
 $pageTitle       = $page['meta_title'] ?: ($page['title'] . ' | Preview');
 $pageDescription = $page['meta_desc'] ?: '';
 $isDraft         = $page['status'] === 'draft';
-$appUrl          = rtrim($_ENV['APP_URL'] ?? '', '/');
+require_once __DIR__ . '/../utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
 ?>
 <!DOCTYPE html>
 <html lang="en">

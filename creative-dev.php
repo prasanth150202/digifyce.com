@@ -7,7 +7,8 @@ $pageTitle = $_seo['meta_title'] ?: 'Creative Development Services in India - Di
 $pageDescription = $_seo['meta_description'] ?: 'Professional creative development services — graphic design, video editing, ad creatives, brand visuals and AI-powered creatives that drive engagement and conversions.';
 $extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'creative-development', 'Creative Development', $pageTitle, $pageDescription);
 $bodyClass = 'creative-dev';
-$appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
+require_once __DIR__ . '/app/utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
 $canonicalUrl = $appUrl . '/creative-development';
 require_once __DIR__ . '/config/database.php';
 $_pdo = Database::getInstance();
