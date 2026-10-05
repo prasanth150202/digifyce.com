@@ -7,7 +7,8 @@ $pageTitle = $_seo['meta_title'] ?: 'Content Marketing Services in India - Digif
 $pageDescription = $_seo['meta_description'] ?: 'Strategic content marketing services including blog writing, website content, social media content, and SEO-focused writing that build trust and drive growth.';
 $extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'content-marketing', 'Content Marketing', $pageTitle, $pageDescription);
 $bodyClass = 'content-marketing';
-$appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
+require_once __DIR__ . '/app/utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
 require_once __DIR__ . '/config/database.php';
 $_pdo          = Database::getInstance();
 $solutions     = $_pdo->query("SELECT * FROM content_solutions WHERE is_active=1 ORDER BY sort_order")->fetchAll(PDO::FETCH_ASSOC);

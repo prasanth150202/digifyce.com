@@ -36,7 +36,7 @@ $publicPages = [
     'brand-shoot', 'careers', 'content-marketing', 'creative-dev',
     'd2c-branding', 'd2c', 'e-com-marketing', 'instavideos',
     'lead_generations', 'market-manage', 'performance-marketing', 'products',
-    'service', 'technology', 'testimonial',
+    'service', 'shopify-development', 'technology', 'testimonial',
     'blog_list',
 ];
 if (in_array($uri_clean, $publicPages, true)) {

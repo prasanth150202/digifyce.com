@@ -72,6 +72,7 @@ RewriteRule ^market-manage/?$ market-manage.php [L,QSA,NC]
 RewriteRule ^performance-marketing/?$ performance-marketing.php [L,QSA,NC]
 RewriteRule ^products/?$ products.php [L,QSA,NC]
 RewriteRule ^service/?$ service.php [L,QSA,NC]
+RewriteRule ^shopify-development/?$ shopify-development.php [L,QSA,NC]
 RewriteRule ^technology/?$ technology.php [L,QSA,NC]
 RewriteRule ^testimonial/?$ testimonial.php [L,QSA,NC]
 # ────────────────────────────────────────────────────────────────────────────

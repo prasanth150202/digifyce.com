@@ -12,7 +12,8 @@ if (file_exists($dotenv)) {
         $_ENV[$key] = $value;
     }
 }
-$appUrl = rtrim($_ENV['APP_URL'] ?? '', '/');
+require_once __DIR__ . '/../utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
 
 // Initialize PermissionManager
 if (!isset($permissionManager) && isset($_SESSION['user_id'])) {

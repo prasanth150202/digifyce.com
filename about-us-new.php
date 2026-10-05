@@ -2,7 +2,8 @@
 $pageTitle = 'About Us – Digifyce | Performance Marketing & Growth Agency';
 $pageDescription = 'About Digifyce: a strategic branding and growth agency helping D2C brands, e-commerce businesses, startups, and growing companies scale with strategy, creativity, and performance.';
 $bodyClass = 'about-creative';
-$appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
+require_once __DIR__ . '/app/utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
 
 $extraHead = <<<'HTML'
 <style>

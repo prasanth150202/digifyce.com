@@ -28,16 +28,16 @@ $blog['tags'] = $tagsStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Env / appUrl (blog view uses these)
 $envFile = __DIR__ . '/../../.env';
-$appUrl  = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce', '/');
 if (file_exists($envFile)) {
     foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
         if (strpos($line, '=') !== false && strpos(trim($line), '#') !== 0) {
             [$k, $v] = array_map('trim', explode('=', $line, 2));
             $_ENV[$k] = $v;
-            if ($k === 'APP_URL') $appUrl = rtrim($v, '/');
         }
     }
 }
+require_once __DIR__ . '/../utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
 
 // Variables the blog view template expects
 $publishedDate = !empty($blog['published_at']) ? date('M d, Y', strtotime($blog['published_at'])) : date('M d, Y');

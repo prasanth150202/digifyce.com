@@ -7,7 +7,8 @@ $pageTitle = $_seo['meta_title'] ?: 'Commercial Shoot Services – Digifyce | Pr
 $pageDescription = $_seo['meta_description'] ?: 'Commercial shoot services by Digifyce: product photography, ad films, brand storytelling, social reels, and performance-ready visual content built to drive trust and conversions.';
 $extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'brand-shoot', 'Commercial Shoot & Brand Photography', $pageTitle, $pageDescription);
 $bodyClass = 'brand-shoot-page';
-$appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
+require_once __DIR__ . '/app/utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
 require_once __DIR__ . '/config/database.php';
 $_pdo        = Database::getInstance();
 $cs_chals    = $_pdo->query("SELECT * FROM commercial_shoot_challenges WHERE is_active=1 ORDER BY sort_order")->fetchAll(PDO::FETCH_ASSOC);
