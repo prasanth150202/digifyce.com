@@ -6,6 +6,13 @@ $_seo = load_page_seo($_seoPdo, 'technology');
 $pageTitle = $_seo['meta_title'] ?: 'Marketing Technology & Automation Solutions';
 $pageDescription = $_seo['meta_description'] ?: 'Leverage advanced marketing technology, automation tools, and analytics solutions to improve performance tracking and business growth.';
 $bodyClass = 'bg-[#05070a] text-white';
+$_techHero = $_seoPdo->query("SELECT * FROM technology_hero WHERE id=1 LIMIT 1")->fetch(PDO::FETCH_ASSOC) ?: [];
+$_techPanels = $_seoPdo->query("SELECT * FROM technology_panels WHERE is_active=1 ORDER BY sort_order ASC")->fetchAll(PDO::FETCH_ASSOC);
+foreach ($_techPanels as &$_tp) {
+    $_tp['bullets_json'] = $_tp['bullets_json'] ? json_decode($_tp['bullets_json'], true) : [];
+    $_tp['image_paths']  = $_tp['image_paths']  ? array_map('trim', explode(',', $_tp['image_paths'])) : [];
+}
+unset($_tp);
 include __DIR__ . '/app/views/header.php';
 // GSAP + ScrollTrigger are already loaded (deferred) by header.php -- no need
 // to load a second copy here; this page's usage below runs inside
@@ -37,84 +44,57 @@ include __DIR__ . '/app/views/header.php';
 
 <main class="min-h-screen">
 
-<div id="tech-hero-container">
-  <section class="py-24 lg:py-32 border-b border-white/5 animate-pulse">
-    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="h-3 bg-white/5 rounded w-32 mb-6"></div>
-      <div class="h-16 bg-white/5 rounded w-2/3 mb-4"></div>
-      <div class="h-5 bg-white/5 rounded w-1/2"></div>
-    </div>
-  </section>
-</div>
+<section class="py-24 lg:py-32 border-b border-white/5">
+  <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+    <span class="text-[var(--electric-blue)] font-bold tracking-[0.3em] text-[10px] uppercase mb-6 block"><?= htmlspecialchars($_techHero['badge'] ?? '') ?></span>
+    <h1 class="text-6xl lg:text-8xl font-bold leading-[0.85] tracking-tighter mb-8"><?= htmlspecialchars($_techHero['headline'] ?? 'Marketing Technology & Automation') ?></h1>
+    <p class="text-white/50 text-lg mt-6 max-w-2xl"><?= htmlspecialchars($_techHero['description'] ?? '') ?></p>
+  </div>
+</section>
 
-<div id="tech-panels-container">
-  <section class="py-24 border-t border-white/5 overflow-hidden" id="tech-stack-section">
-    <div class="horizontal-wrapper relative">
-      <div class="horizontal-track flex gap-10">
-        <div class="panel min-w-[85vw] glass-card rounded-3xl p-12 animate-pulse">
-          <div class="h-4 bg-white/5 rounded w-1/3 mb-4"></div>
-          <div class="h-10 bg-white/5 rounded w-1/2 mb-8"></div>
-          <div class="h-4 bg-white/5 rounded w-full mb-2"></div>
+<?php if ($_techPanels): ?>
+<section class="py-24 border-t border-white/5 overflow-hidden" id="tech-stack-section">
+  <div class="horizontal-wrapper relative">
+    <div class="horizontal-track flex gap-10">
+      <?php foreach ($_techPanels as $p):
+        $hasBullets = !empty($p['bullets_json']);
+        $align = $hasBullets ? 'start' : 'center';
+      ?>
+      <div class="panel min-w-[85vw] glass-card rounded-3xl p-12">
+        <div class="grid lg:grid-cols-2 gap-12 items-<?= $align ?>">
+          <div>
+            <span class="text-xs font-mono text-[var(--electric-blue)]"><?= htmlspecialchars($p['panel_number']) ?>. <?= htmlspecialchars($p['category_label']) ?></span>
+            <h3 class="text-4xl md:text-5xl font-semibold mt-4 mb-8"><?= htmlspecialchars($p['title']) ?></h3>
+            <?php if ($hasBullets): ?>
+            <div class="space-y-6">
+              <?php foreach ($p['bullets_json'] as $b): ?>
+              <div><h4 class="text-xl font-bold mb-2"><?= htmlspecialchars($b['h4']) ?></h4><p class="text-gray-400"><?= htmlspecialchars($b['p']) ?></p></div>
+              <?php endforeach; ?>
+            </div>
+            <?php else: ?>
+            <p class="text-xl text-gray-300 leading-relaxed"><?= htmlspecialchars($p['description'] ?? '') ?></p>
+            <?php endif; ?>
+          </div>
+          <div class="relative overflow-hidden rounded-2xl">
+            <div class="image-slider flex">
+              <?php foreach ($p['image_paths'] as $img): ?>
+              <img src="/<?= htmlspecialchars($img) ?>" class="slider-img w-full shrink-0 object-cover" loading="lazy"<?= image_dims_attr(__DIR__, $img) ?>>
+              <?php endforeach; ?>
+            </div>
+          </div>
         </div>
       </div>
+      <?php endforeach; ?>
     </div>
-  </section>
-</div>
+  </div>
+</section>
+<?php endif; ?>
 
 </main>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  fetch('<?= $appUrl ?>/app/api/technology.php')
-    .then(r => r.json())
-    .then(res => {
-      if (!res.success) return;
-      const d = res.data;
-      const h = d.hero;
-      if (h) {
-        document.getElementById('tech-hero-container').innerHTML = `
-          <section class="py-24 lg:py-32 border-b border-white/5">
-            <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-              <span class="text-[var(--electric-blue)] font-bold tracking-[0.3em] text-[10px] uppercase mb-6 block">${h.badge}</span>
-              <h1 class="text-6xl lg:text-8xl font-bold leading-[0.85] tracking-tighter mb-8">${h.headline}</h1>
-              <p class="text-white/50 text-lg mt-6 max-w-2xl">${h.description}</p>
-            </div>
-          </section>`;
-      }
-      const panels = d.panels || [];
-      if (panels.length) {
-        const panelsHtml = panels.map(p => {
-          const imgs = (p.image_paths || []).map(img => `<img src="/${img}" class="slider-img w-full shrink-0 object-cover">`).join('');
-          let contentHtml = '';
-          if (p.bullets_json && p.bullets_json.length) {
-            contentHtml = `<div class="space-y-6">${p.bullets_json.map(b => `<div><h4 class="text-xl font-bold mb-2">${b.h4}</h4><p class="text-gray-400">${b.p}</p></div>`).join('')}</div>`;
-          } else {
-            contentHtml = `<p class="text-xl text-gray-300 leading-relaxed">${p.description || ''}</p>`;
-          }
-          const align = (p.bullets_json && p.bullets_json.length) ? 'start' : 'center';
-          return `<div class="panel min-w-[85vw] glass-card rounded-3xl p-12">
-            <div class="grid lg:grid-cols-2 gap-12 items-${align}">
-              <div>
-                <span class="text-xs font-mono text-[var(--electric-blue)]">${p.panel_number}. ${p.category_label}</span>
-                <h3 class="text-4xl md:text-5xl font-semibold mt-4 mb-8">${p.title}</h3>
-                ${contentHtml}
-              </div>
-              <div class="relative overflow-hidden rounded-2xl">
-                <div class="image-slider flex">${imgs}</div>
-              </div>
-            </div>
-          </div>`;
-        }).join('');
-        document.getElementById('tech-panels-container').innerHTML = `
-          <section class="py-24 border-t border-white/5 overflow-hidden" id="tech-stack-section">
-            <div class="horizontal-wrapper relative">
-              <div class="horizontal-track flex gap-10">${panelsHtml}</div>
-            </div>
-          </section>`;
-        initGsap();
-      }
-    })
-    .catch(console.error);
+  initGsap();
 });
 
 function initGsap() {

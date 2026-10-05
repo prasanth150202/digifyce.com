@@ -54,6 +54,31 @@ function image_dims_attr(string $docRoot, string $srcPath): string {
 }
 
 /**
+ * Build a Schema.org FAQPage JSON-LD block from the same $faqs array a page
+ * renders as visible FAQ markup, so schema and on-page content can never
+ * drift apart. Pass an array of ['q' => ..., 'a' => ...] pairs.
+ */
+function faq_schema(array $faqs): string {
+    $schema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'FAQPage',
+        'mainEntity' => array_map(function ($faq) {
+            return [
+                '@type' => 'Question',
+                'name' => $faq['q'],
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text' => $faq['a'],
+                ],
+            ];
+        }, $faqs),
+    ];
+    return '<script type="application/ld+json">'
+        . json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+        . '</script>';
+}
+
+/**
  * Build a Schema.org BlogPosting JSON-LD block for a blog post. Pass the
  * raw $blog row (as fetched by blog.php, PDO::FETCH_ASSOC) plus the
  * description already computed for the page's meta tag.

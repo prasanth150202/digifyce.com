@@ -168,6 +168,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             --glass-bg: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.08);
         }
+        /* Rotates the "add" icon on any open <details> FAQ block sitewide.
+           Uses the native [open] attribute selector rather than Tailwind's
+           group-open: variant, since that variant isn't in the compiled
+           tailwind.min.css (JIT only emits classes it scans from templates
+           at build time, and this wasn't scanned when it was last built). */
+        details[open] > summary .rotate-on-open {
+            transform: rotate(45deg);
+        }
+        details > summary .rotate-on-open {
+            transition: transform 0.2s ease;
+        }
         body {
             font-family: 'Space Grotesk', sans-serif;
             background-color: var(--navy-black);
