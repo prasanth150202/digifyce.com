@@ -19,7 +19,7 @@ $techLogos = $appUrl . '/public/assets/tech-logos/';
 
 // ─── Page copy ──────────────────────────────────────────────────────────────
 $sdHero = [
-    'eyebrow' => 'Shopify Development for D2C Brands',
+    'eyebrow' => 'Shopify development company in India for D2C Brands',
     'sub'     => 'We build, migrate, and scale Shopify stores for funded D2C brands, taking you from a first custom build to a full Shopify Plus migration.',
     'cta'     => 'Build Your Website with Us',
 ];
@@ -148,12 +148,12 @@ $sdWork = array_values(array_filter(
     fn($store) => is_file(__DIR__ . '/' . $store['image'])
 ));
 
-$sdFaqHeading = 'FAQ';
+$sdFaqHeading = 'Frequently Asked Question';
 $sdFaqs = [
     ['q' => 'How much does Shopify development cost in India?',                         'a' => 'Indian market rates for Shopify development typically range from around ₹20,000 for a basic store setup to ₹3,00,000 or more for a custom, feature-rich build, depending on theme complexity, integrations, and migration scope. The exact number depends on your specific requirements, so get a custom quote for an accurate figure.'],
     ['q' => 'Can you migrate our existing store to Shopify without losing SEO rankings?', 'a' => 'Yes. Migrations include 301 redirect mapping from your old URLs, metadata and structured data carryover, and a post-launch monitoring window to catch any indexing issues early.'],
     ['q' => 'Do we need Shopify Plus, or is standard Shopify enough?',                  'a' => 'Standard Shopify covers most growing D2C brands. Shopify Plus tends to become worth it once you are approaching $1M or more in annual revenue, or earlier if you need B2B or wholesale checkout, multiple expansion stores, or custom checkout scripting. We can help assess which fits your stage.'],
-    ['q' => 'How long does a typical Shopify project take?',                            'a' => 'A standard custom store build typically runs a few weeks from discovery to launch; migrations and Shopify Plus builds take longer depending on data volume and integration complexity. We scope a firm timeline during discovery.'],
+    ['q' => 'How long does a typical Shopify project take?',                            'a' => 'A standard custom store build launches in 7 days from discovery to go live. Migrations and Shopify Plus builds take longer depending on data volume and integration complexity. We scope a firm timeline during discovery.'],
     ['q' => 'Do you offer support after the store launches?',                           'a' => 'Yes. Post-launch support covering app updates, bug fixes, and performance checks is part of our process, not a separate add-on you have to negotiate for later.'],
 ];
 
@@ -248,6 +248,8 @@ $extraHead .= <<<'HTML'
 
 	/* ─── Shared type ─────────────────────────────── */
 	.sd-label {
+		margin: 0;
+		line-height: 1.4;
 		display: inline-flex;
 		align-items: center;
 		gap: .6rem;
@@ -334,7 +336,7 @@ $extraHead .= <<<'HTML'
 	.sd-hero-top { position: relative; z-index: 1; max-width: 66rem; margin: 0 auto; text-align: center; }
 	.sd-hero-top .sd-label { justify-content: center; }
 	.sd-bag { filter: brightness(0) invert(1); }   /* the Shopify bag in plain white: no brand green in the hero */
-	.sd-h1 { margin-top: 1.3rem; font-size: clamp(2.6rem, 6.6vw, 6.2rem); line-height: 1; font-weight: 800; letter-spacing: -.048em; color: var(--text); }
+	.sd-h1 { margin-top: 1.3rem; margin-bottom: 0; font-size: clamp(2.6rem, 6.6vw, 6.2rem); line-height: 1; font-weight: 800; letter-spacing: -.048em; color: var(--text); }
 	.sd-h1-line { display: block; text-wrap: balance; }
 	.sd-h1 .sd-accent { color: var(--accent); }
 	.sd-hero-stage { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) clamp(360px, 38vw, 560px) minmax(0, 1fr); gap: 2.4rem; align-items: center; margin-top: .5rem; }
@@ -1163,11 +1165,11 @@ include __DIR__ . '/app/views/header.php';
 		<div class="sd-hero-bg" aria-hidden="true">SHOPIFY</div>
 		<div class="sd-wrap">
 			<div class="sd-hero-top">
-				<div class="sd-label" data-sd-reveal><img class="sd-bag" src="<?= sd_e($shopifyLogo) ?>" alt="" width="20" height="22"><?= sd_e($sdHero['eyebrow']) ?></div>
-				<h1 class="sd-h1" data-sd-reveal style="--d:.08s">
+				<h1 class="sd-label" data-sd-reveal><img class="sd-bag" src="<?= sd_e($shopifyLogo) ?>" alt="" width="20" height="22"><?= sd_e($sdHero['eyebrow']) ?></h1>
+				<p class="sd-h1" data-sd-reveal style="--d:.08s">
 					<span class="sd-h1-line">Your D2C Store,</span>
 					<span class="sd-h1-line sd-accent">Ready to Sell in 7 Days</span>
-				</h1>
+				</p>
 			</div>
 
 			<div class="sd-hero-stage" data-sd-hero>
