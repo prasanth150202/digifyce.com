@@ -12,6 +12,12 @@ $shareTitle = htmlspecialchars($blog['title'] ?? 'Digifyce');
 
 $extraHead = ($extraHead ?? '') . blog_posting_schema($appUrl, $blog, $pageDescription ?? $excerpt);
 
+// FAQPage schema built from the post's visible FAQ section (no-op when it has none).
+$blogFaqs = blog_faqs_from_content((string) ($blog['content'] ?? ''));
+if ($blogFaqs) {
+    $extraHead .= faq_schema($blogFaqs);
+}
+
 $extraHead .= '<style>
     @layer utilities {
         .grainy-overlay {
