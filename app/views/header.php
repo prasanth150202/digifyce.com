@@ -86,7 +86,6 @@ if ($navCtaHref !== '') {
     <meta name="description" content="<?= htmlspecialchars($pageDescription) ?>"/>
     <?php
     $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-    $isIndividualBlog = strpos($path, '/blog/') !== false;
     if (!isset($canonicalUrl)) {
         // Behind ngrok (and most reverse proxies) TLS ends at the proxy and
         // this server only ever sees plain HTTP, so $_SERVER['HTTPS'] alone
@@ -100,16 +99,21 @@ if ($navCtaHref !== '') {
         $domain = $_SERVER['HTTP_HOST'];
         $canonicalUrl = $protocol . "://" . $domain . $path;
     }
-    if (!$isIndividualBlog):
     ?>
     <link rel="canonical" href="<?= htmlspecialchars($canonicalUrl) ?>" />
-    <?php endif; ?>
     <meta name="keywords" content="web design, development, digital marketing agency in coimbatore, digifyce"/>
     <meta property="og:title" content="<?= htmlspecialchars($pageTitle) ?>"/>
     <meta property="og:description" content="<?= htmlspecialchars($pageDescription) ?>"/>
     <meta property="og:site_name" content="Digifyce"/>
     <meta name="twitter:title" content="<?= htmlspecialchars($pageTitle) ?>"/>
     <meta name="twitter:description" content="<?= htmlspecialchars($pageDescription) ?>"/>
+    <?php if (!empty($ogImage)): ?>
+    <meta property="og:type" content="<?= htmlspecialchars($ogType ?? 'website') ?>"/>
+    <meta property="og:url" content="<?= htmlspecialchars($canonicalUrl) ?>"/>
+    <meta property="og:image" content="<?= htmlspecialchars($ogImage) ?>"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:image" content="<?= htmlspecialchars($ogImage) ?>"/>
+    <?php endif; ?>
     <?php if (!empty($siteFavicon)): ?>
         <link rel="icon" href="<?= htmlspecialchars($appUrl . '/' . ltrim($siteFavicon, '/')) ?>">
     <?php endif; ?>

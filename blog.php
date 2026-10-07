@@ -67,4 +67,11 @@ $pdo->prepare('UPDATE blogs SET view_count=view_count+1 WHERE id=?')->execute([$
 $publishedDate = date('M d, Y', strtotime($blog['published_at'] ?: $blog['created_at']));
 $estimatedRead = max(1, ceil(str_word_count(strip_tags($blog['content'])) / 200));
 
+// Canonical is the clean, DB-cased post URL (no tracking params, no slug case variants).
+$canonicalUrl = $appUrl . '/blog/' . rawurlencode($blog['slug']);
+
+// Share-card image + type (read by header.php); same file the BlogPosting schema uses.
+$ogType = 'article';
+$ogImage = !empty($blog['featured_image']) ? $appUrl . '/storage/uploads/' . rawurlencode($blog['featured_image']) : '';
+
 include __DIR__ . '/app/views/blog.php';
