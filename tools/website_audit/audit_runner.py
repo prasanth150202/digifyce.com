@@ -1,14 +1,21 @@
-"""Entry point invoked by AuditSpawner.php as:
-    python.exe audit_runner.py <audit_id>
+"""Runs one website audit, invoked by api.py as:
+    python audit_runner.py <job_json_path> <result_json_path>
 
-Loads the audit row's URL from the DB by ID (the URL never travels via
-argv/shell), re-validates it's safe to fetch, runs the Scrapy crawl, scores
-the result, and writes it back. Always leaves the row in a terminal state
+No database access: the PHP site sends everything needed in the job (audit
+id, token, URL, lead context, case study list), and the result is written
+to <result_json_path> for api.py to POST back to the PHP site, which saves
+it to MySQL. Each audit runs in its own process because Scrapy's reactor
+can only be started once per process.
+
+Re-validates the URL is safe to fetch, runs the Scrapy crawl, captures the
+homepage screenshot, and scores the result. Always writes a terminal result
 (completed/failed) - never raises uncaught, so a job can never get stuck.
 """
 
+import base64
 import json
 import os
+import re
 import subprocess
 import sys
 import urllib.request
@@ -19,13 +26,15 @@ from scrapy.crawler import CrawlerProcess
 import ai_analyzer
 import audit_rules
 import brand_brief
-import db
 from spider import AuditSpider
 from ssrf_guard import is_url_safe
 
-REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 SCREENSHOT_WORKER = os.path.join(os.path.dirname(__file__), 'screenshot_worker.py')
 SCREENSHOT_TIMEOUT_SECONDS = 30
+TOKEN_PATTERN = re.compile(r'^[a-f0-9]{32}$')
+# Where app/api/website_audit_callback.php saves the screenshot on the PHP
+# site - recorded in scraped_data_json so the report can link to it.
+SCREENSHOT_PUBLIC_PATH = 'storage/audits/screenshots/{token}/homepage.png'
 
 
 def check_url_exists(base_url, path):
@@ -38,74 +47,44 @@ def check_url_exists(base_url, path):
         return False
 
 
-def set_status(conn, audit_id, **fields):
-    columns = list(fields.keys())
-    set_clause = ', '.join(f'{c} = %s' for c in columns) + ', updated_at = NOW()'
-    values = [fields[c] for c in columns]
-    values.append(audit_id)
-    with conn.cursor() as cur:
-        cur.execute(f'UPDATE website_audits SET {set_clause} WHERE id = %s', values)
-
-
-def capture_screenshot_and_layout(url, token):
+def capture_screenshot_and_layout(url, work_dir):
     """Best-effort: any failure/timeout here never fails the audit itself.
-    Returns (screenshot_path, layout_data) - either may be None independently."""
-    screenshot_dir = os.path.join(REPO_ROOT, 'storage', 'audits', 'screenshots', token)
-    screenshot_output = os.path.join(screenshot_dir, 'homepage.png')
-    layout_output = os.path.join(screenshot_dir, 'layout.json')
+    Returns (screenshot_png_base64, layout_data) - either may be None independently."""
+    screenshot_output = os.path.join(work_dir, 'homepage.png')
+    layout_output = os.path.join(work_dir, 'layout.json')
 
-    screenshot_path = None
+    screenshot_b64 = None
     layout_data = None
 
     try:
-        os.makedirs(screenshot_dir, exist_ok=True)
         result = subprocess.run(
             [sys.executable, SCREENSHOT_WORKER, url, screenshot_output, layout_output],
             timeout=SCREENSHOT_TIMEOUT_SECONDS,
             capture_output=True,
         )
         if result.returncode == 0 and os.path.exists(screenshot_output):
-            screenshot_path = 'storage/audits/screenshots/' + token + '/homepage.png'
+            with open(screenshot_output, 'rb') as f:
+                screenshot_b64 = base64.b64encode(f.read()).decode('ascii')
         if os.path.exists(layout_output):
             with open(layout_output, 'r', encoding='utf-8') as f:
                 layout_data = json.load(f)
     except Exception as exc:  # noqa: BLE001 - screenshot/layout data is optional, never fatal
         print(f'screenshot/layout capture errored: {exc}', file=sys.stderr)
 
-    return screenshot_path, layout_data
+    return screenshot_b64, layout_data
 
 
-def main(audit_id):
-    conn = db.get_connection()
+def run(job, work_dir):
+    url = job.get('url')
+    token = job.get('token')
+    if not isinstance(url, str) or not isinstance(token, str) or not TOKEN_PATTERN.match(token):
+        return {'status': 'failed', 'error_message': 'Malformed audit job.'}
 
-    with conn.cursor() as cur:
-        cur.execute(
-            '''SELECT wa.url, wa.token, l.industry, l.has_ads, l.ad_spend, l.roas
-               FROM website_audits wa
-               JOIN lead_form_submissions l ON l.id = wa.lead_id
-               WHERE wa.id = %s''',
-            (audit_id,)
-        )
-        row = cur.fetchone()
-
-    if not row:
-        return
-
-    url = row['url']
-    token = row['token']
-    lead_context = {
-        'industry': row.get('industry') or None,
-        'runs_ads': row.get('has_ads') == 'yes',
-        'ad_spend': row.get('ad_spend') if row.get('has_ads') == 'yes' else None,
-        'roas': row.get('roas') if row.get('has_ads') == 'yes' else None,
-    }
+    lead_context = job.get('lead_context') or {}
 
     safe, reason = is_url_safe(url)
     if not safe:
-        set_status(conn, audit_id, status='failed', error_message=f'URL failed safety check: {reason}')
-        return
-
-    set_status(conn, audit_id, status='running')
+        return {'status': 'failed', 'error_message': f'URL failed safety check: {reason}'}
 
     robots_txt_found = check_url_exists(url, '/robots.txt')
     sitemap_found = check_url_exists(url, '/sitemap.xml')
@@ -116,8 +95,8 @@ def main(audit_id):
     process.start()
 
     has_good_page = any(not p.get('error') for p in results)
-    screenshot_path, layout_data = (
-        capture_screenshot_and_layout(url, token) if has_good_page else (None, None)
+    screenshot_b64, layout_data = (
+        capture_screenshot_and_layout(url, work_dir) if has_good_page else (None, None)
     )
 
     plan_json = None
@@ -139,7 +118,9 @@ def main(audit_id):
         brief = None
     else:
         try:
-            ai_result = ai_analyzer.analyze(results, robots_txt_found, sitemap_found, layout_data, lead_context)
+            ai_result = ai_analyzer.analyze(
+                results, robots_txt_found, sitemap_found, layout_data, lead_context, job.get('case_studies'),
+            )
             score = ai_result['score']
             findings = ai_result['findings']
             brief = ai_result['brand_brief']
@@ -163,38 +144,49 @@ def main(audit_id):
         'pages': results,
         'robots_txt_found': robots_txt_found,
         'sitemap_found': sitemap_found,
-        'screenshot_path': screenshot_path,
+        'screenshot_path': SCREENSHOT_PUBLIC_PATH.format(token=token) if screenshot_b64 else None,
         'layout_data': layout_data,
     }
 
-    set_status(
-        conn, audit_id,
-        status='completed',
-        score=score,
-        findings_json=json.dumps(findings),
-        brand_brief=brief,
-        scraped_data_json=json.dumps(scraped_data),
-        ai_plan_json=plan_json,
-        ai_model_used=model_used,
-        executive_summary=executive_summary,
-        ai_priority_actions_json=priority_actions_json,
-        ai_ad_strategy_json=ad_strategy_json,
-        ai_case_study_matches_json=case_study_matches_json,
-    )
+    # Keys are website_audits column names; JSON columns are pre-serialized
+    # here exactly as they were when this script wrote to MySQL directly.
+    return {
+        'status': 'completed',
+        'fields': {
+            'score': score,
+            'findings_json': json.dumps(findings),
+            'brand_brief': brief,
+            'scraped_data_json': json.dumps(scraped_data),
+            'ai_plan_json': plan_json,
+            'ai_model_used': model_used,
+            'executive_summary': executive_summary,
+            'ai_priority_actions_json': priority_actions_json,
+            'ai_ad_strategy_json': ad_strategy_json,
+            'ai_case_study_matches_json': case_study_matches_json,
+        },
+        'screenshot_png_base64': screenshot_b64,
+    }
+
+
+def write_result(result_path, result):
+    tmp_path = result_path + '.tmp'
+    with open(tmp_path, 'w', encoding='utf-8') as f:
+        json.dump(result, f)
+    os.replace(tmp_path, result_path)
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        sys.exit('usage: audit_runner.py <audit_id>')
+    if len(sys.argv) < 3:
+        sys.exit('usage: audit_runner.py <job_json_path> <result_json_path>')
 
-    audit_id_arg = int(sys.argv[1])
+    job_path, result_path = sys.argv[1], sys.argv[2]
 
     try:
-        main(audit_id_arg)
-    except Exception as exc:  # noqa: BLE001 - top-level safety net, must never leave a row stuck
-        print(f'audit_runner failed for audit_id={audit_id_arg}: {exc}', file=sys.stderr)
-        try:
-            conn = db.get_connection()
-            set_status(conn, audit_id_arg, status='failed', error_message=str(exc)[:1000])
-        except Exception as inner_exc:
-            print(f'also failed to record failure state: {inner_exc}', file=sys.stderr)
+        with open(job_path, 'r', encoding='utf-8') as f:
+            job_data = json.load(f)
+        audit_result = run(job_data, os.path.dirname(os.path.abspath(result_path)))
+    except Exception as exc:  # noqa: BLE001 - top-level safety net, must never leave a job without a result
+        print(f'audit_runner failed for {job_path}: {exc}', file=sys.stderr)
+        audit_result = {'status': 'failed', 'error_message': str(exc)[:1000]}
+
+    write_result(result_path, audit_result)

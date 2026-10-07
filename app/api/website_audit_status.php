@@ -43,9 +43,10 @@ try {
     }
 
     if ($row['status'] === 'running') {
-        // Self-heal: a headless-browser subprocess (screenshot capture) can
-        // genuinely hang, unlike the pure-Python crawl. Give up gracefully
-        // after a generous timeout so the lead's UI never spins forever.
+        // Self-heal: if the audit service never reports back (restarted or
+        // redeployed mid-job, or its result callback couldn't reach us),
+        // give up gracefully after a generous timeout so the lead's UI never
+        // spins forever.
         $timeoutStmt = $pdo->prepare(
             "UPDATE website_audits
              SET status = 'failed', error_message = 'Audit timed out.', updated_at = NOW()
@@ -58,9 +59,11 @@ try {
     }
 
     if ($row['status'] === 'pending') {
-        // Self-heal: no queue/cron exists in this codebase, so if the initial
-        // fire-and-forget spawn silently failed, retry it here (atomic
-        // compare-and-swap so two concurrent pollers can't double-spawn).
+        // Self-heal: still 'pending' means the audit service never accepted
+        // the job (unreachable, or still waking from free-tier sleep), so
+        // re-dispatch it here (atomic compare-and-swap so two concurrent
+        // pollers can't double-dispatch; the service also ignores a job
+        // it already has).
         $respawn = $pdo->prepare(
             "UPDATE website_audits
              SET attempts = attempts + 1, updated_at = NOW()

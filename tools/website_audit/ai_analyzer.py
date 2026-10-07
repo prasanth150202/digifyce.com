@@ -17,15 +17,12 @@ stuck waiting on an external API.
 """
 
 import json
-import os
 import sys
 
 from openai import BadRequestError, OpenAI
 
-import case_study_extractor
-import db
-
-REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+import case_study_library
+import settings
 
 MODEL = 'gpt-4o-mini'
 # 0, not a small-but-nonzero value: these are structured analysis/extraction
@@ -167,12 +164,10 @@ class AIAnalysisError(Exception):
 
 
 def _get_client():
-    env = db.load_env()
-
-    if (env.get('WEBSITE_AUDIT_AI_ENABLED') or 'true').strip().lower() == 'false':
+    if settings.get('WEBSITE_AUDIT_AI_ENABLED', 'true').strip().lower() == 'false':
         raise AIAnalysisError('AI analysis disabled via WEBSITE_AUDIT_AI_ENABLED')
 
-    api_key = env.get('OPENAI_API_KEY')
+    api_key = settings.get('OPENAI_API_KEY')
     if not api_key:
         raise AIAnalysisError('OPENAI_API_KEY not configured')
 
@@ -333,35 +328,17 @@ def _generate_plan(client, crawl_summary, lead_context):
     return plan
 
 
-def _fetch_case_study_library():
-    """Reads Digifyce's own case study documents (uploaded via
-    app/admin/case_studies.php) and extracts their text, for the dedicated
-    case-study-matching call to reference. Any failure here (DB unreachable,
-    table missing in some environment, a corrupt upload) degrades to an
-    empty library rather than failing the audit - this is supplementary
-    context, not something the audit depends on."""
-    try:
-        conn = db.get_connection()
-        with conn.cursor() as cur:
-            cur.execute(
-                'SELECT title, description, file_path FROM case_studies '
-                'WHERE file_path IS NOT NULL ORDER BY position ASC LIMIT %s',
-                (MAX_CASE_STUDIES_IN_PROMPT,)
-            )
-            rows = cur.fetchall()
-    except Exception:
-        return []
-
+def _fetch_case_study_library(case_studies):
+    """Gathers the text of Digifyce's own case study documents (uploaded via
+    app/admin/case_studies.php, listed in the job payload by the PHP site,
+    downloaded by case_study_library.py), for the dedicated
+    case-study-matching call to reference. A document that can't be
+    downloaded or parsed is just left out - this is supplementary context,
+    not something the audit depends on."""
     library = []
     total_chars = 0
-    for row in rows:
-        file_path = row.get('file_path')
-        if not file_path:
-            continue
-        abs_path = os.path.join(REPO_ROOT, file_path)
-        content = case_study_extractor.extract_text(abs_path)
-        if not content:
-            continue
+    for document in case_study_library.iter_documents((case_studies or [])[:MAX_CASE_STUDIES_IN_PROMPT]):
+        content = document['content']
         if total_chars + len(content) > MAX_TOTAL_CASE_STUDY_CHARS:
             remaining = MAX_TOTAL_CASE_STUDY_CHARS - total_chars
             if remaining < 500:  # not enough room left for a usable excerpt
@@ -369,8 +346,8 @@ def _fetch_case_study_library():
             content = content[:remaining]
         total_chars += len(content)
         library.append({
-            'title': row.get('title'),
-            'description': row.get('description') or '',
+            'title': document['title'],
+            'description': document['description'],
             'content': content,
         })
     return library
@@ -519,12 +496,14 @@ def _validate_recommended_implementations(data):
                     raise AIAnalysisError('AI recommended implementation proof metric missing label/value')
 
 
-def analyze(pages, robots_txt_found, sitemap_found, layout_data, lead_context=None):
+def analyze(pages, robots_txt_found, sitemap_found, layout_data, lead_context=None, case_studies=None):
     """Returns {'score', 'findings', 'brand_brief', 'executive_summary',
     'priority_actions', 'ad_strategy', 'case_study_matches', 'plan',
     'model_used'} on success - 'case_study_matches' holds proof-backed
     implementation recommendations for this business (see
     _generate_recommended_implementations), not case-study summaries.
+    case_studies is the job payload's case study list (see
+    case_study_library.py).
     Raises AIAnalysisError (or lets an unexpected exception propagate) on
     any failure - the caller is responsible for
     catching and falling back to the rule-based engine."""
@@ -538,12 +517,12 @@ def analyze(pages, robots_txt_found, sitemap_found, layout_data, lead_context=No
 
     # _generate_recommended_implementations already retries once and logs
     # its own failures - this outer catch is only the last-resort safety net
-    # (e.g. a DB hiccup fetching the library) so one bad audit never throws
-    # away an otherwise-successful score/findings result. It should rarely
-    # fire; when it does, the stderr log above already explains why.
+    # (e.g. an unexpected error building the library) so one bad audit never
+    # throws away an otherwise-successful score/findings result. It should
+    # rarely fire; when it does, the stderr log above already explains why.
     try:
-        case_study_library = _fetch_case_study_library()
-        recommended_implementations = _generate_recommended_implementations(client, plan, result, lead_context, case_study_library)
+        library = _fetch_case_study_library(case_studies)
+        recommended_implementations = _generate_recommended_implementations(client, plan, result, lead_context, library)
     except Exception as exc:  # noqa: BLE001
         print(f'giving up on recommended implementations for this audit: {exc}', file=sys.stderr)
         recommended_implementations = []

@@ -3,10 +3,9 @@ uploaded through the admin panel (app/admin/case_studies.php), so
 ai_analyzer.py can hand Digifyce's own case study library to the model as
 reference material when auditing a prospective client's site.
 
-Extraction happens fresh on every audit run rather than being cached at
-upload time - these documents are static and few in number, so re-parsing
-costs a fraction of a second and always reflects whatever the admin most
-recently uploaded, with no separate re-processing step to remember to run.
+Works on a local copy downloaded from the PHP site by case_study_library.py,
+which also caches the extracted text per document version - so a re-upload
+takes effect on the next audit with no separate re-processing step.
 """
 
 import os
@@ -55,11 +54,16 @@ def _extract_xlsx(path):
     from openpyxl import load_workbook
     workbook = load_workbook(path, data_only=True, read_only=True)
     parts = []
-    for sheet in workbook.worksheets:
-        for row in sheet.iter_rows(values_only=True):
-            cells = [str(c) for c in row if c is not None]
-            if cells:
-                parts.append(' | '.join(cells))
+    # read_only mode keeps the file handle open until close() - which would
+    # stop case_study_library.py deleting the downloaded copy on Windows.
+    try:
+        for sheet in workbook.worksheets:
+            for row in sheet.iter_rows(values_only=True):
+                cells = [str(c) for c in row if c is not None]
+                if cells:
+                    parts.append(' | '.join(cells))
+    finally:
+        workbook.close()
     return '\n'.join(parts)
 
 

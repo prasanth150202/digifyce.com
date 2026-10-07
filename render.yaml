@@ -1,0 +1,34 @@
+# Render Blueprint: deploys ONLY the website audit service
+# (tools/website_audit - Scrapy + Playwright + OpenAI). The PHP site and
+# MySQL stay on Hostinger. Setup steps: tools/website_audit/README.md.
+services:
+  - type: web
+    name: digifyce-website-audit
+    runtime: docker
+    plan: free
+    # Can't be changed after the service is created. Singapore is the
+    # closest Render region to India.
+    region: singapore
+    # Switch to main once this branch is merged.
+    branch: feature/website-audit-v2
+    dockerfilePath: ./tools/website_audit/Dockerfile
+    dockerContext: ./tools/website_audit
+    healthCheckPath: /health
+    autoDeploy: true
+    # Only redeploy when the audit service itself changes, not on PHP edits.
+    buildFilter:
+      paths:
+        - tools/website_audit/**
+    envVars:
+      # Same value as AUDIT_SHARED_SECRET in the PHP site's .env.
+      - key: AUDIT_SHARED_SECRET
+        sync: false
+      # The PHP site's public base URL, e.g. https://digifyce.com
+      - key: PHP_BASE_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      # Each running audit launches a headless Chromium - keep this low on
+      # the free plan's 512 MB.
+      - key: AUDIT_MAX_CONCURRENT_JOBS
+        value: "2"

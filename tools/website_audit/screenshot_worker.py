@@ -130,6 +130,10 @@ LAUNCH_ARGS = [
     '--mute-audio',
     '--disable-notifications',
     '--no-first-run',
+    # Docker (Render) caps /dev/shm at 64MB, which crashes Chromium on
+    # heavier pages; there's no GPU there either.
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
 ]
 
 BLOCKED_RESOURCE_TYPES = {'font', 'media'}
