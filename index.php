@@ -2619,55 +2619,60 @@ if ($homeCtaHref !== '') {
             }
         });
     });
-    // Methodology Steps Animation - Desktop only
-    const isMobile = window.innerWidth < 768;
+    // Methodology Steps Animation
+    // GSAP is loaded with `defer` (header.php), so it only exists once DOMContentLoaded fires.
+    // Running this inline at parse time threw a ReferenceError and left the steps at opacity: 0.
+    document.addEventListener('DOMContentLoaded', () => {
+        const isMobile = window.innerWidth < 768;
+        const hasGsap = typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
 
-    if (!isMobile) {
-        gsap.registerPlugin(ScrollTrigger);
-        const steps = gsap.utils.toArray('.methodology-step');
-        steps.forEach((step, index) => {
-            const isEven = index % 2 === 0;
-            gsap.fromTo(step,
-                {
-                    opacity: 0,
-                    x: window.innerWidth < 1024 ? (isEven ? -60 : 60) : 0,
-                    y: window.innerWidth < 1024 ? 0 : 50,
-                    scale: 0.95
-                },
-                {
-                    opacity: 1,
-                    x: 0,
-                    y: 0,
-                    scale: 1,
-                    duration: 1,
-                    ease: 'power3.out',
-                    scrollTrigger: {
-                        trigger: step,
-                        start: 'top 90%',
-                        toggleActions: 'play none none none'
+        if (!isMobile && hasGsap) {
+            gsap.registerPlugin(ScrollTrigger);
+            const steps = gsap.utils.toArray('.methodology-step');
+            steps.forEach((step, index) => {
+                const isEven = index % 2 === 0;
+                gsap.fromTo(step,
+                    {
+                        opacity: 0,
+                        x: window.innerWidth < 1024 ? (isEven ? -60 : 60) : 0,
+                        y: window.innerWidth < 1024 ? 0 : 50,
+                        scale: 0.95
+                    },
+                    {
+                        opacity: 1,
+                        x: 0,
+                        y: 0,
+                        scale: 1,
+                        duration: 1,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: step,
+                            start: 'top 90%',
+                            toggleActions: 'play none none none'
+                        }
                     }
-                }
-            );
-        });
-    } else {
-        // Simple fade-in for mobile using CSS
-        const steps = document.querySelectorAll('.methodology-step');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
+                );
             });
-        }, { threshold: 0.2 });
+        } else {
+            // Simple fade-in for mobile, or when GSAP failed to load
+            const steps = document.querySelectorAll('.methodology-step');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.2 });
 
-        steps.forEach(step => {
-            step.style.opacity = '0';
-            step.style.transform = 'translateY(20px)';
-            step.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            observer.observe(step);
-        });
-    }
+            steps.forEach(step => {
+                step.style.opacity = '0';
+                step.style.transform = 'translateY(20px)';
+                step.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(step);
+            });
+        }
+    });
 
     // Initialize
     startAutoTour();
