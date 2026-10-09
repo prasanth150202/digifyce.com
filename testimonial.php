@@ -6,6 +6,7 @@ $_seoPdo = Database::getInstance();
 $_seo = load_page_seo($_seoPdo, 'testimonial');
 $pageTitle = $_seo['meta_title'] ?: 'Client Testimonials – Digifyce';
 $pageDescription = $_seo['meta_description'] ?: 'See what our clients say about Digifyce\'s digital marketing and growth services.';
+$_testimonials = $_seoPdo->query("SELECT * FROM testimonial_items WHERE is_active=1 ORDER BY sort_order ASC")->fetchAll(PDO::FETCH_ASSOC);
 include __DIR__ . '/app/views/header.php'; ?>
 
 <style>
@@ -24,48 +25,37 @@ include __DIR__ . '/app/views/header.php'; ?>
     <div class="max-w-5xl mx-auto px-4 relative z-10">
         <h2 class="text-3xl sm:text-4xl font-bold text-center text-white mb-16 tracking-tight">Client Video Testimonials</h2>
         <div class="space-y-24" id="testimonials-container">
-            <div class="animate-pulse space-y-4">
-                <div class="h-8 bg-white/5 rounded w-1/2 mx-auto mb-4"></div>
-                <div class="h-48 bg-white/5 rounded"></div>
+            <?php $_borderColors = ['border-[#00d9ff33]', 'border-[#8b5cf633]']; ?>
+            <?php foreach ($_testimonials as $i => $t):
+                $isReverse = $i % 2 === 1;
+                $flexDir = $isReverse ? 'md:flex-row-reverse' : 'md:flex-row';
+                $border = $_borderColors[$i % 2];
+            ?>
+            <div class="flex flex-col <?= $flexDir ?> items-center md:items-stretch gap-10 testimonial-fade">
+                <div class="md:w-1/2 w-full relative">
+                    <video class="rounded-2xl shadow-2xl w-full h-auto border-4 <?= $border ?>" controls poster="/<?= htmlspecialchars($t['thumbnail_path']) ?>" preload="none">
+                        <source src="/<?= htmlspecialchars($t['video_path']) ?>" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                <div class="md:w-1/2 w-full flex items-center relative">
+                    <div class="bg-[#181e2a] rounded-2xl p-10 shadow-2xl text-white relative overflow-visible">
+                        <span class="testimonial-quote">"</span>
+                        <img src="/<?= htmlspecialchars($t['logo_path']) ?>" alt="<?= htmlspecialchars($t['client_name']) ?>" class="testimonial-avatar mx-auto md:mx-0" width="64" height="64" loading="lazy">
+                        <h3 class="text-2xl font-bold mb-2 tracking-tight"><?= htmlspecialchars($t['client_name']) ?></h3>
+                        <p class="text-lg mb-4 italic relative z-2"><?= htmlspecialchars($t['quote']) ?></p>
+                        <div class="text-sm text-blue-300 font-semibold">- <?= htmlspecialchars($t['story_label']) ?></div>
+                    </div>
+                </div>
             </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    fetch('<?= $appUrl ?>/app/api/testimonial.php')
-        .then(r => r.json())
-        .then(res => {
-            if (!res.success) return;
-            const items = res.data.items || [];
-            const borderColors = ['border-[#00d9ff33]', 'border-[#8b5cf633]'];
-            const html = items.map((t, i) => {
-                const isReverse = i % 2 === 1;
-                const flexDir = isReverse ? 'md:flex-row-reverse' : 'md:flex-row';
-                const border = borderColors[i % 2];
-                return `<div class="flex flex-col ${flexDir} items-center md:items-stretch gap-10 testimonial-fade">
-                    <div class="md:w-1/2 w-full relative">
-                        <video class="rounded-2xl shadow-2xl w-full h-auto border-4 ${border}" controls poster="/${t.thumbnail_path}" preload="none">
-                            <source src="/${t.video_path}" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                    <div class="md:w-1/2 w-full flex items-center relative">
-                        <div class="bg-[#181e2a] rounded-2xl p-10 shadow-2xl text-white relative overflow-visible">
-                            <span class="testimonial-quote">"</span>
-                            <img src="/${t.logo_path}" alt="${t.client_name}" class="testimonial-avatar mx-auto md:mx-0" width="64" height="64" loading="lazy">
-                            <h3 class="text-2xl font-bold mb-2 tracking-tight">${t.client_name}</h3>
-                            <p class="text-lg mb-4 italic relative z-2">${t.quote}</p>
-                            <div class="text-sm text-blue-300 font-semibold">- ${t.story_label}</div>
-                        </div>
-                    </div>
-                </div>`;
-            }).join('');
-            document.getElementById('testimonials-container').innerHTML = html;
-            revealTestimonials();
-        })
-        .catch(console.error);
+    revealTestimonials();
 });
 
 function revealTestimonials() {

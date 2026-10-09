@@ -54,6 +54,113 @@ function image_dims_attr(string $docRoot, string $srcPath): string {
 }
 
 /**
+ * Build a Schema.org FAQPage JSON-LD block from the same $faqs array a page
+ * renders as visible FAQ markup, so schema and on-page content can never
+ * drift apart. Pass an array of ['q' => ..., 'a' => ...] pairs.
+ */
+function faq_schema(array $faqs): string {
+    $schema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'FAQPage',
+        'mainEntity' => array_map(function ($faq) {
+            return [
+                '@type' => 'Question',
+                'name' => $faq['q'],
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text' => $faq['a'],
+                ],
+            ];
+        }, $faqs),
+    ];
+    return '<script type="application/ld+json">'
+        . json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG)
+        . '</script>';
+}
+
+/**
+ * Pull FAQ question/answer pairs out of a blog post's own HTML, so the
+ * FAQPage schema is always built from the FAQ a reader can actually see.
+ *
+ * Convention (what the admin editor produces): an H2 whose text contains
+ * "FAQ" or "Frequently Asked", then each question as an H3 followed by its
+ * answer in the paragraphs / lists up to the next H3 or H2. Returns [] when
+ * there is no such section, fewer than two pairs, or DOM support is missing,
+ * in which case the post simply gets no FAQ schema (never an error).
+ *
+ * @return array<int, array{q: string, a: string}>
+ */
+function blog_faqs_from_content(string $html): array {
+    if (trim($html) === '' || !class_exists('DOMDocument')) {
+        return [];
+    }
+    $clean = static function (string $t): string {
+        return trim(preg_replace('/[\s\x{00A0}]+/u', ' ', $t));
+    };
+
+    $prev = libxml_use_internal_errors(true);
+    $dom = new DOMDocument();
+    $loaded = $dom->loadHTML('<?xml encoding="UTF-8"><body>' . $html . '</body>');
+    libxml_clear_errors();
+    libxml_use_internal_errors($prev);
+    if (!$loaded) {
+        return [];
+    }
+
+    $xpath = new DOMXPath($dom);
+    $nodes = $xpath->query(
+        '//body//h2 | //body//h3 | //body//p[not(ancestor::li)]'
+        . ' | //body//ul[not(ancestor::li)] | //body//ol[not(ancestor::li)]'
+    );
+    if (!$nodes) {
+        return [];
+    }
+
+    $faqs = [];
+    $inFaq = false;
+    $question = null;
+    $answer = [];
+    $flush = static function () use (&$faqs, &$question, &$answer) {
+        if ($question !== null && $question !== '' && $answer) {
+            $faqs[] = ['q' => $question, 'a' => implode(' ', $answer)];
+        }
+        $question = null;
+        $answer = [];
+    };
+
+    foreach ($nodes as $node) {
+        $tag = $node->nodeName;
+        if ($tag === 'ul' || $tag === 'ol') {
+            $items = [];
+            foreach ($xpath->query('./li', $node) as $li) {
+                $item = $clean($li->textContent);
+                if ($item !== '') {
+                    $items[] = preg_match('/[.!?]$/u', $item) ? $item : $item . '.';
+                }
+            }
+            $text = implode(' ', $items);
+        } else {
+            $text = $clean($node->textContent);
+        }
+
+        if ($tag === 'h2') {
+            $flush();
+            $inFaq = (bool) preg_match('/\b(faqs?|frequently asked)\b/i', $text);
+        } elseif (!$inFaq) {
+            continue;
+        } elseif ($tag === 'h3') {
+            $flush();
+            $question = $text;
+        } elseif ($question !== null && $text !== '') {
+            $answer[] = $text;
+        }
+    }
+    $flush();
+
+    return count($faqs) >= 2 ? $faqs : [];
+}
+
+/**
  * Build a Schema.org BlogPosting JSON-LD block for a blog post. Pass the
  * raw $blog row (as fetched by blog.php, PDO::FETCH_ASSOC) plus the
  * description already computed for the page's meta tag.
@@ -77,12 +184,12 @@ function blog_posting_schema(string $appUrl, array $blog, string $description): 
         'description' => $description,
         'url' => $url,
         'mainEntityOfPage' => ['@type' => 'WebPage', '@id' => $url],
-        'datePublished' => date('c', strtotime($published)),
+        'datePublished' => date('Y-m-d', strtotime($published)),
         'publisher' => $orgId,
     ];
 
     if (!empty($blog['updated_at'])) {
-        $schema['dateModified'] = date('c', strtotime($blog['updated_at']));
+        $schema['dateModified'] = date('Y-m-d', strtotime($blog['updated_at']));
     }
     if (!empty($blog['featured_image'])) {
         $schema['image'] = $appUrl . '/storage/uploads/' . $blog['featured_image'];

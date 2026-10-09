@@ -22,6 +22,9 @@ RewriteRule ^(.*)$ https://digifyce.com/$1 [R=301,L]
 # Serve static files from storage/ directly — bypass all routing
 RewriteRule ^storage/ - [L]
 
+# XML sitemap is generated live from the database (blog posts appear automatically)
+RewriteRule ^sitemap\.xml$ sitemap.php [L,NC]
+
 # PDF download endpoint (bypasses slug router entirely)
 RewriteRule ^pdf-download/?$ pdf-download.php [L,QSA,NC]
 
@@ -80,6 +83,7 @@ RewriteRule ^market-manage/?$ market-manage.php [L,QSA,NC]
 RewriteRule ^performance-marketing/?$ performance-marketing.php [L,QSA,NC]
 RewriteRule ^products/?$ products.php [L,QSA,NC]
 RewriteRule ^service/?$ service.php [L,QSA,NC]
+RewriteRule ^shopify-development/?$ shopify-development.php [L,QSA,NC]
 RewriteRule ^technology/?$ technology.php [L,QSA,NC]
 RewriteRule ^testimonial/?$ testimonial.php [L,QSA,NC]
 # ────────────────────────────────────────────────────────────────────────────

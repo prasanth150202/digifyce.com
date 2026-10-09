@@ -5,9 +5,11 @@ $_seoPdo = Database::getInstance();
 $_seo = load_page_seo($_seoPdo, 'e-com-marketing');
 $pageTitle = $_seo['meta_title'] ?: 'E-Commerce Marketing Services in India – Digifyce';
 $pageDescription = $_seo['meta_description'] ?: 'Build High-Performing Online Stores That Convert Visitors into Customers with Digifyce. Shopify, WooCommerce, and custom e-commerce development.';
-$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'e-com-marketing', 'E-Commerce Marketing', $pageTitle, $pageDescription);
+$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'e-commerce-marketing-service', 'E-Commerce Marketing', $pageTitle, $pageDescription);
 $bodyClass = 'ecom-unique-page';
-$appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
+require_once __DIR__ . '/app/utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
+$canonicalUrl = $appUrl . '/e-commerce-marketing-service';
 require_once __DIR__ . '/config/database.php';
 $_pdo       = Database::getInstance();
 $challenges = $_pdo->query("SELECT * FROM ecom_challenges WHERE is_active=1 ORDER BY sort_order")->fetchAll(PDO::FETCH_ASSOC);
@@ -19,6 +21,16 @@ $ec_why     = $_pdo->query("SELECT * FROM ecom_why_points WHERE is_active=1 ORDE
 $ec_cta     = $_pdo->query("SELECT * FROM ecom_cta WHERE id=1")->fetch(PDO::FETCH_ASSOC) ?: [];
 $ecom_sh    = [];
 foreach ($_pdo->query("SELECT * FROM ecom_section_headers")->fetchAll(PDO::FETCH_ASSOC) as $_r) { $ecom_sh[$_r['slug']] = $_r; }
+
+$ecom_faqs = [
+    ['q' => 'What does e-commerce marketing include?', 'a' => 'E-commerce marketing covers everything that turns store traffic into revenue: platform development on Shopify or WooCommerce, conversion rate optimization, retargeting and abandoned cart recovery, and ongoing performance monitoring, built as one system rather than separate one-off projects.'],
+    ['q' => 'Do you build the store itself, or only market it?', 'a' => 'Both. We build and develop high-performing online stores on Shopify, WooCommerce, or a custom platform, then run the marketing, retargeting, and conversion work on top of that foundation.'],
+    ['q' => 'How much does e-commerce marketing cost in India?', 'a' => 'Costs depend on whether you need a new store build, a migration, or ongoing marketing and CRO work on an existing store. Get a custom quote based on your specific setup for an accurate figure.'],
+    ['q' => 'How do you reduce cart abandonment?', 'a' => 'Through audience segmentation, personalized retargeting ads, and structured abandoned cart recovery across channels, the same approach that increased one client\'s online sales by 35% within four months.'],
+    ['q' => 'How long before we see results?', 'a' => 'Conversion and retargeting improvements can show measurable movement within the first month or two; a full store build or migration takes longer depending on scope. We scope a firm timeline during discovery.'],
+];
+$extraHead .= faq_schema($ecom_faqs);
+
 include __DIR__ . '/app/views/header.php';
 ?>
 
@@ -870,6 +882,25 @@ include __DIR__ . '/app/views/header.php';
                         <span class="material-symbols-outlined text-base" aria-hidden="true">arrow_forward</span>
                     </a>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="py-20 border-t border-white/5">
+        <div class="max-w-[900px] mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-xs uppercase tracking-[0.4em] text-[var(--electric-blue)] mb-4 text-center">FAQ</h2>
+            <h3 class="text-3xl md:text-5xl font-black tracking-tighter text-center mb-16">Frequently Asked Question</h3>
+            <div class="space-y-4">
+                <?php foreach ($ecom_faqs as $faq): ?>
+                <details class="p-6 border border-white/10 rounded-2xl bg-white/[0.02]">
+                    <summary class="flex justify-between items-center cursor-pointer font-bold text-lg list-none">
+                        <?= htmlspecialchars($faq['q']) ?>
+                        <span class="material-symbols-outlined text-[var(--electric-blue)] rotate-on-open" aria-hidden="true">add</span>
+                    </summary>
+                    <p class="text-slate-400 leading-relaxed mt-4"><?= htmlspecialchars($faq['a']) ?></p>
+                </details>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>

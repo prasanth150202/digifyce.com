@@ -5,9 +5,11 @@ $_seoPdo = Database::getInstance();
 $_seo = load_page_seo($_seoPdo, 'performance-marketing');
 $pageTitle = $_seo['meta_title'] ?: 'Performance Marketing Services in India – Digifyce | SEO, PPC, Meta Ads & Growth';
 $pageDescription = $_seo['meta_description'] ?: 'Data-driven performance marketing services in India by Digifyce. We build full-funnel growth systems across Meta Ads, Google Ads, SEO, PPC, CRO, retargeting, and automation.';
-$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'performance-marketing', 'Performance Marketing', $pageTitle, $pageDescription);
+$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'performance-marketing-service', 'Performance Marketing', $pageTitle, $pageDescription);
 $bodyClass = 'performance-marketing-page';
-$appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
+require_once __DIR__ . '/app/utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
+$canonicalUrl = $appUrl . '/performance-marketing-service';
 
 require_once __DIR__ . '/config/database.php';
 $_pdo            = Database::getInstance();
@@ -25,6 +27,15 @@ $pm_leadgen_tabs = $_pdo->query("SELECT * FROM pm_leadgen_tabs WHERE is_active=1
 $pm_seo_panels   = $_pdo->query("SELECT * FROM pm_seo_panels WHERE is_active=1 ORDER BY sort_order, id")->fetchAll(PDO::FETCH_ASSOC);
 $pm_steps        = $_pdo->query("SELECT * FROM pm_steps WHERE is_active=1 ORDER BY sort_order, id")->fetchAll(PDO::FETCH_ASSOC);
 $pm_impacts      = $_pdo->query("SELECT * FROM pm_impacts WHERE is_active=1 ORDER BY sort_order, id")->fetchAll(PDO::FETCH_ASSOC);
+
+$pm_faqs = [
+    ['q' => 'What is performance marketing?', 'a' => 'Performance marketing is a form of digital advertising where spend is tied directly to measurable outcomes, clicks, leads, or sales, rather than paying for impressions alone. It covers paid channels like Google Ads and Meta Ads alongside SEO, CRO, and retargeting, all optimized against a specific business result.'],
+    ['q' => 'How much does performance marketing cost in India?', 'a' => 'Costs vary by ad spend, industry, and competition, Indian market rates for a managed performance marketing engagement typically start in the range of a few tens of thousands of rupees per month in service fees, separate from ad spend itself. Get a custom quote based on your goals and budget for an accurate figure.'],
+    ['q' => 'Which platforms do you run performance marketing campaigns on?', 'a' => 'We run campaigns across Meta Ads, Google Ads, SEO, PPC, CRO, retargeting, and marketing automation, built as a connected system rather than isolated channel-by-channel spend.'],
+    ['q' => 'How long does it take to see results from performance marketing?', 'a' => 'Paid channels can show early signal within the first few weeks as campaigns exit the learning phase, but a stable, optimized system that reliably hits target CAC or ROAS typically takes 60-90 days to mature, especially where SEO and organic channels are part of the mix.'],
+    ['q' => 'Do you handle both paid and organic growth, or just ads?', 'a' => 'Both. Performance marketing here includes SEO and organic growth alongside paid channels, since relying on paid spend alone tends to keep customer acquisition cost high with no compounding effect over time.'],
+];
+$extraHead .= faq_schema($pm_faqs);
 
 $extraHead .= <<<'HTML'
 <style>
@@ -1865,6 +1876,24 @@ include __DIR__ . '/app/views/header.php';
 						<span class="material-symbols-outlined text-base" aria-hidden="true">arrow_forward</span>
 					</a>
 				</div>
+			</div>
+		</div>
+	</section>
+
+	<section class="py-20 border-t border-white/5" id="faq">
+		<div class="max-w-[900px] mx-auto px-4 sm:px-6 lg:px-8">
+			<h2 class="text-xs uppercase tracking-[0.4em] text-[var(--electric-blue)] mb-4 text-center">FAQ</h2>
+			<h3 class="text-3xl md:text-5xl font-black tracking-tighter text-center mb-16">Frequently Asked Question</h3>
+			<div class="space-y-4">
+				<?php foreach ($pm_faqs as $faq): ?>
+				<details class="p-6 border border-white/10 rounded-2xl bg-white/[0.02]">
+					<summary class="flex justify-between items-center cursor-pointer font-bold text-lg list-none text-white">
+						<?= htmlspecialchars($faq['q']) ?>
+						<span class="material-symbols-outlined text-[var(--electric-blue)] rotate-on-open" aria-hidden="true">add</span>
+					</summary>
+					<p class="text-slate-400 leading-relaxed mt-4"><?= htmlspecialchars($faq['a']) ?></p>
+				</details>
+				<?php endforeach; ?>
 			</div>
 		</div>
 	</section>

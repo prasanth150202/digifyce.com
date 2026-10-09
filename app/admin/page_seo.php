@@ -33,6 +33,7 @@ $defaultPages = [
     ['d2c-branding',         'D2C Branding',           'd2c-branding.php',         '/d2c-branding'],
     ['brand-shoot',          'Commercial Shoot',       'brand-shoot.php',          '/brand-shoot'],
     ['creative-dev',         'Creative Development',   'creative-dev.php',         '/creative-dev'],
+    ['shopify-development',  'Shopify Development',    'shopify-development.php',  '/shopify-development'],
     ['performance-marketing','Performance Marketing',  'performance-marketing.php','/performance-marketing'],
     ['e-com-marketing',      'E-Commerce Marketing',   'e-com-marketing.php',      '/e-com-marketing'],
     ['market-manage',        'Marketplace Management', 'market-manage.php',        '/market-manage'],

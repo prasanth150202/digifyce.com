@@ -76,22 +76,34 @@ if ($navCtaHref !== '') {
     <meta name="description" content="<?= htmlspecialchars($pageDescription) ?>"/>
     <?php
     $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-    $isIndividualBlog = strpos($path, '/blog/') !== false;
     if (!isset($canonicalUrl)) {
-        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http";
+        // Behind ngrok (and most reverse proxies) TLS ends at the proxy and
+        // this server only ever sees plain HTTP, so $_SERVER['HTTPS'] alone
+        // reports "http" even when the visitor is on https. X-Forwarded-Proto
+        // is what the proxy sets to say what the visitor actually used.
+        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            $protocol = strtolower(trim(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0]));
+        } else {
+            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http";
+        }
         $domain = $_SERVER['HTTP_HOST'];
         $canonicalUrl = $protocol . "://" . $domain . $path;
     }
-    if (!$isIndividualBlog):
     ?>
     <link rel="canonical" href="<?= htmlspecialchars($canonicalUrl) ?>" />
-    <?php endif; ?>
     <meta name="keywords" content="web design, development, digital marketing agency in coimbatore, digifyce"/>
     <meta property="og:title" content="<?= htmlspecialchars($pageTitle) ?>"/>
     <meta property="og:description" content="<?= htmlspecialchars($pageDescription) ?>"/>
     <meta property="og:site_name" content="Digifyce"/>
     <meta name="twitter:title" content="<?= htmlspecialchars($pageTitle) ?>"/>
     <meta name="twitter:description" content="<?= htmlspecialchars($pageDescription) ?>"/>
+    <?php if (!empty($ogImage)): ?>
+    <meta property="og:type" content="<?= htmlspecialchars($ogType ?? 'website') ?>"/>
+    <meta property="og:url" content="<?= htmlspecialchars($canonicalUrl) ?>"/>
+    <meta property="og:image" content="<?= htmlspecialchars($ogImage) ?>"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:image" content="<?= htmlspecialchars($ogImage) ?>"/>
+    <?php endif; ?>
     <?php if (!empty($siteFavicon)): ?>
         <link rel="icon" href="<?= htmlspecialchars($appUrl . '/' . ltrim($siteFavicon, '/')) ?>">
     <?php endif; ?>
@@ -136,8 +148,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-TDJJXH8X');</script>
 <!-- End Google Tag Manager -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    </noscript>
     <style>
         :root {
             --navy-black: #05070a;
@@ -145,6 +161,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             --accent-glow: rgba(0, 102, 255, 0.15);
             --glass-bg: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.08);
+        }
+        /* Rotates the "add" icon on any open <details> FAQ block sitewide.
+           Uses the native [open] attribute selector rather than Tailwind's
+           group-open: variant, since that variant isn't in the compiled
+           tailwind.min.css (JIT only emits classes it scans from templates
+           at build time, and this wasn't scanned when it was last built). */
+        details[open] > summary .rotate-on-open {
+            transform: rotate(45deg);
+        }
+        details > summary .rotate-on-open {
+            transition: transform 0.2s ease;
         }
         body {
             font-family: 'Space Grotesk', sans-serif;

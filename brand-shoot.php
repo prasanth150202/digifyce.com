@@ -5,9 +5,11 @@ $_seoPdo = Database::getInstance();
 $_seo = load_page_seo($_seoPdo, 'brand-shoot');
 $pageTitle = $_seo['meta_title'] ?: 'Commercial Shoot Services – Digifyce | Product Photography, Ad Films & Brand Storytelling';
 $pageDescription = $_seo['meta_description'] ?: 'Commercial shoot services by Digifyce: product photography, ad films, brand storytelling, social reels, and performance-ready visual content built to drive trust and conversions.';
-$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'brand-shoot', 'Commercial Shoot & Brand Photography', $pageTitle, $pageDescription);
+$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'commercial-shoot-service', 'Commercial Shoot & Brand Photography', $pageTitle, $pageDescription);
 $bodyClass = 'brand-shoot-page';
-$appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
+require_once __DIR__ . '/app/utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
+$canonicalUrl = $appUrl . '/commercial-shoot-service';
 require_once __DIR__ . '/config/database.php';
 $_pdo        = Database::getInstance();
 $cs_chals    = $_pdo->query("SELECT * FROM commercial_shoot_challenges WHERE is_active=1 ORDER BY sort_order")->fetchAll(PDO::FETCH_ASSOC);
@@ -21,6 +23,15 @@ foreach ($_pdo->query("SELECT * FROM cs_section_headers")->fetchAll(PDO::FETCH_A
 $cs_approach = $_pdo->query("SELECT * FROM cs_approach_panels WHERE is_active=1 ORDER BY sort_order")->fetchAll(PDO::FETCH_ASSOC);
 $cs_why_bullets = $_pdo->query("SELECT * FROM cs_why_bullets WHERE is_active=1 ORDER BY sort_order")->fetchAll(PDO::FETCH_ASSOC);
 $cs_cta      = $_pdo->query("SELECT * FROM cs_cta WHERE id=1")->fetch(PDO::FETCH_ASSOC) ?: [];
+
+$cs_faqs = [
+    ['q' => 'What is included in a commercial shoot?', 'a' => 'Commercial shoot services cover product photography, ad films, brand storytelling, and social reels, planned and shot to be performance-ready rather than purely aesthetic, so the output is built to drive trust and conversions, not just look good.'],
+    ['q' => 'How much does a commercial shoot cost in India?', 'a' => 'Costs vary by format, product photography, ad films, and social reels each have different production scope. Get a custom quote based on what you need for an accurate figure.'],
+    ['q' => 'Do you handle both product photography and video content?', 'a' => 'Yes, the same team covers still product photography, ad films, and short-form social reels, so visual content stays consistent across formats instead of looking like separate vendors did each piece.'],
+    ['q' => 'How long does a shoot take from booking to delivery?', 'a' => 'Timeline depends on the number of products or scenes and the formats needed. We scope a firm timeline during discovery based on your specific shot list.'],
+    ['q' => 'Can the content be used across multiple platforms?', 'a' => 'Yes, shoots are planned with multiple formats and platforms in mind, so the same shoot day produces assets usable across your website, ads, and social channels rather than one-off content for a single placement.'],
+];
+$extraHead .= faq_schema($cs_faqs);
 
 $extraHead .= <<<'HTML'
 <style>
@@ -1018,6 +1029,22 @@ include __DIR__ . '/app/views/header.php';
 					<h3 class="text-xl font-bold mb-2"><?= htmlspecialchars($imp['title']) ?></h3>
 					<p class="text-slate-300 leading-relaxed"><?= htmlspecialchars($imp['description']) ?></p>
 				</div>
+				<?php endforeach; ?>
+			</div>
+		</div>
+	</section>
+
+	<!-- FAQ -->
+	<section>
+		<div class="section-wrap px-4 sm:px-6 lg:px-8" style="max-width:900px;padding-top:5rem;padding-bottom:5rem;">
+			<div class="eyebrow" style="margin:0 auto 1.5rem;width:fit-content;"><span class="dot"></span>FAQ</div>
+			<h2 style="text-align:center;margin-bottom:2.5rem;">Frequently Asked Question</h2>
+			<div style="display:flex;flex-direction:column;gap:1rem;">
+				<?php foreach ($cs_faqs as $faq): ?>
+				<details class="impact-card">
+					<summary style="cursor:pointer;font-weight:700;color:#fff;list-style:none;"><?= htmlspecialchars($faq['q']) ?></summary>
+					<p class="text-slate-300 leading-relaxed mt-3"><?= htmlspecialchars($faq['a']) ?></p>
+				</details>
 				<?php endforeach; ?>
 			</div>
 		</div>

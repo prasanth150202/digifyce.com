@@ -5,9 +5,11 @@ $_seoPdo = Database::getInstance();
 $_seo = load_page_seo($_seoPdo, 'd2c-branding');
 $pageTitle = $_seo['meta_title'] ?: 'D2C Branding Services in India - Digifyce';
 $pageDescription = $_seo['meta_description'] ?: 'Build a Scalable Brand That Drives Growth and Customer Loyalty with Digifyce\'s strategic D2C branding services.';
-$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'd2c-branding', 'D2C Branding', $pageTitle, $pageDescription);
+$extraHead = ($extraHead ?? '') . service_schema($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', 'd2c-branding-service', 'D2C Branding', $pageTitle, $pageDescription);
 $bodyClass = 'd2c-branding';
-$appUrl = rtrim($_ENV['APP_URL'] ?? 'http://localhost/digifyce2', '/');
+require_once __DIR__ . '/app/utilities/AppUrl.php';
+$appUrl = AppUrl::resolve();
+$canonicalUrl = $appUrl . '/d2c-branding-service';
 require_once __DIR__ . '/config/database.php';
 $pdo        = Database::getInstance();
 $hero       = $pdo->query("SELECT * FROM d2c_hero WHERE id=1 LIMIT 1")->fetch(PDO::FETCH_ASSOC) ?: [];
@@ -21,6 +23,16 @@ $mets       = $pdo->query("SELECT * FROM d2c_metrics WHERE is_active=1 ORDER BY 
 $feats      = $pdo->query("SELECT * FROM d2c_why_features WHERE is_active=1 ORDER BY sort_order")->fetchAll(PDO::FETCH_ASSOC);
 $d2c_sh     = [];
 foreach ($pdo->query("SELECT * FROM d2c_section_headers")->fetchAll(PDO::FETCH_ASSOC) as $row) { $d2c_sh[$row['slug']] = $row; }
+
+$d2c_faqs = [
+    ['q' => 'What does a D2C branding agency do?', 'a' => 'A D2C branding agency builds the brand identity, packaging, and positioning a direct-to-consumer business needs to stand out and convert, going beyond a logo to cover visual identity, brand strategy, and how the brand is presented across every customer touchpoint.'],
+    ['q' => 'How much does D2C branding cost in India?', 'a' => 'Costs depend on scope, a brand identity refresh is a smaller engagement than a full rebrand with packaging and positioning work included. Get a custom quote based on your specific requirements for an accurate figure.'],
+    ['q' => 'What is included in a D2C branding project?', 'a' => 'Typical scope covers brand identity, packaging design, brand positioning, and conversion-focused branding solutions, tailored to your product, audience, and market dynamics rather than a one-size-fits-all package.'],
+    ['q' => 'How long does a branding project take?', 'a' => 'A brand identity project typically takes a few weeks from discovery to final assets; a full rebrand with packaging and positioning work takes longer depending on scope. We scope a firm timeline during discovery.'],
+    ['q' => 'Do you only work with D2C brands, or other business types too?', 'a' => 'We work best with funded, scaling D2C and e-commerce brands, typically in the ₹50 lakh to ₹5 crore annual revenue range, since that is where branding work translates most directly into growth. If your brand is outside that range, reach out and we can assess fit.'],
+];
+$extraHead .= faq_schema($d2c_faqs);
+
 include __DIR__ . '/app/views/header.php';
 ?>
 <style>
@@ -1836,6 +1848,34 @@ $_mq_str = implode(' <span class="mq-sep">◆</span> ', array_map('htmlspecialch
         <?php endforeach; ?>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ══ FAQ ═════════════════════════════════════════════ -->
+<section id="faq" style="background:var(--g900);">
+  <div class="wrap">
+    <div class="section-header" data-reveal>
+      <div>
+        <div class="label" style="margin-bottom:.75rem;">FAQ</div>
+        <h2>Frequently Asked Question</h2>
+      </div>
+    </div>
+    <?php foreach ($d2c_faqs as $i => $faq): ?>
+      <div class="challenge-row" data-reveal data-delay="<?= min($i, 4) ?>">
+        <button class="ch-trigger" aria-expanded="false">
+          <span class="ch-num">0<?= $i + 1 ?></span>
+          <span class="ch-title"><?= htmlspecialchars($faq['q']) ?></span>
+          <span class="ch-icon">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </span>
+        </button>
+        <div class="ch-body">
+          <p><?= htmlspecialchars($faq['a']) ?></p>
+        </div>
+      </div>
+    <?php endforeach; ?>
   </div>
 </section>
 
