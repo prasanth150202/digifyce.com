@@ -1,0 +1,13 @@
+# Client proposals and pitch decks: never served straight from the web.
+# The website audit service downloads them through
+# app/api/audit_case_study_file.php (signed request, read from disk by PHP),
+# so nothing needs a public URL. This overrides the root .htaccess rule that
+# serves storage/ directly.
+Options -Indexes
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

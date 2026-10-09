@@ -44,6 +44,14 @@ $budgetLabels = ['50000' => '₹50,000', '1lakh' => '₹1 Lakh', 'above_1lakh' =
 include __DIR__ . '/../views/admin_header.php';
 ?>
 
+<style>
+    .lead-table th,
+    .lead-table td {
+        padding: 10px 12px;
+        white-space: normal;
+    }
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h3">
         <i class="fas fa-envelope me-2"></i>Lead Form Submissions
@@ -129,50 +137,49 @@ include __DIR__ . '/../views/admin_header.php';
         </div>
         <?php else: ?>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0 lead-table">
                 <thead class="bg-light">
                     <tr>
                         <th>Date</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Company</th>
-                        <th>Objective</th>
-                        <th>Business Type</th>
-                        <th>Industry</th>
+                        <th>Contact</th>
+                        <th>Company / Type</th>
                         <th>Budget</th>
-                        <th>Qualified</th>
-                        <th>Actions</th>
+                        <th>Website</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($leads as $lead): ?>
                     <tr>
-                        <td class="text-muted small">
+                        <td class="text-muted small text-nowrap">
                             <?= date('M d, Y', strtotime($lead['created_at'])) ?><br>
                             <small><?= date('g:i A', strtotime($lead['created_at'])) ?></small>
                         </td>
                         <td>
-                            <strong><?= htmlspecialchars($lead['full_name']) ?></strong>
-                        </td>
-                        <td>
-                            <a href="mailto:<?= htmlspecialchars($lead['email']) ?>">
-                                <?= htmlspecialchars($lead['email']) ?>
-                            </a>
-                        </td>
-                        <td>
+                            <div class="fw-bold text-truncate" style="max-width: 220px;">
+                                <?= htmlspecialchars($lead['full_name']) ?>
+                                <?php if (($lead['status'] ?? 'submitted') === 'draft'): ?>
+                                    <span class="badge bg-warning text-dark ms-1" title="Started an audit but never finished the form">Draft</span>
+                                <?php endif; ?>
+                                <?php if (!empty($lead['is_qualified'])): ?>
+                                    <span class="badge bg-warning text-dark ms-1" title="<?= htmlspecialchars($objectiveLabels[$lead['main_objective']] ?? $lead['main_objective'] ?? '') ?>"><i class="fas fa-star me-1"></i>Qualified</span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="small text-truncate" style="max-width: 220px;">
+                                <a href="mailto:<?= htmlspecialchars($lead['email']) ?>"><?= htmlspecialchars($lead['email']) ?></a>
+                            </div>
                             <?php if ($lead['phone']): ?>
-                                <a href="tel:<?= htmlspecialchars($lead['phone']) ?>">
-                                    <?= htmlspecialchars($lead['phone']) ?>
-                                </a>
-                            <?php else: ?>
-                                <span class="text-muted">-</span>
+                                <div class="small text-muted">
+                                    <a class="text-muted" href="tel:<?= htmlspecialchars($lead['phone']) ?>"><?= htmlspecialchars($lead['phone']) ?></a>
+                                </div>
                             <?php endif; ?>
                         </td>
-                        <td><?= $lead['company'] ? htmlspecialchars($lead['company']) : '<span class="text-muted">-</span>' ?></td>
-                        <td><?= !empty($lead['main_objective']) ? htmlspecialchars($objectiveLabels[$lead['main_objective']] ?? $lead['main_objective']) : '<span class="text-muted">-</span>' ?></td>
-                        <td><?= !empty($lead['business_type']) ? htmlspecialchars($businessTypeLabels[$lead['business_type']] ?? $lead['business_type']) : '<span class="text-muted">-</span>' ?></td>
-                        <td><?= !empty($lead['industry']) ? htmlspecialchars($industryLabels[$lead['industry']] ?? $lead['industry']) : '<span class="text-muted">-</span>' ?></td>
+                        <td>
+                            <div class="text-truncate" style="max-width: 180px;"><?= $lead['company'] ? htmlspecialchars($lead['company']) : '<span class="text-muted">-</span>' ?></div>
+                            <?php if (!empty($lead['business_type'])): ?>
+                                <div class="small text-muted text-truncate" style="max-width: 180px;"><?= htmlspecialchars($businessTypeLabels[$lead['business_type']] ?? $lead['business_type']) ?></div>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <?php if ($lead['budget']): ?>
                                 <span class="badge bg-success"><?= htmlspecialchars($budgetLabels[$lead['budget']] ?? $lead['budget']) ?></span>
@@ -181,18 +188,20 @@ include __DIR__ . '/../views/admin_header.php';
                             <?php endif; ?>
                         </td>
                         <td>
-                            <?php if (!empty($lead['is_qualified'])): ?>
-                                <span class="badge bg-warning text-dark"><i class="fas fa-star me-1"></i>Qualified</span>
+                            <?php if (!empty($lead['website'])): ?>
+                                <a class="text-truncate d-inline-block" style="max-width: 160px;" href="<?= htmlspecialchars($lead['website']) ?>" target="_blank" rel="noopener"><?= htmlspecialchars($lead['website']) ?></a>
+                            <?php elseif (($lead['has_website'] ?? null) === 'no'): ?>
+                                <span class="text-muted">No website</span>
                             <?php else: ?>
-                                <span class="badge bg-secondary">No</span>
+                                <span class="text-muted">-</span>
                             <?php endif; ?>
                         </td>
-                        <td>
+                        <td class="text-end text-nowrap">
                             <button class="btn btn-sm btn-outline-primary"
                                     onclick="viewLead(<?= htmlspecialchars(json_encode($lead)) ?>)">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <a href="?action=delete&id=<?= $lead['id'] ?>" 
+                            <a href="?action=delete&id=<?= $lead['id'] ?>"
                                class="btn btn-sm btn-outline-danger"
                                onclick="return confirm('Delete this lead submission?')">
                                 <i class="fas fa-trash"></i>
@@ -242,24 +251,44 @@ include __DIR__ . '/../views/admin_header.php';
                         <p id="modal-objective"></p>
                     </div>
                     <div class="col-md-6">
-                        <label class="text-muted small">Business Type</label>
-                        <p id="modal-business-type"></p>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="text-muted small">Industry</label>
-                        <p id="modal-industry"></p>
-                    </div>
-                    <div class="col-md-6">
                         <label class="text-muted small">Qualified</label>
                         <p id="modal-qualified"></p>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
+                        <label class="text-muted small">Business Type</label>
+                        <p id="modal-business-type"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Industry</label>
+                        <p id="modal-industry"></p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
                         <label class="text-muted small">Budget</label>
                         <p id="modal-budget"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Runs Paid Ads?</label>
+                        <p id="modal-has-ads"></p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">Monthly Ad Spend</label>
+                        <p id="modal-ad-spend"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Current ROAS</label>
+                        <p id="modal-roas"></p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">Has Website?</label>
+                        <p id="modal-has-website"></p>
                     </div>
                     <div class="col-md-6">
                         <label class="text-muted small">Website</label>
@@ -300,14 +329,30 @@ function viewLead(lead) {
     document.getElementById('modal-phone').textContent = lead.phone || '-';
     document.getElementById('modal-company').textContent = lead.company || '-';
     document.getElementById('modal-objective').textContent = objectiveLabels[lead.main_objective] || lead.main_objective || '-';
-    document.getElementById('modal-business-type').textContent = businessTypeLabels[lead.business_type] || lead.business_type || '-';
-    document.getElementById('modal-industry').textContent = industryLabels[lead.industry] || lead.industry || '-';
     document.getElementById('modal-qualified').innerHTML = (lead.is_qualified == 1)
         ? '<span class="badge bg-warning text-dark"><i class="fas fa-star me-1"></i>Qualified</span>'
         : '<span class="badge bg-secondary">No</span>';
+    document.getElementById('modal-business-type').textContent = businessTypeLabels[lead.business_type] || lead.business_type || '-';
+    document.getElementById('modal-industry').textContent = industryLabels[lead.industry] || lead.industry || '-';
     document.getElementById('modal-budget').textContent = budgetLabels[lead.budget] || lead.budget || '-';
-    document.getElementById('modal-website').innerHTML = lead.website ?
-        `<a href="${lead.website}" target="_blank">${lead.website}</a>` : '-';
+    document.getElementById('modal-has-ads').textContent = lead.has_ads ? (lead.has_ads === 'yes' ? 'Yes' : 'No') : '-';
+    document.getElementById('modal-ad-spend').textContent = lead.ad_spend || '-';
+    document.getElementById('modal-roas').textContent = lead.roas || '-';
+    document.getElementById('modal-has-website').textContent = lead.has_website ? (lead.has_website === 'yes' ? 'Yes' : 'No') : '-';
+    var websiteEl = document.getElementById('modal-website');
+    websiteEl.innerHTML = '';
+    if (lead.website && /^https?:\/\//i.test(lead.website)) {
+        // Lead-typed free text, not URL-validated on input - only link it
+        // when it's actually http(s), never render e.g. a javascript: URI as a link.
+        var websiteLink = document.createElement('a');
+        websiteLink.href = lead.website;
+        websiteLink.target = '_blank';
+        websiteLink.rel = 'noopener';
+        websiteLink.textContent = lead.website;
+        websiteEl.appendChild(websiteLink);
+    } else {
+        websiteEl.textContent = lead.website || '-';
+    }
     document.getElementById('modal-message').textContent = lead.message;
     document.getElementById('modal-ip').textContent = lead.ip_address || '-';
     document.getElementById('modal-date').textContent = new Date(lead.created_at).toLocaleString();

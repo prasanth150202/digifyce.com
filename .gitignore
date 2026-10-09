@@ -6,6 +6,8 @@
 # Dependencies
 /vendor/
 /node_modules/
+/tools/website_audit/venv/
+/tools/website_audit/__pycache__/
 
 # PHP / app cache and logs
 *.log
@@ -21,6 +23,10 @@
 !/storage/uploads/cv/.gitkeep
 /public/uploads/cv/*
 !/public/uploads/cv/.gitkeep
+
+# Audit screenshots are generated per-submission, not source content.
+/storage/audits/screenshots/*
+!/storage/audits/screenshots/.gitkeep
 
 # OS / editor files
 .DS_Store
