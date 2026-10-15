@@ -97,8 +97,8 @@ include __DIR__ . '/app/views/header.php';
             <span
                 class="text-[var(--electric-blue)] font-bold tracking-[0.3em] text-[10px] uppercase mb-4 block">Quantifiable
                 Comparison</span>
-            <h2 class="text-6xl lg:text-8xl font-bold leading-[0.85] tracking-tighter mb-8">Industry Verticals &amp;
-                Performance Benchmarks</h2>
+            <h1 class="text-6xl lg:text-8xl font-bold leading-[0.85] tracking-tighter mb-8">Industry Verticals &amp;
+                Performance Benchmarks</h1>
             <p class="text-white/40 max-w-2xl text-lg">A multi-level analysis comparing standard agency performance
                 against Digifyce's engineered approach.</p>
         </div>

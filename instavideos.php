@@ -61,9 +61,11 @@ main {
     border-color: white !important;
     transform: scale(1.05);
 }
+.reel-h1 { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 </style>
 
 <main id="reelLayout" class="h-screen flex flex-col lg:flex-row overflow-hidden relative">
+    <h1 class="reel-h1">Educational Marketing Videos &amp; Strategy Insights</h1>
 
     <!-- MAIN VIDEO -->
     <div class="flex-1 flex items-center justify-center bg-black relative z-10">
