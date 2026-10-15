@@ -23,7 +23,7 @@ include __DIR__ . '/app/views/header.php'; ?>
 
 <section class="testimonial-innovative py-20">
     <div class="max-w-5xl mx-auto px-4 relative z-10">
-        <h2 class="text-3xl sm:text-4xl font-bold text-center text-white mb-16 tracking-tight">Client Video Testimonials</h2>
+        <h1 class="text-3xl sm:text-4xl font-bold text-center text-white mb-16 tracking-tight">Client Video Testimonials</h1>
         <div class="space-y-24" id="testimonials-container">
             <?php $_borderColors = ['border-[#00d9ff33]', 'border-[#8b5cf633]']; ?>
             <?php foreach ($_testimonials as $i => $t):

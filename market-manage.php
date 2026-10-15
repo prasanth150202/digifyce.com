@@ -1102,11 +1102,11 @@ include __DIR__ . '/app/views/header.php';
                 </ul>
 
                 <div class="flex flex-col sm:flex-row gap-6 justify-center max-w-[45rem] mx-auto">
-                    <a href="<?= htmlspecialchars($mk_cta['btn1_url'] ?? 'leadform.php') ?>" class="btn-white w-full sm:w-auto text-center px-10 py-4 text-lg">
+                    <a href="<?= htmlspecialchars($mk_cta['btn1_url'] ?? 'leadform') ?>" class="btn-white w-full sm:w-auto text-center px-10 py-4 text-lg">
                         <?= htmlspecialchars($mk_cta['btn1_label'] ?? 'Scale Your Business Now') ?>
                         <span class="material-symbols-outlined">rocket_launch</span>
                     </a>
-                    <a href="<?= htmlspecialchars($mk_cta['btn2_url'] ?? 'contact.php') ?>" class="btn-outline w-full sm:w-auto text-center px-10 py-4 text-lg">
+                    <a href="<?= htmlspecialchars($mk_cta['btn2_url'] ?? 'leadform') ?>" class="btn-outline w-full sm:w-auto text-center px-10 py-4 text-lg">
                         <?= htmlspecialchars($mk_cta['btn2_label'] ?? 'Talk to an Expert') ?>
                     </a>
                 </div>
