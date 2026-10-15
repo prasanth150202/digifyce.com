@@ -1,5 +1,8 @@
 <?php
-$pageTitle = ($blog['title'] ?? 'Blog') . ' | Digifyce';
+// blog.php and the admin preview already set $pageTitle from the post's Meta Title field
+// (falling back to the post title). Only fill it here if neither did, so the Meta Title
+// saved in the admin is what visitors and Google actually see.
+$pageTitle = $pageTitle ?? (($blog['title'] ?? 'Blog') . ' | Digifyce');
 $bodyClass = 'bg-background-dark font-display text-white selection:bg-primary/30';
 $excerpt = $blog['excerpt'] ?? '';
 $categoryName = $blog['category_name'] ?? 'INSIGHTS';
