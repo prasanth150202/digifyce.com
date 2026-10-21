@@ -194,6 +194,12 @@ $faqSchema = [
 ];
 $extraHead .= '<script type="application/ld+json">' . json_encode($faqSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) . '</script>';
 
+// Speed: the first hero screenshot is the page's largest image, so fetch it first, before the CSS and
+// scripts have finished (the later hero screens load at low priority). This page does not use GSAP,
+// so header.php skips loading it here.
+$extraHead .= '<link rel="preload" as="image" href="' . htmlspecialchars($appUrl . '/' . $sdHeroStore['desk'][0]) . '" fetchpriority="high">';
+$noGsap = true;
+
 $extraHead .= <<<'HTML'
 <style>
 	/* Colours match the other service pages (header.php, d2c-branding, brand-shoot):
@@ -308,6 +314,8 @@ $extraHead .= <<<'HTML'
 		transition-delay: var(--d, 0s);
 	}
 	.sd-js [data-sd-reveal].is-in { opacity: 1; transform: none; }
+	/* the hero is the first thing seen: show it at once instead of waiting for the script to reveal it */
+	.sd-hero [data-sd-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
 
 	/* ═══ THE STORY: hero, a sideways film, a sticky story, a chart ═══ */
 
@@ -1195,7 +1203,7 @@ include __DIR__ . '/app/views/header.php';
 						<div class="sd-desk-bar" aria-hidden="true"><i></i><i></i><i></i><span class="sd-desk-url"><span class="material-symbols-outlined">lock</span><span class="sd-url-t"><?= sd_e($sdHeroStore['domain']) ?><?php foreach ($sdHeroStore['paths'] as $p => $path): ?><span class="sd-url-p sd-url-p--<?= $p ?>"><?= sd_e($path) ?></span><?php endforeach; ?></span></span></div>
 						<div class="sd-desk-body">
 							<?php foreach ($sdHeroStore['desk'] as $p => $src): ?>
-							<div class="sd-shot sd-shot--<?= $p ?>"><img src="<?= sd_e($appUrl . '/' . $src) ?>" alt="" decoding="async"<?= image_dims_attr(__DIR__, $src) ?>><?php if (isset($sdHeroStore['taps'][$p])): ?><i class="sd-tap" style="left:<?= $sdHeroStore['taps'][$p][0] ?>%;top:<?= $sdHeroStore['taps'][$p][1] ?>%"></i><?php endif; ?></div>
+							<div class="sd-shot sd-shot--<?= $p ?>"><img src="<?= sd_e($appUrl . '/' . $src) ?>" alt="" decoding="async" fetchpriority="<?= $p === 0 ? 'high' : 'low' ?>"<?= image_dims_attr(__DIR__, $src) ?>><?php if (isset($sdHeroStore['taps'][$p])): ?><i class="sd-tap" style="left:<?= $sdHeroStore['taps'][$p][0] ?>%;top:<?= $sdHeroStore['taps'][$p][1] ?>%"></i><?php endif; ?></div>
 							<?php endforeach; ?>
 							<span class="sd-toast" aria-hidden="true"><span class="material-symbols-outlined">check_circle</span>Added to cart</span>
 							<div class="sd-done" aria-hidden="true"><span class="sd-ps-ok"><span class="material-symbols-outlined">check</span></span><span class="sd-ps-done">Order placed</span></div>
@@ -1206,7 +1214,7 @@ include __DIR__ . '/app/views/header.php';
 						<span class="sd-phone-notch"></span>
 						<div class="sd-ps">
 							<?php foreach ($sdHeroStore['phone'] as $p => $src): ?>
-							<div class="sd-shot sd-shot--<?= $p ?>"><img src="<?= sd_e($appUrl . '/' . $src) ?>" alt="" decoding="async"<?= image_dims_attr(__DIR__, $src) ?>></div>
+							<div class="sd-shot sd-shot--<?= $p ?>"><img src="<?= sd_e($appUrl . '/' . $src) ?>" alt="" decoding="async" fetchpriority="<?= $p === 0 ? 'high' : 'low' ?>"<?= image_dims_attr(__DIR__, $src) ?>></div>
 							<?php endforeach; ?>
 							<span class="sd-toast" aria-hidden="true"><span class="material-symbols-outlined">check_circle</span>Added to cart</span>
 							<div class="sd-done" aria-hidden="true">
@@ -1771,6 +1779,10 @@ include __DIR__ . '/app/views/header.php';
 			let step = 0;
 			let timer = null;
 			let userTookOver = false;
+			let inView = false;
+			// Hold the auto-advance until the first screen is on screen, so a later screen never becomes
+			// the page's largest (and so its slowest) paint.
+			const firstReady = Promise.all(Array.from(heroStage.querySelectorAll('.sd-shot--0 img')).map((img) => (img.complete ? null : new Promise((res) => { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); }))));
 
 			const desk = heroStage.querySelector('[data-sd-desk]');
 			const devs = heroStage.querySelector('[data-sd-devs]');
@@ -1786,7 +1798,8 @@ include __DIR__ . '/app/views/header.php';
 
 			if (!reduceMotion && 'IntersectionObserver' in window) {
 				new IntersectionObserver(([entry]) => {
-					if (entry.isIntersecting && !userTookOver && !timer) timer = setInterval(() => setStep(step + 1), window.matchMedia('(max-width: 760px)').matches ? 2000 : 2800);
+					inView = entry.isIntersecting;
+					if (entry.isIntersecting && !userTookOver && !timer) firstReady.then(() => { if (inView && !userTookOver && !timer) timer = setInterval(() => setStep(step + 1), window.matchMedia('(max-width: 760px)').matches ? 2000 : 2800); });
 					if (!entry.isIntersecting && timer) { clearInterval(timer); timer = null; }
 				}, { threshold: 0.35 }).observe(heroStage);
 			}

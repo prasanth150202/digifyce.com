@@ -69,7 +69,9 @@ if ($navCtaHref !== '') {
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <?php if (empty($noGsap)): ?>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <?php endif; ?>
     <link rel="preconnect" href="https://www.googletagmanager.com">
     <link rel="preconnect" href="https://www.clarity.ms">
     <title><?= htmlspecialchars($pageTitle) ?></title>
@@ -137,8 +139,11 @@ if ($navCtaHref !== '') {
     <script type="application/ld+json"><?= json_encode($orgSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
     <script type="application/ld+json"><?= json_encode($websiteSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
     <link rel="stylesheet" href="<?= htmlspecialchars($appUrl . '/public/assets/css/tailwind.min.css') ?>">
+    <?php // Pages that never touch GSAP set $noGsap = true before including this header, to skip ~110 KB of script. ?>
+    <?php if (empty($noGsap)): ?>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+    <?php endif; ?>
     <script type="text/javascript">     (function(c,l,a,r,i,t,y){         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);     })(window, document, "clarity", "script", "w58ca53ero"); </script>
     <!-- Google tag (gtag.js) --> <script async src="https://www.googletagmanager.com/gtag/js?id=G-2D5QYRRXZG"></script> <script>   window.dataLayer = window.dataLayer || [];   function gtag(){dataLayer.push(arguments);}   gtag('js', new Date());   gtag('config', 'G-2D5QYRRXZG'); </script>
     <!-- Google Tag Manager -->
