@@ -48,3 +48,7 @@ venv/
 
 # Website audit generated output (screenshots, reports)
 /storage/audits/
+
+# Blog autopilot scratch drafts
+/tools/blog_autopilot/work/
+__pycache__/
