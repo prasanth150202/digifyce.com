@@ -1,0 +1,55 @@
+{
+  "site": "https://digifyce.com",
+  "sitemap": "https://digifyce.com/sitemap.xml",
+  "import_endpoint": "https://digifyce.com/app/api/blog_import.php",
+  "max_auto_links": 6,
+  "limits": {
+    "title_min": 50, "title_max": 60, "title_hard_max": 62, "title_hard_min": 40,
+    "meta_min": 130, "meta_max": 150, "meta_hard_max": 160, "meta_hard_min": 110,
+    "words_min": 1200, "words_hard_min": 1000,
+    "faq_answer_min": 40, "faq_answer_max": 60, "faq_answer_hard_min": 35, "faq_answer_hard_max": 70,
+    "faq_min_questions": 4
+  },
+  "cta": {
+    "base_url": "https://digifyce.com/leadform",
+    "utm": "utm_source=Organic&amp;utm_medium=Organic_Website&amp;utm_campaign=Blog_Lead_Form&amp;utm_id=Website_Blogs",
+    "button_style": "display: inline-block; background-color: #0d69f2; color: #ffffff; padding: 14px 32px; border-radius: 6px; font-weight: bold; text-decoration: none; font-size: 15px; letter-spacing: 0.05em; text-transform: uppercase;",
+    "variants": {
+      "shopify": {
+        "mid_text": "Not sure where your Shopify store stands? Digifyce can review it and show you the biggest opportunities first.",
+        "mid_label": "Get a free store audit",
+        "end_text": "Ready to improve your Shopify store? Talk to the Digifyce team about a scoped plan for your brand.",
+        "end_label": "Get a free store audit"
+      },
+      "general": {
+        "mid_text": "Want a clear view of where your marketing can improve? Digifyce can review your setup and show you what to fix first.",
+        "mid_label": "Get a free audit",
+        "end_text": "Ready to grow your brand? Talk to the Digifyce team about a plan built around your goals.",
+        "end_label": "Get a free audit"
+      }
+    }
+  },
+  "link_rules": [
+    {"phrases": ["Shopify development services", "Shopify development company", "Shopify development"], "url": "https://digifyce.com/shopify-development"},
+    {"phrases": ["Shopify development cost in India", "Shopify development cost"], "url": "https://digifyce.com/blog/shopify-development-cost-india"},
+    {"phrases": ["Shopify vs WooCommerce"], "url": "https://digifyce.com/blog/shopify-vs-woocommerce-for-d2c-brands"},
+    {"phrases": ["Shopify Plus vs Shopify", "Shopify Plus"], "url": "https://digifyce.com/blog/shopify-plus-vs-shopify"},
+    {"phrases": ["Shopify agency vs freelancer"], "url": "https://digifyce.com/blog/shopify-agency-vs-freelancer-india"},
+    {"phrases": ["choose a Shopify development company"], "url": "https://digifyce.com/blog/how-to-choose-a-shopify-development-company"},
+    {"phrases": ["Shopify migration"], "url": "https://digifyce.com/blog/shopify-migration-case-study-apparel-brand"},
+    {"phrases": ["Shopify checkout optimization"], "url": "https://digifyce.com/blog/shopify-checkout-optimization-case-study"},
+    {"phrases": ["cart abandonment"], "url": "https://digifyce.com/blog/how_to_reduce_cart_abandonment_for_clients"},
+    {"phrases": ["D2C branding services", "D2C branding"], "url": "https://digifyce.com/d2c-branding-service"},
+    {"phrases": ["performance marketing"], "url": "https://digifyce.com/performance-marketing-service"},
+    {"phrases": ["ecommerce marketing"], "url": "https://digifyce.com/e-commerce-marketing-service"},
+    {"phrases": ["marketplace management"], "url": "https://digifyce.com/marketplace-management-service"},
+    {"phrases": ["content marketing"], "url": "https://digifyce.com/content-marketing-service"},
+    {"phrases": ["lead generation"], "url": "https://digifyce.com/lead_generations"},
+    {"phrases": ["commercial shoot", "product photography"], "url": "https://digifyce.com/commercial-shoot-service"},
+    {"phrases": ["creative development"], "url": "https://digifyce.com/creative-development"}
+  ],
+  "banned_phrases": [
+    "in today's fast paced", "game changer", "unlock the power", "delve", "ever evolving", "it is important to note",
+    "in the realm of", "navigate the complexities", "tapestry", "revolutionize", "seamlessly", "cutting edge", "leverage"
+  ]
+}
