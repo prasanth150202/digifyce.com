@@ -34,7 +34,7 @@ $uri_clean = ltrim($_GET['uri'] ?? '', '/');
 $publicPages = [
     'leadform', 'thankyou', 'about-us', 'about-us-new',
     'brand-shoot', 'careers', 'content-marketing', 'creative-dev',
-    'd2c-branding', 'd2c', 'e-com-marketing', 'instavideos',
+    'd2c-branding', 'd2c', 'd2c-enquiry', 'e-com-marketing', 'instavideos',
     'lead_generations', 'market-manage', 'performance-marketing', 'products',
     'service', 'shopify-development', 'technology', 'testimonial',
     'blog_list',
