@@ -25,6 +25,8 @@ $statements = [
     "ALTER TABLE lead_form_submissions ADD COLUMN business_type VARCHAR(32) AFTER main_objective",
     "ALTER TABLE lead_form_submissions ADD COLUMN industry VARCHAR(32) AFTER business_type",
     "ALTER TABLE lead_form_submissions ADD COLUMN is_qualified TINYINT(1) NOT NULL DEFAULT 0 AFTER budget",
+    "ALTER TABLE lead_form_submissions ADD COLUMN industry_other VARCHAR(128) NULL AFTER industry",
+    "ALTER TABLE lead_form_submissions ADD COLUMN crm_skipped TINYINT(1) NOT NULL DEFAULT 0 AFTER is_qualified",
 ];
 
 $ok = 0; $skipped = 0; $errors = [];

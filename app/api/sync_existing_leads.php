@@ -56,6 +56,10 @@ try {
     $errors = [];
     
     foreach ($leads as $lead) {
+        // Early-exit leads from leadform.php are intentionally kept out of the CRM.
+        if (!empty($lead['crm_skipped'])) {
+            continue;
+        }
         $leadData = [
             'id' => $lead['id'],
             'full_name' => $lead['full_name'],

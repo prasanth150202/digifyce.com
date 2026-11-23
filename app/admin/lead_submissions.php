@@ -37,8 +37,29 @@ $qualifiedLeads = count(array_filter($leads, function($lead) {
 }));
 
 $objectiveLabels = ['leads' => 'Leads', 'sales_website' => 'Sales (Website)'];
-$businessTypeLabels = ['own_manufacturer' => 'Own Manufacturer', 'reseller_retailer' => 'Reseller/Retailer', 'wholesale' => 'Wholesale'];
-$industryLabels = ['fmcg' => 'FMCG', 'textile' => 'Textile', 'cosmetic' => 'Cosmetic', 'others' => 'Others'];
+$businessTypeLabels = [
+    'own_brand_manufacturer' => 'My own brand – I manufacture',
+    'own_brand_third_party'  => 'My own brand – made by a third party',
+    'retailer_reseller'      => 'Retailer / reseller of other brands',
+    'wholesaler_b2b'         => 'Wholesaler / B2B supplier',
+    'planning_to_launch'     => 'Planning to launch',
+    'service_business'       => 'Service business (salon, studio, etc.)',
+    // Legacy values from submissions made before the options changed
+    'own_manufacturer'       => 'Own Manufacturer',
+    'reseller_retailer'      => 'Reseller/Retailer',
+    'wholesale'              => 'Wholesale',
+];
+$industryLabels = [
+    'beauty_personal_care'    => 'Beauty & personal care',
+    'food_beverage_fmcg'      => 'Food, beverages & packaged goods',
+    'fashion_apparel_textile' => 'Fashion, apparel & textiles',
+    'other_consumer_product'  => 'Other consumer product',
+    // Legacy values from submissions made before the options changed
+    'fmcg'     => 'FMCG',
+    'textile'  => 'Textile',
+    'cosmetic' => 'Cosmetic',
+    'others'   => 'Others',
+];
 $budgetLabels = ['50000' => '₹50,000', '1lakh' => '₹1 Lakh', 'above_1lakh' => 'Above ₹1 Lakh'];
 
 include __DIR__ . '/../views/admin_header.php';
@@ -160,6 +181,9 @@ include __DIR__ . '/../views/admin_header.php';
                                 <?= htmlspecialchars($lead['full_name']) ?>
                                 <?php if (($lead['status'] ?? 'submitted') === 'draft'): ?>
                                     <span class="badge bg-warning text-dark ms-1" title="Started an audit but never finished the form">Draft</span>
+                                <?php endif; ?>
+                                <?php if (!empty($lead['crm_skipped'])): ?>
+                                    <span class="badge bg-secondary ms-1" title="Budget ₹50,000 or business is Planning to launch / Service business - finished the form early and was not sent to the CRM">Not sent to CRM</span>
                                 <?php endif; ?>
                                 <?php if (!empty($lead['is_qualified'])): ?>
                                     <span class="badge bg-warning text-dark ms-1" title="<?= htmlspecialchars($objectiveLabels[$lead['main_objective']] ?? $lead['main_objective'] ?? '') ?>"><i class="fas fa-star me-1"></i>Qualified</span>
@@ -333,7 +357,9 @@ function viewLead(lead) {
         ? '<span class="badge bg-warning text-dark"><i class="fas fa-star me-1"></i>Qualified</span>'
         : '<span class="badge bg-secondary">No</span>';
     document.getElementById('modal-business-type').textContent = businessTypeLabels[lead.business_type] || lead.business_type || '-';
-    document.getElementById('modal-industry').textContent = industryLabels[lead.industry] || lead.industry || '-';
+    var industryText = industryLabels[lead.industry] || lead.industry || '-';
+    if (lead.industry_other) industryText += ': ' + lead.industry_other;
+    document.getElementById('modal-industry').textContent = industryText;
     document.getElementById('modal-budget').textContent = budgetLabels[lead.budget] || lead.budget || '-';
     document.getElementById('modal-has-ads').textContent = lead.has_ads ? (lead.has_ads === 'yes' ? 'Yes' : 'No') : '-';
     document.getElementById('modal-ad-spend').textContent = lead.ad_spend || '-';

@@ -43,9 +43,10 @@ try {
     $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
 
-    // Qualification: Sales(website) objective + Own Manufacturer/Wholesale + budget of 1Lakh or above
+    // Qualification: Sales(website) objective + own-brand manufacturer/wholesaler + budget of 1Lakh or above
+    // (legacy 'own_manufacturer'/'wholesale' keys still accepted from older clients)
     $isQualified = ($mainObjective === 'sales_website')
-        && in_array($businessType, ['own_manufacturer', 'wholesale'], true)
+        && in_array($businessType, ['own_brand_manufacturer', 'wholesaler_b2b', 'own_manufacturer', 'wholesale'], true)
         && in_array($budget, ['1lakh', 'above_1lakh'], true);
 
     $pdo = Database::getInstance();

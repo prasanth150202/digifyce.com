@@ -19,8 +19,30 @@ if (!empty($_GET['services'])) {
     $selectedServicesText = "I am interested in: " . implode(', ', $services) . ".";
 }
 
-$businessTypeOptions = ['own_manufacturer' => 'Own Manufacturer', 'reseller_retailer' => 'Reseller/Retailer (Outsource Products)', 'wholesale' => 'Wholesale'];
-$industryOptions = ['fmcg' => 'FMCG', 'textile' => 'Textile', 'cosmetic' => 'Cosmetic', 'others' => 'Others'];
+// Keys are stored in lead_form_submissions.business_type / .industry, which are
+// VARCHAR(32) on older databases - keep every key at 32 characters or fewer.
+$businessTypeOptions = [
+    'own_brand_manufacturer' => 'My own brand – I manufacture',
+    'own_brand_third_party'  => 'My own brand – made by a third party',
+    'retailer_reseller'      => 'Retailer / reseller of other brands',
+    'wholesaler_b2b'         => 'Wholesaler / B2B supplier',
+    'planning_to_launch'     => 'Planning to launch',
+    'service_business'       => 'Service business (salon, studio, etc.)',
+];
+$industryOptions = [
+    'beauty_personal_care'    => 'Beauty & personal care products: makeup, kajal, skincare, haircare',
+    'food_beverage_fmcg'      => 'Food, beverages & packaged consumer goods',
+    'fashion_apparel_textile' => 'Fashion, apparel & textiles',
+    'other_consumer_product'  => 'Other consumer product',
+];
+// The industry option that reveals the required "What product?" text box.
+$industryOtherKey = 'other_consumer_product';
+
+// Leads matching ANY of these end the form at step 3 (Your Business): they go
+// straight to the thank-you page and are saved, but never sent to the CRM.
+// Mirrored in the step-3 Next handler in the script below.
+$crmSkipBudgets = ['50000'];
+$crmSkipBusinessTypes = ['planning_to_launch', 'service_business'];
 $budgetOptions = ['50000' => '₹50,000', '1lakh' => '₹1 Lakh', 'above_1lakh' => 'Above ₹1 Lakh'];
 $adSpendOptions = ['under-25k' => 'Under ₹25k', '25k-50k' => '₹25k - ₹50k', '50k-1l' => '₹50k - ₹1L', '1l-3l' => '₹1L - ₹3L', '3l-plus' => '₹3L+'];
 $roasOptions = ['below-1x' => 'Below 1x', '1x-2x' => '1x - 2x', '2x-4x' => '2x - 4x', '4x-6x' => '4x - 6x', '6x-plus' => '6x+', 'not-sure' => 'Not sure'];
@@ -53,6 +75,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $businessType = isset($_POST['business_type']) ? trim($_POST['business_type']) : '';
         $industry = isset($_POST['industry']) ? trim($_POST['industry']) : '';
+        // Only accept values the form actually offers.
+        if (!isset($businessTypeOptions[$businessType])) {
+            $businessType = '';
+        }
+        if (!isset($industryOptions[$industry])) {
+            $industry = '';
+        }
+        $industryOther = ($industry === $industryOtherKey && isset($_POST['industry_other']))
+            ? mb_substr(trim($_POST['industry_other']), 0, 128)
+            : null;
         $budget = isset($_POST['budget']) ? trim($_POST['budget']) : null;
 
         $hasAds = isset($_POST['has_ads']) && in_array($_POST['has_ads'], ['yes', 'no'], true)
@@ -71,12 +103,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $message = isset($_POST['message']) ? trim($_POST['message']) : '';
 
+        // Early exit: these leads finish at step 3 (Your Business) - the form
+        // submits straight to the thank-you page, skipping Marketing and
+        // Project Details, and the lead is saved but never pushed to the CRM.
+        // Decided here from the submitted values, not from a client flag.
+        $crmSkipped = in_array($budget, $crmSkipBudgets, true)
+            || in_array($businessType, $crmSkipBusinessTypes, true);
+
         if (
-            empty($fullName) || empty($email) || empty($message) || empty($mainObjective) ||
-            $businessType === '' || $industry === '' || $hasAds === null ||
-            ($hasAds === 'yes' && (empty($adSpend) || empty($roas))) ||
+            empty($fullName) || empty($email) || empty($mainObjective) ||
+            $businessType === '' ||
             $hasWebsite === null ||
-            ($hasWebsite === 'yes' && empty($website))
+            ($hasWebsite === 'yes' && empty($website)) ||
+            // Steps 4-5 are only required for leads that go through the full form.
+            (!$crmSkipped && (
+                empty($message) || $industry === '' ||
+                ($industry === $industryOtherKey && empty($industryOther)) ||
+                $hasAds === null ||
+                ($hasAds === 'yes' && (empty($adSpend) || empty($roas)))
+            ))
         ) {
             $errorMessage = 'Please fill in all required fields.';
         } else {
@@ -87,12 +132,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
                 $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
 
-                // Qualification: Sales(website) objective + Own Manufacturer/Wholesale + budget of 1Lakh or above
+                // Qualification: Sales(website) objective + own-brand manufacturer/wholesaler + budget of 1Lakh or above
                 $isQualified = ($mainObjective === 'sales_website')
-                    && in_array($businessType, ['own_manufacturer', 'wholesale'], true)
+                    && in_array($businessType, ['own_brand_manufacturer', 'wholesaler_b2b'], true)
                     && in_array($budget, ['1lakh', 'above_1lakh'], true);
 
                 $pdo = Database::getInstance();
+
+                // Self-heal: databases created before these fields were added
+                // don't have the columns yet.
+                $selfHealColumns = [
+                    'industry_other' => "ALTER TABLE lead_form_submissions ADD COLUMN industry_other VARCHAR(128) NULL AFTER industry",
+                    'crm_skipped'    => "ALTER TABLE lead_form_submissions ADD COLUMN crm_skipped TINYINT(1) NOT NULL DEFAULT 0 AFTER is_qualified",
+                ];
+                foreach ($selfHealColumns as $column => $alterSql) {
+                    try {
+                        $colCheck = $pdo->query("SHOW COLUMNS FROM lead_form_submissions LIKE '$column'");
+                        if (!$colCheck->fetch()) {
+                            $pdo->exec($alterSql);
+                        }
+                    } catch (Exception $e) {
+                        error_log("leadform.php $column column check failed: " . $e->getMessage());
+                    }
+                }
 
                 // If step 2 (Website) already created a draft lead + started an
                 // audit in the background, finish that same row instead of
@@ -110,12 +172,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($draftExists) {
                     $stmt = $pdo->prepare(
                         "UPDATE lead_form_submissions SET
-                            full_name = ?, email = ?, phone = ?, company = ?, main_objective = ?, business_type = ?, industry = ?,
-                            budget = ?, has_ads = ?, ad_spend = ?, roas = ?, has_website = ?, is_qualified = ?, website = ?,
+                            full_name = ?, email = ?, phone = ?, company = ?, main_objective = ?, business_type = ?, industry = ?, industry_other = ?,
+                            budget = ?, has_ads = ?, ad_spend = ?, roas = ?, has_website = ?, is_qualified = ?, crm_skipped = ?, website = ?,
                             message = ?, ip_address = ?, user_agent = ?, status = 'submitted'
                          WHERE id = ?"
                     );
-                    $stmt->execute([$fullName, $email, $phone, $company, $mainObjective, $businessType, $industry, $budget, $hasAds, $adSpend, $roas, $hasWebsite, $isQualified ? 1 : 0, $website, $message, $ipAddress, $userAgent, $draftLeadId]);
+                    $stmt->execute([$fullName, $email, $phone, $company, $mainObjective, $businessType, $industry, $industryOther, $budget, $hasAds, $adSpend, $roas, $hasWebsite, $isQualified ? 1 : 0, $crmSkipped ? 1 : 0, $website, $message, $ipAddress, $userAgent, $draftLeadId]);
                     $leadId = $draftLeadId;
 
                     // The audit (if eligible) already started when the draft was
@@ -127,8 +189,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     unset($_SESSION['draft_lead_id'], $_SESSION['draft_audit_reason']);
                 } else {
-                    $stmt = $pdo->prepare("INSERT INTO lead_form_submissions (full_name, email, phone, company, main_objective, business_type, industry, budget, has_ads, ad_spend, roas, has_website, is_qualified, website, message, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([$fullName, $email, $phone, $company, $mainObjective, $businessType, $industry, $budget, $hasAds, $adSpend, $roas, $hasWebsite, $isQualified ? 1 : 0, $website, $message, $ipAddress, $userAgent]);
+                    $stmt = $pdo->prepare("INSERT INTO lead_form_submissions (full_name, email, phone, company, main_objective, business_type, industry, industry_other, budget, has_ads, ad_spend, roas, has_website, is_qualified, crm_skipped, website, message, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$fullName, $email, $phone, $company, $mainObjective, $businessType, $industry, $industryOther, $budget, $hasAds, $adSpend, $roas, $hasWebsite, $isQualified ? 1 : 0, $crmSkipped ? 1 : 0, $website, $message, $ipAddress, $userAgent]);
                     $leadId = (int) $pdo->lastInsertId();
 
                     // Fallback path: the early draft-start request never fired or
@@ -139,7 +201,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $auditReason = $auditResult['reason'];
                 }
 
-                // Send lead to CRM webhook
+                // Send lead to CRM webhook (skipped for early-exit leads)
+                if ($crmSkipped) {
+                    error_log("leadform.php: lead $leadId saved but not sent to CRM (budget=$budget, business_type=$businessType)");
+                } else {
                 $crmWebhookUrl = 'https://crm.zingbot.io/api/external/webhook_receiver_dynamic.php?org_id=10&conn_id=47674d8c390bb72696198f81797f238f&api_key=1e3d1ca5c5fe8226550f05824b3b9b83c152dafc4ccb665f30bb798693671fd4';
 
                 $leadData = [
@@ -150,7 +215,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'company' => $company,
                     'main_objective' => $objectiveOptions[$mainObjective] ?? $mainObjective,
                     'business_type' => $businessTypeOptions[$businessType] ?? $businessType,
-                    'industry' => $industryOptions[$industry] ?? $industry,
+                    'industry' => ($industryOptions[$industry] ?? $industry) . ($industryOther ? ': ' . $industryOther : ''),
+                    'industry_other' => $industryOther,
                     'budget' => $budgetOptions[$budget] ?? $budget,
                     'has_ads' => $hasAds,
                     'ad_spend' => $adSpend,
@@ -181,6 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Log webhook response for debugging
                 error_log("CRM webhook sent from leadform.php: HTTP $httpCode - Response: " . substr($response, 0, 500) . (strlen($response) > 500 ? '...' : '') . ($curlError ? " - cURL Error: $curlError" : ""));
+                }
 
                 // Redirect (not re-render) so refreshing the thank-you page never
                 // re-submits the lead, and the audit token gets a bookmarkable URL.
@@ -355,22 +422,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <!-- Step 3: Your Business -->
                     <div class="form-step grid grid-cols-1 md:grid-cols-2 gap-6 hidden" data-step="2">
-                        <div>
+                        <div class="md:col-span-2">
                             <label class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Company</label>
                             <input name="company"
                                 class="mt-3 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-600 focus:border-[var(--electric-blue)] focus:outline-none"
                                 placeholder="Company name" />
                         </div>
-                        <div>
-                            <label class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Does your business have its own manufacturing facility? <span class="text-[var(--electric-blue)]">*</span></label>
-                            <select name="business_type" required
-                                class="mt-3 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-[var(--electric-blue)] focus:outline-none">
-                                <option value="" class="bg-[#030508]">Select an option</option>
+                        <div class="md:col-span-2">
+                            <span class="text-[10px] uppercase tracking-[0.3em] text-slate-500 block mb-3">Which best describes your business? <span class="text-[var(--electric-blue)]">*</span></span>
+                            <div class="lf-radio-group" data-required-radio="business_type" role="radiogroup">
                                 <?php foreach ($businessTypeOptions as $val => $label): ?>
-                                <option value="<?= htmlspecialchars($val) ?>" class="bg-[#030508]"><?= htmlspecialchars($label) ?></option>
+                                <label class="lf-radio">
+                                    <input type="radio" name="business_type" value="<?= htmlspecialchars($val) ?>">
+                                    <span class="lf-radio-dot" aria-hidden="true"></span>
+                                    <span class="lf-radio-text"><?= htmlspecialchars($label) ?></span>
+                                </label>
                                 <?php endforeach; ?>
-                            </select>
-                            <p class="field-error hidden mt-2 text-xs text-red-400">Please select your business type.</p>
+                            </div>
+                            <p class="field-error hidden mt-2 text-xs text-red-400">Please select what best describes your business.</p>
                         </div>
                         <div>
                             <label class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Estimated monthly marketing budget</label>
@@ -397,15 +466,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <!-- Step 4: Marketing -->
                     <div class="form-step grid grid-cols-1 md:grid-cols-2 gap-6 hidden" data-step="3">
                         <div class="md:col-span-2">
-                            <label class="text-[10px] uppercase tracking-[0.3em] text-slate-500">What type of industry is your business? <span class="text-[var(--electric-blue)]">*</span></label>
-                            <select name="industry" required
-                                class="mt-3 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-[var(--electric-blue)] focus:outline-none">
-                                <option value="" class="bg-[#030508]">Select industry</option>
+                            <span class="text-[10px] uppercase tracking-[0.3em] text-slate-500 block mb-3">What does your brand sell? <span class="text-[var(--electric-blue)]">*</span></span>
+                            <div class="lf-radio-group" data-required-radio="industry" role="radiogroup">
                                 <?php foreach ($industryOptions as $val => $label): ?>
-                                <option value="<?= htmlspecialchars($val) ?>" class="bg-[#030508]"><?= htmlspecialchars($label) ?></option>
+                                <?php
+                                    // "Title: examples" labels render the examples as a muted hint line.
+                                    $parts = explode(':', $label, 2);
+                                ?>
+                                <label class="lf-radio">
+                                    <input type="radio" name="industry" value="<?= htmlspecialchars($val) ?>">
+                                    <span class="lf-radio-dot" aria-hidden="true"></span>
+                                    <span class="lf-radio-text">
+                                        <?= htmlspecialchars(trim($parts[0])) ?>
+                                        <?php if (isset($parts[1])): ?>
+                                        <span class="lf-radio-hint"><?= htmlspecialchars(trim($parts[1])) ?></span>
+                                        <?php endif; ?>
+                                    </span>
+                                </label>
                                 <?php endforeach; ?>
-                            </select>
-                            <p class="field-error hidden mt-2 text-xs text-red-400">Please select your industry.</p>
+                            </div>
+                            <p class="field-error hidden mt-2 text-xs text-red-400">Please select what your brand sells.</p>
+                        </div>
+                        <div id="industryOtherWrap" class="hidden md:col-span-2">
+                            <label for="industryOtherInput" class="text-[10px] uppercase tracking-[0.3em] text-slate-500">What product? <span class="text-[var(--electric-blue)]">*</span></label>
+                            <input name="industry_other" id="industryOtherInput" maxlength="128"
+                                class="mt-3 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-600 focus:border-[var(--electric-blue)] focus:outline-none"
+                                placeholder="e.g. Home decor, pet supplies, electronics" />
+                            <p class="field-error hidden mt-2 text-xs text-red-400">Please tell us what product you sell.</p>
                         </div>
                         <div class="md:col-span-2">
                             <label class="text-[10px] uppercase tracking-[0.3em] text-slate-500 block mb-3">Do you currently run paid ads? <span class="text-[var(--electric-blue)]">*</span></label>
@@ -480,6 +567,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </section>
 
 <?php if (!$submitted): ?>
+<style>
+    /* Radio-card options. Plain CSS rather than Tailwind utilities because
+       tailwind.min.css is prebuilt and only contains classes it scanned. */
+    .lf-radio-group {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    @media (min-width: 768px) {
+        .lf-radio-group { grid-template-columns: 1fr 1fr; }
+    }
+    .lf-radio {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
+        cursor: pointer;
+        transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+    .lf-radio:hover { border-color: var(--electric-blue); }
+    .lf-radio input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+        pointer-events: none;
+    }
+    .lf-radio-dot {
+        flex-shrink: 0;
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+        border-radius: 9999px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .lf-radio-text { line-height: 1.4; }
+    .lf-radio-hint {
+        display: block;
+        margin-top: 2px;
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+    .lf-radio.is-checked {
+        border-color: var(--electric-blue);
+        background: rgba(0, 102, 255, 0.1);
+    }
+    .lf-radio.is-checked .lf-radio-dot {
+        border-color: var(--electric-blue);
+        box-shadow: inset 0 0 0 3px #05070a, inset 0 0 0 9px var(--electric-blue);
+    }
+    .lf-radio input:focus-visible + .lf-radio-dot {
+        outline: 2px solid var(--electric-blue);
+        outline-offset: 2px;
+    }
+    .lf-radio-group.has-error .lf-radio { border-color: rgb(239, 68, 68); }
+
+    /* Selected state for the Yes/No toggle buttons (website, audit, ads). */
+    .has-website-option.is-selected,
+    .audit-option.is-selected,
+    .has-ads-option.is-selected {
+        border-color: var(--electric-blue);
+        background: rgba(0, 102, 255, 0.15);
+        box-shadow: inset 0 0 0 1px var(--electric-blue);
+        font-weight: 600;
+    }
+</style>
 <script>
 (function () {
     var form = document.getElementById('leadForm');
@@ -514,6 +673,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         field.classList.toggle('border-red-500', hasError);
         if (errorEl) errorEl.classList.toggle('hidden', !hasError);
     }
+
+    var crmSkipBudgets = <?= json_encode($crmSkipBudgets) ?>;
+    var crmSkipBusinessTypes = <?= json_encode($crmSkipBusinessTypes) ?>;
+
+    function isEarlyExitLead() {
+        var budgetSelect = form.querySelector('[name="budget"]');
+        var businessType = form.querySelector('input[name="business_type"]:checked');
+        return (budgetSelect && crmSkipBudgets.indexOf(budgetSelect.value) !== -1)
+            || (businessType && crmSkipBusinessTypes.indexOf(businessType.value) !== -1);
+    }
+
+    function setRadioGroupError(group, hasError) {
+        group.classList.toggle('has-error', hasError);
+        var errorEl = group.parentElement.querySelector('.field-error');
+        if (errorEl) errorEl.classList.toggle('hidden', !hasError);
+    }
+
+    // Radio cards: mirror the checked state onto the card, clear the group's
+    // error once something is picked, and reveal the "What product?" box only
+    // for "Other consumer product".
+    var industryOtherKey = <?= json_encode($industryOtherKey) ?>;
+    var industryOtherWrap = document.getElementById('industryOtherWrap');
+    var industryOtherInput = document.getElementById('industryOtherInput');
+
+    Array.prototype.forEach.call(form.querySelectorAll('.lf-radio-group'), function (group) {
+        var inputs = group.querySelectorAll('input[type="radio"]');
+        Array.prototype.forEach.call(inputs, function (input) {
+            input.addEventListener('change', function () {
+                Array.prototype.forEach.call(inputs, function (other) {
+                    other.closest('.lf-radio').classList.toggle('is-checked', other.checked);
+                });
+                setRadioGroupError(group, false);
+
+                if (input.name === 'industry') {
+                    var showOther = input.value === industryOtherKey;
+                    industryOtherWrap.classList.toggle('hidden', !showOther);
+                    if (showOther) {
+                        industryOtherInput.setAttribute('required', 'required');
+                        industryOtherInput.focus();
+                    } else {
+                        industryOtherInput.removeAttribute('required');
+                        industryOtherInput.value = '';
+                        setFieldError(industryOtherInput, false);
+                    }
+                }
+            });
+        });
+    });
 
     function isVisible(el) {
         return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
@@ -561,6 +768,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        Array.prototype.forEach.call(step.querySelectorAll('[data-required-radio]'), function (group) {
+            var name = group.getAttribute('data-required-radio');
+            var checked = !!form.querySelector('input[name="' + name + '"]:checked');
+            if (!checked) valid = false;
+            setRadioGroupError(group, !checked);
+        });
+
         if (hasAdsGroup && step.contains(hasAdsGroup)) {
             var adsGroupError = hasAdsGroup.parentElement.querySelector('.field-error');
             if (!hasAdsInput.value) {
@@ -605,6 +819,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (current === 1 && !draftAuditStarted && hasWebsiteInput.value === 'yes' && wantAuditInput.value === 'yes') {
             startDraftAudit();
         }
+        // Step 3 (Your Business): early-exit leads skip the remaining steps and
+        // submit straight to the thank-you page. The server applies the same
+        // rule and won't send these leads to the CRM.
+        if (current === 2 && isEarlyExitLead()) {
+            nextBtn.disabled = true;
+            backBtn.disabled = true;
+            nextBtn.textContent = 'Submitting...';
+            form.submit();
+            return;
+        }
         current = Math.min(current + 1, steps.length - 1);
         showStep(current);
     });
@@ -630,9 +854,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             var value = btn.getAttribute('data-value');
             hasAdsInput.value = value;
             Array.prototype.forEach.call(document.querySelectorAll('.has-ads-option'), function (b) {
-                var active = b === btn;
-                b.classList.toggle('border-[var(--electric-blue)]', active);
-                b.classList.toggle('bg-[var(--electric-blue)]/10', active);
+                b.classList.toggle('is-selected', b === btn);
+                b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
             });
             var groupError = hasAdsGroup.parentElement.querySelector('.field-error');
             if (groupError) groupError.classList.add('hidden');
@@ -664,7 +887,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         wantAuditInput.value = '';
         auditTimeNote.classList.add('hidden');
         Array.prototype.forEach.call(document.querySelectorAll('.audit-option'), function (b) {
-            b.classList.remove('border-[var(--electric-blue)]', 'bg-[var(--electric-blue)]/10');
+            b.classList.remove('is-selected');
+            b.setAttribute('aria-pressed', 'false');
         });
         var auditGroupError = wantAuditGroup.parentElement.querySelector('.field-error');
         if (auditGroupError) auditGroupError.classList.add('hidden');
@@ -675,9 +899,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             var value = btn.getAttribute('data-value');
             hasWebsiteInput.value = value;
             Array.prototype.forEach.call(document.querySelectorAll('.has-website-option'), function (b) {
-                var active = b === btn;
-                b.classList.toggle('border-[var(--electric-blue)]', active);
-                b.classList.toggle('bg-[var(--electric-blue)]/10', active);
+                b.classList.toggle('is-selected', b === btn);
+                b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
             });
             var groupError = hasWebsiteGroup.parentElement.querySelector('.field-error');
             if (groupError) groupError.classList.add('hidden');
@@ -702,9 +925,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             var value = btn.getAttribute('data-value');
             wantAuditInput.value = value;
             Array.prototype.forEach.call(document.querySelectorAll('.audit-option'), function (b) {
-                var active = b === btn;
-                b.classList.toggle('border-[var(--electric-blue)]', active);
-                b.classList.toggle('bg-[var(--electric-blue)]/10', active);
+                b.classList.toggle('is-selected', b === btn);
+                b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
             });
             var groupError = wantAuditGroup.parentElement.querySelector('.field-error');
             if (groupError) groupError.classList.add('hidden');
