@@ -178,11 +178,10 @@ if ($crmSkipped) {
         'phone'        => $phone,
         'industry'     => $industryOptions[$industry],
         'budget'       => $budget ? $budgetOptions[$budget] : '',
-        'message'      => $message,
-        'ip_address'   => $ipAddress,
-        'user_agent'   => $userAgent,
         'submitted_at' => date('Y-m-d H:i:s'),
     ];
+    // Only contact + brand details go to the CRM. The visitor's products, costs
+    // and prices ($message) stay in our admin only.
 
     $ch = curl_init($crmWebhookUrl);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
