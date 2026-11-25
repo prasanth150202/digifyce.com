@@ -19,6 +19,14 @@ RewriteCond %{REQUEST_METHOD} !POST
 RewriteCond %{HTTP_HOST} ^www\.digifyce\.com$ [NC]
 RewriteRule ^(.*)$ https://digifyce.com/$1 [R=301,L]
 
+# Collapse repeated slashes in the path (e.g. /digifyce//pricing-calculator → /digifyce/pricing-calculator).
+# Apache serves those URLs as-is, so the page (and its canonical tag) would keep the "//".
+# Reads THE_REQUEST because Apache may already have merged slashes in REQUEST_URI.
+# Fixes one run of slashes per redirect; GET only, like the rules above.
+RewriteCond %{REQUEST_METHOD} !POST
+RewriteCond %{THE_REQUEST} ^[A-Z]+\s([^?\s]*?)//+([^?\s]*)
+RewriteRule ^ %1/%2 [R=301,L,NE]
+
 # Serve static files from storage/ directly — bypass all routing
 RewriteRule ^storage/ - [L]
 
@@ -82,6 +90,7 @@ RewriteRule ^e-com-marketing/?$ e-com-marketing.php [L,QSA,NC]
 RewriteRule ^instavideos/?$ instavideos.php [L,QSA,NC]
 RewriteRule ^market-manage/?$ market-manage.php [L,QSA,NC]
 RewriteRule ^performance-marketing/?$ performance-marketing.php [L,QSA,NC]
+RewriteRule ^pricing-calculator/?$ pricing-calculator.php [L,QSA,NC]
 RewriteRule ^products/?$ products.php [L,QSA,NC]
 RewriteRule ^service/?$ service.php [L,QSA,NC]
 RewriteRule ^shopify-development/?$ shopify-development.php [L,QSA,NC]

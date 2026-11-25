@@ -44,6 +44,7 @@ $businessTypeLabels = [
     'wholesaler_b2b'         => 'Wholesaler / B2B supplier',
     'planning_to_launch'     => 'Planning to launch',
     'service_business'       => 'Service business (salon, studio, etc.)',
+    'pricing_calculator'     => 'Pricing calculator',
     // Legacy values from submissions made before the options changed
     'own_manufacturer'       => 'Own Manufacturer',
     'reseller_retailer'      => 'Reseller/Retailer',
@@ -321,7 +322,7 @@ include __DIR__ . '/../views/admin_header.php';
                 </div>
                 <div class="mb-3">
                     <label class="text-muted small">Message</label>
-                    <p class="border p-3 bg-light" id="modal-message"></p>
+                    <p class="border p-3 bg-light" id="modal-message" style="white-space: pre-line;"></p>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
