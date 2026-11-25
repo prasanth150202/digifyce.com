@@ -12,7 +12,7 @@ header('Content-Type: application/json');
 
 // Set to true to start saving calculator leads to the database. While false the
 // form is still validated and the visitor still sees their price, but nothing is stored.
-const PC_SAVE_LEADS = false;
+const PC_SAVE_LEADS = true;
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
