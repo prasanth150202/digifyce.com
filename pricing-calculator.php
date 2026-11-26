@@ -1,99 +1,110 @@
 <?php
-$pageTitle = 'D2C Pricing Calculator – Digifyce';
-$pageDescription = 'Find the selling price that breaks even on ads. Enter your manufacturing, packaging and shipping costs and get a price and breakeven ROAS for every product and variant.';
+// One file serves two addresses (see .htaccess):
+//   /pricing-calculator            → the calculator (steps 1–2 + contact popup)
+//   /pricing-calculator/thank-you  → thank-you page with the price sheet, after the popup is submitted
+$isThanks = (($_GET['view'] ?? '') === 'thanks');
+
+if ($isThanks) {
+    $pageTitle = 'Thank you – Your price sheet | Digifyce';
+    $pageDescription = 'Your selling prices and breakeven ROAS from the Digifyce pricing calculator.';
+    $extraHead = '<meta name="robots" content="noindex, nofollow">';
+} else {
+    $pageTitle = 'D2C Pricing Calculator – Digifyce';
+    $pageDescription = 'Find the selling price that breaks even on ads. Enter your manufacturing, packaging and shipping costs and get a price and breakeven ROAS for every product and variant.';
+}
 include __DIR__ . '/app/views/header.php';
 ?>
 <style>
     /* Page-scoped styles. Kept as plain CSS (not Tailwind utilities) because
        public/assets/css/tailwind.min.css is a pre-built JIT bundle and only
        contains classes that were present when it was last compiled.
-       Text colours are chosen to stay at or above WCAG AA contrast on the dark background. */
-    /* Top padding clears the site's fixed nav (h-20 = 80px, sm:h-24 = 96px). */
-    .pc-section { background: #030508; padding: calc(80px + 1.5rem) 0 4rem; }
-    @media (min-width: 640px) { .pc-section { padding-top: calc(96px + 2rem); } }
+       Light theme: a dark title band under the site nav, then a light work area.
+       Text colours keep at least WCAG AA contrast on their backgrounds. */
+
+    /* The site nav is 60% transparent; over the light area its white links would
+       wash out, so give it a solid dark background on this page only. */
+    .main-nav-uppercase { background: rgba(5,7,10,.94) !important; }
+
+    .pc-section { --blue: #0066ff; --blue-d: #0052cc; --ink: #0f172a; --ink-2: #334155; --muted: #475569; --line: #e2e8f0; --line-2: #cbd5e1; --soft: #f8fafc;
+        background: #f3f6fb; color: var(--ink); padding-bottom: 4rem; }
     .pc-wrap { width: 92%; max-width: 940px; margin: 0 auto; transition: max-width .3s ease; }
-    .pc-wrap.is-wide { max-width: 1240px; }
-    .pc-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: .3em; color: #60a5fa; }
-    .pc-title { margin-top: .5rem; font-size: clamp(1.6rem, 3.2vw, 2.4rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; }
-    .pc-lede { margin-top: .5rem; color: #a3b1c6; max-width: 640px; font-size: 15px; line-height: 1.55; }
+    .pc-section.is-wide .pc-wrap { max-width: 1240px; }
     .pc-sr { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-    .pc-section :focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
+    .pc-section :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
     .pc-section .pc-input:focus-visible { outline: none; }
 
-    .pc-card { border: 1px solid rgba(255,255,255,.1); border-radius: 14px; background: rgba(255,255,255,.015); }
-    .pc-main { margin-top: 1.5rem; padding: 1.25rem; }
+    /* Dark title band. Top padding clears the fixed nav (h-20 = 80px, sm:h-24 = 96px). */
+    .pc-band { background: radial-gradient(120% 140% at 85% 0%, #0d1b3a 0%, #05070a 55%); color: #f8fafc; padding: calc(80px + 1.5rem) 0 4.5rem; }
+    @media (min-width: 640px) { .pc-band { padding-top: calc(96px + 2rem); } }
+    .pc-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: .3em; color: #7db4ff; font-weight: 600; }
+    .pc-title { margin-top: .5rem; font-size: clamp(1.6rem, 3.2vw, 2.4rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; color: #fff; }
+
+    /* Light work area; the card overlaps the band */
+    .pc-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 12px 32px rgba(15,23,42,.08); }
+    .pc-main { position: relative; margin-top: -3rem; padding: 1.25rem; }
     @media (min-width: 640px) { .pc-main { padding: 1.75rem; } }
 
-    /* Progress: step buttons with a thin bar under them */
-    .pc-steps { display: flex; gap: .5rem; flex-wrap: wrap; }
-    .pc-step { display: inline-flex; align-items: center; gap: .5rem; min-height: 40px; padding: .35rem .9rem .35rem .45rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); background: transparent; color: #a3b1c6; font: inherit; font-size: 13px; cursor: pointer; transition: border-color .2s, color .2s; }
-    .pc-step:hover { color: #fff; border-color: rgba(255,255,255,.3); }
-    .pc-step-n { width: 24px; height: 24px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; background: rgba(255,255,255,.08); }
-    .pc-step.is-done { color: #e2e8f0; }
-    .pc-step.is-done .pc-step-n { background: rgba(0,102,255,.35); color: #fff; }
-    .pc-step.is-current { color: #fff; border-color: var(--electric-blue); }
-    .pc-step.is-current .pc-step-n { background: var(--electric-blue); color: #fff; }
-    .pc-track { height: 4px; margin-top: .9rem; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; }
-    .pc-fill { height: 100%; border-radius: 999px; background: var(--electric-blue); transition: width .5s ease-out; }
+    /* Progress bar at the top of the card */
+    .pc-track { height: 4px; border-radius: 999px; background: var(--line); overflow: hidden; }
+    .pc-fill { height: 100%; border-radius: 999px; background: var(--blue); transition: width .5s ease-out; }
 
     .pc-body { margin-top: 1.5rem; }
-    .pc-h2 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; }
+    .pc-h2 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
     .pc-h2:focus { outline: none; }
-    .pc-h3 { font-size: 1rem; font-weight: 700; }
-    .pc-help { margin-top: .3rem; color: #a3b1c6; font-size: 14px; line-height: 1.5; }
-    .pc-label { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: #a3b1c6; font-weight: 600; }
+    .pc-h3 { font-size: 1rem; font-weight: 700; color: var(--ink); }
+    .pc-help { margin-top: .3rem; color: var(--muted); font-size: 14px; line-height: 1.5; }
 
     /* Fields */
-    .pc-field label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: #a3b1c6; font-weight: 600; }
+    .pc-field label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 600; }
     .pc-input-wrap { position: relative; margin-top: .4rem; }
-    .pc-input { width: 100%; min-height: 44px; border-radius: 10px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.05); padding: .65rem .85rem; color: #fff; font: inherit; font-size: 15px; outline: none; transition: border-color .2s, background .2s, box-shadow .2s; }
-    .pc-input::placeholder { color: #7c8aa0; }
-    .pc-input:focus { border-color: #60a5fa; background: rgba(0,102,255,.08); box-shadow: 0 0 0 3px rgba(96,165,250,.25); }
-    .pc-input[aria-invalid="true"] { border-color: #f87171; box-shadow: 0 0 0 3px rgba(248,113,113,.2); }
+    .pc-input { width: 100%; min-height: 44px; border-radius: 10px; border: 1px solid var(--line-2); background: #fff; padding: .65rem .85rem; color: var(--ink); font: inherit; font-size: 15px; outline: none; transition: border-color .2s, box-shadow .2s; }
+    .pc-input::placeholder { color: #7b8798; }
+    .pc-input:hover { border-color: #94a3b8; }
+    .pc-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,102,255,.18); }
+    .pc-input[aria-invalid="true"] { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.15); }
     .pc-input.has-pre { padding-left: 1.75rem; }
-    .pc-pre { position: absolute; top: 50%; left: .8rem; transform: translateY(-50%); color: #a3b1c6; font-size: 14px; pointer-events: none; }
-    .pc-error { display: flex; gap: .4rem; align-items: center; margin-top: .9rem; padding: .6rem .8rem; border-radius: 10px; background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.35); font-size: 14px; color: #fecaca; }
+    .pc-pre { position: absolute; top: 50%; left: .8rem; transform: translateY(-50%); color: #64748b; font-size: 14px; pointer-events: none; }
+    .pc-error { display: flex; gap: .4rem; align-items: center; margin-top: .9rem; padding: .6rem .8rem; border-radius: 10px; background: #fef2f2; border: 1px solid #fecaca; font-size: 14px; color: #b91c1c; }
     .pc-error[hidden] { display: none; }
     .pc-error .material-symbols-outlined { font-size: 18px; }
 
     /* Buttons */
-    .pc-btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 44px; border-radius: 999px; padding: .65rem 1.3rem; font: inherit; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; cursor: pointer; transition: background .2s, color .2s, border-color .2s, opacity .2s; border: 1px solid transparent; }
+    .pc-btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 44px; border-radius: 999px; padding: .65rem 1.3rem; font: inherit; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; cursor: pointer; transition: background .2s, color .2s, border-color .2s, opacity .2s; border: 1px solid transparent; text-decoration: none; }
     .pc-btn .material-symbols-outlined { font-size: 18px; }
-    .pc-btn-primary { background: var(--electric-blue); color: #fff; }
-    .pc-btn-primary:hover { background: #fff; color: #05070a; }
+    .pc-btn-primary { background: var(--blue); color: #fff; }
+    .pc-btn-primary:hover { background: var(--blue-d); }
     .pc-btn-primary[disabled] { opacity: .6; cursor: wait; }
-    .pc-btn-ghost { background: transparent; color: #e2e8f0; border-color: rgba(255,255,255,.25); }
-    .pc-btn-ghost:hover { border-color: #60a5fa; color: #93c5fd; }
-    .pc-link { display: inline-flex; align-items: center; gap: .3rem; min-height: 36px; padding: .25rem .1rem; background: none; border: 0; color: #93c5fd; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
-    .pc-link:hover { color: #fff; text-decoration: underline; }
+    .pc-btn-ghost { background: #fff; color: var(--ink); border-color: var(--line-2); }
+    .pc-btn-ghost:hover { border-color: var(--blue); color: var(--blue-d); }
+    .pc-link { display: inline-flex; align-items: center; gap: .3rem; min-height: 36px; padding: .25rem .1rem; background: none; border: 0; color: var(--blue-d); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .pc-link:hover { color: #003d99; text-decoration: underline; }
     .pc-link .material-symbols-outlined { font-size: 18px; }
-    .pc-link small { color: #a3b1c6; font-weight: 400; font-size: 13px; }
-    .pc-icon-btn { width: 40px; height: 40px; flex: none; border-radius: 999px; border: 1px solid rgba(255,255,255,.16); background: transparent; color: #cbd5e1; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: color .2s, border-color .2s; }
+    .pc-link small { color: #64748b; font-weight: 400; font-size: 13px; }
+    .pc-icon-btn { width: 40px; height: 40px; flex: none; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: color .2s, border-color .2s, background .2s; }
     .pc-icon-btn .material-symbols-outlined { font-size: 18px; }
-    .pc-icon-btn:hover { color: #fff; border-color: rgba(255,255,255,.4); }
-    .pc-icon-btn.is-danger:hover { color: #fca5a5; border-color: rgba(248,113,113,.6); }
+    .pc-icon-btn:hover { color: var(--ink); border-color: #94a3b8; }
+    .pc-icon-btn.is-danger:hover { color: #dc2626; border-color: #fecaca; background: #fef2f2; }
 
     /* Back / Next stay pinned to the bottom of the screen while filling in */
-    .pc-nav { position: sticky; bottom: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin: 1.5rem -1.25rem -1.25rem; padding: .85rem 1.25rem; background: rgba(8,11,18,.96); backdrop-filter: blur(8px); border-top: 1px solid rgba(255,255,255,.1); border-radius: 0 0 14px 14px; }
+    .pc-nav { position: sticky; bottom: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin: 1.5rem -1.25rem -1.25rem; padding: .85rem 1.25rem; background: rgba(255,255,255,.96); backdrop-filter: blur(8px); border-top: 1px solid var(--line); border-radius: 0 0 16px 16px; }
     @media (min-width: 640px) { .pc-nav { margin: 1.75rem -1.75rem -1.75rem; padding: .9rem 1.75rem; } }
-    .pc-nav-hint { font-size: 13px; color: #a3b1c6; display: none; }
+    .pc-nav[hidden] { display: none; }
+    .pc-nav-hint { font-size: 13px; color: #64748b; display: none; }
     @media (min-width: 720px) { .pc-nav-hint { display: block; } }
 
-    /* Step 1: "What does your brand sell?" dropdown */
-    .pc-req { color: #60a5fa; }
+    /* Step 1: brand dropdowns */
+    .pc-req { color: var(--blue); }
     .pc-brand { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1rem; margin-top: 1rem; }
     @media (max-width: 640px) { .pc-brand { grid-template-columns: minmax(0,1fr); } }
     .pc-select-wrap { position: relative; margin-top: .4rem; }
-    .pc-select { text-overflow: ellipsis; }
-    .pc-select.is-optional.is-empty { color: #a3b1c6; } /* optional: no :invalid, so grey via class */
-    .pc-select { appearance: none; -webkit-appearance: none; padding-right: 2.75rem; cursor: pointer; color-scheme: dark; }
-    .pc-select:invalid { color: #a3b1c6; } /* "Select a category" shown in grey until chosen */
-    .pc-select option { background: #0a0e15; color: #f1f5f9; }
-    .pc-select-wrap::after { content: ''; position: absolute; right: 1rem; top: 50%; width: 8px; height: 8px; margin-top: -6px; border-right: 2px solid #a3b1c6; border-bottom: 2px solid #a3b1c6; transform: rotate(45deg); pointer-events: none; }
+    .pc-select { appearance: none; -webkit-appearance: none; padding-right: 2.75rem; cursor: pointer; color-scheme: light; text-overflow: ellipsis; }
+    .pc-select:invalid, .pc-select.is-optional.is-empty { color: #64748b; } /* placeholder option shown in grey */
+    .pc-select option { background: #fff; color: var(--ink); }
+    .pc-select-wrap::after { content: ''; position: absolute; right: 1rem; top: 50%; width: 8px; height: 8px; margin-top: -6px; border-right: 2px solid #64748b; border-bottom: 2px solid #64748b; transform: rotate(45deg); pointer-events: none; }
 
     /* Step 1: products */
     .pc-products { display: grid; gap: .75rem; margin-top: 1.1rem; }
-    .pc-product { border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 1rem 1.1rem; background: rgba(255,255,255,.02); }
+    .pc-product { border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.1rem; background: var(--soft); }
     .pc-prow { display: flex; gap: .75rem; align-items: flex-end; }
     .pc-prow .pc-field { flex: 1; }
     .pc-vgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: .6rem; margin-top: .75rem; }
@@ -102,22 +113,22 @@ include __DIR__ . '/app/views/header.php';
     .pc-pfoot { margin-top: .5rem; }
 
     /* Step 2: compact cost grid per product (stacks on phones) */
-    .pc-cost { border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 1rem 1.1rem; background: rgba(255,255,255,.02); }
+    .pc-cost { border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.1rem; background: var(--soft); }
     .pc-cost + .pc-cost { margin-top: .75rem; }
     .pc-chead, .pc-crow { display: grid; grid-template-columns: var(--cols); gap: .6rem; align-items: center; }
-    .pc-chead { margin-top: .8rem; padding-bottom: .35rem; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; font-weight: 600; color: #a3b1c6; }
+    .pc-chead { margin-top: .8rem; padding-bottom: .35rem; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; color: var(--muted); }
     .pc-chead span:last-child, .pc-cbase { text-align: right; }
-    .pc-crow { padding: .45rem 0; border-top: 1px solid rgba(255,255,255,.06); }
-    .pc-cname { font-size: 14px; font-weight: 600; color: #e2e8f0; overflow-wrap: anywhere; }
+    .pc-crow { padding: .45rem 0; border-top: 1px solid var(--line); }
+    .pc-cname { font-size: 14px; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
     .pc-ccell .pc-input-wrap { margin-top: 0; }
-    .pc-cbase { font-size: 15px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
+    .pc-cbase { font-size: 15px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
     .pc-cl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
     @media (max-width: 640px) {
         .pc-chead { display: none; }
         .pc-crow { grid-template-columns: 1fr 1fr; padding: .75rem 0; }
         .pc-cname, .pc-cbase { grid-column: 1 / -1; }
         .pc-cbase { text-align: left; font-size: 14px; }
-        .pc-cl { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; display: block; margin-bottom: .3rem; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; font-weight: 600; color: #a3b1c6; }
+        .pc-cl { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; display: block; margin-bottom: .3rem; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; color: var(--muted); }
     }
 
     /* Other costs: folded away until needed */
@@ -130,46 +141,65 @@ include __DIR__ . '/app/views/header.php';
     .pc-extra-form .pc-input-wrap { margin-top: 0; }
     @media (max-width: 560px) { .pc-extra-form { grid-template-columns: 1fr; } }
     .pc-chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .6rem; }
-    .pc-chip { display: inline-flex; align-items: center; gap: .35rem; font-size: 13px; color: #e2e8f0; border: 1px solid rgba(255,255,255,.16); border-radius: 999px; padding: .2rem .25rem .2rem .75rem; }
-    .pc-chip button { width: 28px; height: 28px; border-radius: 999px; background: none; border: 0; color: #cbd5e1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
-    .pc-chip button:hover { color: #fca5a5; background: rgba(248,113,113,.12); }
+    .pc-chip { display: inline-flex; align-items: center; gap: .35rem; font-size: 13px; color: var(--ink); background: #fff; border: 1px solid var(--line-2); border-radius: 999px; padding: .2rem .25rem .2rem .75rem; }
+    .pc-chip button { width: 28px; height: 28px; border-radius: 999px; background: none; border: 0; color: #64748b; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+    .pc-chip button:hover { color: #dc2626; background: #fef2f2; }
     .pc-chip .material-symbols-outlined { font-size: 16px; }
 
-    /* Step 3: results table */
+    /* Thank-you page: price sheet table */
     .pc-result-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1rem; }
     .pc-actions { display: flex; flex-wrap: wrap; gap: .6rem; }
-    .pc-sheet { margin-top: 1rem; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; overflow: auto; max-height: 62vh; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.22) transparent; }
+    .pc-sheet { margin-top: 1rem; border: 1px solid var(--line); border-radius: 12px; overflow: auto; max-height: 62vh; scrollbar-width: thin; scrollbar-color: rgba(15,23,42,.25) transparent; }
     .pc-sheet::-webkit-scrollbar { height: 8px; width: 8px; }
     .pc-sheet::-webkit-scrollbar-track, .pc-sheet::-webkit-scrollbar-corner { background: transparent; }
-    .pc-sheet::-webkit-scrollbar-thumb { background: rgba(255,255,255,.18); border-radius: 999px; }
-    .pc-sheet::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.32); }
+    .pc-sheet::-webkit-scrollbar-thumb { background: rgba(15,23,42,.2); border-radius: 999px; }
+    .pc-sheet::-webkit-scrollbar-thumb:hover { background: rgba(15,23,42,.35); }
     .pc-sheet::-webkit-scrollbar-button { display: none; }
     .pc-sheet table { border-collapse: separate; border-spacing: 0; font-size: 14px; min-width: 100%; }
-    .pc-sheet th, .pc-sheet td { padding: .65rem .9rem; white-space: nowrap; border-bottom: 1px solid rgba(255,255,255,.07); }
-    .pc-sheet thead th { position: sticky; top: 0; z-index: 2; background: #0d121b; color: #a3b1c6; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; text-align: right; }
-    .pc-sheet td, .pc-sheet tbody th { background: #070a10; color: #dbe3ee; text-align: right; font-weight: 400; font-variant-numeric: tabular-nums; }
+    .pc-sheet th, .pc-sheet td { padding: .65rem .9rem; white-space: nowrap; border-bottom: 1px solid var(--line); }
+    .pc-sheet thead th { position: sticky; top: 0; z-index: 2; background: #f1f5f9; color: var(--muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; text-align: right; }
+    .pc-sheet td, .pc-sheet tbody th { background: #fff; color: #1e293b; text-align: right; font-weight: 400; font-variant-numeric: tabular-nums; }
     .pc-sheet .is-text { text-align: left; }
-    .pc-sheet .pc-stick { position: sticky; left: 0; z-index: 1; box-shadow: 1px 0 0 rgba(255,255,255,.1); }
-    .pc-sheet tbody th.pc-stick { color: #fff; font-weight: 600; }
+    .pc-sheet .pc-stick { position: sticky; left: 0; z-index: 1; box-shadow: 1px 0 0 var(--line); }
+    .pc-sheet tbody th.pc-stick { color: var(--ink); font-weight: 600; }
     .pc-sheet thead th.pc-stick { z-index: 3; }
-    .pc-sheet td.is-key { color: #fff; font-weight: 700; background: #0b1426; }
-    .pc-sheet thead th.is-key { color: #93c5fd; background: #0f1a2e; }
+    .pc-sheet td.is-key { color: #0b3d91; font-weight: 700; background: #eff6ff; }
+    .pc-sheet thead th.is-key { color: #1d4ed8; background: #dbeafe; }
     .pc-sheet tbody tr:last-child > * { border-bottom: 0; }
-    .pc-sheet tr.is-group > * { border-top: 1px solid rgba(255,255,255,.16); }
-    .pc-sheet-note { margin-top: .5rem; font-size: 13px; color: #a3b1c6; }
+    .pc-sheet tr.is-group > * { border-top: 1px solid var(--line-2); }
+    .pc-sheet tbody tr:hover > td, .pc-sheet tbody tr:hover > th { background: #f8fafc; }
+    .pc-sheet tbody tr:hover > td.is-key { background: #e0edff; }
+    .pc-sheet-note { margin-top: .5rem; font-size: 13px; color: #64748b; }
 
-    /* Lead modal */
-    .pc-modal { position: fixed; inset: 0; z-index: 70; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(2,4,8,.8); backdrop-filter: blur(4px); }
+    /* Contact popup */
+    .pc-modal { position: fixed; inset: 0; z-index: 70; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(15,23,42,.55); backdrop-filter: blur(3px); }
     .pc-modal.is-open { display: flex; }
-    .pc-dialog { position: relative; width: 100%; max-width: 440px; max-height: calc(100vh - 2rem); overflow-y: auto; border-radius: 16px; border: 1px solid rgba(255,255,255,.14); background: #0a0e15; padding: 1.75rem 1.5rem 1.5rem; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+    .pc-dialog { position: relative; width: 100%; max-width: 440px; max-height: calc(100vh - 2rem); overflow-y: auto; border-radius: 16px; border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 1.75rem 1.5rem 1.5rem; box-shadow: 0 30px 80px rgba(15,23,42,.3); }
     .pc-dialog .pc-icon-btn { position: absolute; top: .9rem; right: .9rem; }
+
+    /* "Almost there 🎉": the popper pops in and throws a little confetti each time the popup opens
+       (CSS animations restart when the popup goes from display:none to flex). */
+    .pc-almost { display: flex; align-items: center; gap: .5rem; padding-right: 2.5rem; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+    .pc-popper { position: relative; display: inline-block; font-size: 1.6rem; line-height: 1; transform-origin: 30% 80%; animation: pcPop .7s cubic-bezier(.2,1.6,.4,1) both, pcWiggle 1.2s ease-in-out .7s 2; }
+    .pc-confetti { position: absolute; left: 55%; top: 35%; width: 0; height: 0; pointer-events: none; }
+    .pc-confetti i { position: absolute; width: 6px; height: 9px; border-radius: 2px; opacity: 0; animation: pcBurst .9s ease-out .25s forwards; }
+    .pc-confetti i:nth-child(1) { --x: 34px;  --y: -30px; --r: 120deg; background: #0066ff; }
+    .pc-confetti i:nth-child(2) { --x: 46px;  --y: -6px;  --r: 220deg; background: #f59e0b; }
+    .pc-confetti i:nth-child(3) { --x: 28px;  --y: 22px;  --r: 80deg;  background: #ec4899; }
+    .pc-confetti i:nth-child(4) { --x: 4px;   --y: -42px; --r: 300deg; background: #22c55e; }
+    .pc-confetti i:nth-child(5) { --x: -24px; --y: -34px; --r: 160deg; background: #f97316; }
+    .pc-confetti i:nth-child(6) { --x: 52px;  --y: -26px; --r: 40deg;  background: #8b5cf6; width: 5px; height: 5px; border-radius: 999px; }
+    .pc-confetti i:nth-child(7) { --x: -14px; --y: 16px;  --r: 260deg; background: #06b6d4; width: 5px; height: 5px; border-radius: 999px; }
+    .pc-confetti i:nth-child(8) { --x: 16px;  --y: 36px;  --r: 200deg; background: #eab308; }
+    @keyframes pcPop { 0% { transform: scale(0) rotate(-40deg); opacity: 0; } 70% { opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+    @keyframes pcWiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-14deg); } 75% { transform: rotate(10deg); } }
+    @keyframes pcBurst { 0% { opacity: 1; transform: translate(0,0) rotate(0) scale(.6); } 100% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(1); } }
     .pc-dialog .pc-field + .pc-field { margin-top: .9rem; }
     .pc-dialog form { margin-top: 1.1rem; }
     .pc-dialog .pc-btn-primary { width: 100%; margin-top: 1.25rem; }
-    .pc-privacy { margin-top: .8rem; font-size: 13px; color: #a3b1c6; text-align: center; }
     .pc-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
-    .pc-toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(20px); opacity: 0; background: #fff; color: #05070a; padding: .65rem 1.1rem; border-radius: 999px; font-size: 14px; font-weight: 600; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 80; }
+    .pc-toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(20px); opacity: 0; background: var(--ink); color: #fff; padding: .65rem 1.1rem; border-radius: 999px; font-size: 14px; font-weight: 600; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 80; box-shadow: 0 10px 30px rgba(15,23,42,.25); }
     .pc-toast.is-on { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     @media (prefers-reduced-motion: reduce) {
@@ -177,14 +207,20 @@ include __DIR__ . '/app/views/header.php';
     }
 </style>
 
-<section class="pc-section">
-    <div class="pc-wrap" id="pcWrap">
-        <div class="pc-eyebrow">Pricing Calculator</div>
-        <h1 class="pc-title">Price your products to break even on ads.</h1>
-        <p class="pc-lede">Enter what one unit costs you. We'll give you the selling price and the ROAS your ads must hit, for every product and variant.</p>
+<section class="pc-section<?= $isThanks ? ' is-wide' : '' ?>" id="pcSection">
+    <div class="pc-band">
+        <div class="pc-wrap">
+            <?php if ($isThanks): ?>
+                <h1 class="pc-title">Thank you<span id="pcThanksName"></span>! Your price sheet is ready.</h1>
+            <?php else: ?>
+                <div class="pc-eyebrow">Pricing Calculator</div>
+                <h1 class="pc-title">Find your selling price and breakeven ROAS.</h1>
+            <?php endif; ?>
+        </div>
+    </div>
 
+    <div class="pc-wrap">
         <div class="pc-card pc-main">
-            <nav class="pc-steps" id="pcSteps" aria-label="Calculator steps"></nav>
             <div class="pc-track" id="pcTrack" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="33">
                 <div class="pc-fill" id="pcFill" style="width:33%"></div>
             </div>
@@ -192,7 +228,7 @@ include __DIR__ . '/app/views/header.php';
 
             <div class="pc-body" id="pcBody"></div>
 
-            <div class="pc-nav" id="pcNav">
+            <div class="pc-nav" id="pcNav"<?= $isThanks ? ' hidden' : '' ?>>
                 <button type="button" class="pc-btn pc-btn-ghost" data-a="back" id="pcBack">
                     <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>Back
                 </button>
@@ -204,12 +240,14 @@ include __DIR__ . '/app/views/header.php';
         </div>
     </div>
 
-    <!-- Contact details, asked once before the prices are shown -->
+    <?php if (!$isThanks): ?>
+    <!-- Contact details, asked once before the price sheet -->
     <div class="pc-modal" id="pcModal" aria-hidden="true">
         <div class="pc-dialog" role="dialog" aria-modal="true" aria-labelledby="pcModalTitle" aria-describedby="pcModalDesc">
             <button type="button" class="pc-icon-btn" data-a="close-modal" aria-label="Close"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
-            <div class="pc-eyebrow">Almost there</div>
-            <h2 class="pc-h2" id="pcModalTitle" style="margin-top:.5rem">Where should we send your prices?</h2>
+            <h2 class="pc-almost" id="pcModalTitle">Almost there
+                <span class="pc-popper" aria-hidden="true">🎉<span class="pc-confetti"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></span>
+            </h2>
             <p class="pc-help" id="pcModalDesc">Enter your details to see your price sheet.</p>
             <form id="pcLeadForm" novalidate>
                 <div class="pc-field">
@@ -227,10 +265,10 @@ include __DIR__ . '/app/views/header.php';
                 <div class="pc-hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
                 <div class="pc-error" id="pcFormError" role="alert" hidden></div>
                 <button type="submit" class="pc-btn pc-btn-primary" id="pcSubmit">Show my prices<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></button>
-                <p class="pc-privacy">We'll only use these details to get in touch about your pricing.</p>
             </form>
         </div>
     </div>
+    <?php endif; ?>
 
     <div class="pc-toast" id="pcToast" role="status" aria-live="polite"></div>
 </section>
@@ -239,10 +277,14 @@ include __DIR__ . '/app/views/header.php';
 (function () {
     'use strict';
 
-    var STORE_KEY = 'digifyce_pricing_calc_v1';
+    var VIEW = <?= json_encode($isThanks ? 'thanks' : 'calc') ?>;
+    var CALC_URL = <?= json_encode($appUrl . '/pricing-calculator') ?>;
+    var THANKS_URL = <?= json_encode($appUrl . '/pricing-calculator/thank-you') ?>;
     var LEAD_URL = <?= json_encode($appUrl . '/app/api/pricing_calculator_lead.php') ?>;
+    var STORE_KEY = 'digifyce_pricing_calc_v1';
+    var NAME_KEY = 'digifyce_pricing_calc_name'; // first name for the thank-you greeting (this tab only)
     var STEPS = ['Products', 'Unit Costs', 'Price Sheet'];
-    var RESULT_STEP = STEPS.length - 1;
+    var RESULT_STEP = STEPS.length - 1; // the price sheet, shown on the thank-you page
 
     // Fixed pricing assumptions. Visitors only enter their own costs; these are
     // not editable on the page. Change them here.
@@ -272,13 +314,14 @@ include __DIR__ . '/app/views/header.php';
         { key: 'above_1lakh', label: 'Above ₹1 Lakh' }
     ];
 
-    var root = document.querySelector('.pc-section');
+    var root = document.getElementById('pcSection');
     var body = document.getElementById('pcBody');
-    var modal = document.getElementById('pcModal');
-    var form = document.getElementById('pcLeadForm');
+    var modal = document.getElementById('pcModal');   // calculator page only
+    var form = document.getElementById('pcLeadForm'); // calculator page only
     var moreOpen = {}; // product id → "Other costs" panel open (kept across re-renders)
 
     /* ---------- state ----------
+       Kept in localStorage so the thank-you page can show the same products.
        S.products = [{ id, name, extras: [{ id, name, value }], variants: [{ id, name, mfg, pack, ship, x: { extraId: value }, implicit? }] }]
        A product with no variants still needs one row of costs to price. That row
        is "implicit": hidden from the variant list and labelled with the product
@@ -308,9 +351,8 @@ include __DIR__ . '/app/views/header.php';
                     only.implicit = true; only.name = '';
                 }
             });
-            var out = { step: Math.min(s.step || 0, RESULT_STEP), unlocked: !!s.unlocked, industry: s.industry || '', budget: s.budget || '', products: s.products };
-            if (out.step === RESULT_STEP && !out.unlocked) out.step = RESULT_STEP - 1;
-            return out;
+            // The calculator page only has steps 1–2; the price sheet lives on the thank-you page.
+            return { step: Math.min(s.step || 0, RESULT_STEP - 1), unlocked: !!s.unlocked, industry: s.industry || '', budget: s.budget || '', products: s.products };
         } catch (e) {}
         return freshState();
     }
@@ -412,7 +454,7 @@ include __DIR__ . '/app/views/header.php';
         '</div>';
     }
 
-    /* ---------- results table: one column list drives the page view and the download ---------- */
+    /* ---------- price sheet: one column list drives the table and the download ---------- */
 
     function otherCostsText(p, v) {
         return p.extras.map(function (e) {
@@ -489,7 +531,7 @@ include __DIR__ . '/app/views/header.php';
             '<thead>' + head + '</thead><tbody>' + bodyRows + '</tbody></table></div>';
     }
 
-    /* ---------- steps ---------- */
+    /* ---------- calculator steps ---------- */
 
     // Empty error box each step renders; showStepError() below fills it in.
     function stepErrorBox() { return '<div class="pc-error" id="pcStepError" role="alert" hidden></div>'; }
@@ -585,24 +627,27 @@ include __DIR__ . '/app/views/header.php';
             stepErrorBox();
     }
 
-    function stepResult() {
+    // Thank-you page body: the price sheet.
+    function thanksSheet() {
         return '<div class="pc-result-head">' +
                 '<div><h2 class="pc-h2" id="pcStepTitle" tabindex="-1">Your price sheet</h2>' +
-                '<p class="pc-help">Selling price and breakeven ROAS are highlighted.</p></div>' +
+                '</div>' +
                 '<div class="pc-actions">' +
                     '<button type="button" class="pc-btn pc-btn-primary" data-a="download">' + icon('download') + 'Download sheet</button>' +
                     '<button type="button" class="pc-btn pc-btn-ghost" data-a="edit-costs">' + icon('edit') + 'Edit costs</button>' +
-                    '<button type="button" class="pc-btn pc-btn-ghost" data-a="restart">' + icon('restart_alt') + 'Start over</button>' +
+                    '<button type="button" class="pc-btn pc-btn-ghost" data-a="restart">' + icon('restart_alt') + 'Price new products</button>' +
                 '</div>' +
             '</div>' +
             renderSheet() +
             '<p class="pc-sheet-note">Scroll sideways to see every column.</p>';
     }
 
-    var STEP_RENDER = [stepProducts, stepCosts, stepResult];
-    var NAV_HINT = ['Press Enter to continue', 'Press Enter to see your prices', ''];
+    var STEP_RENDER = [stepProducts, stepCosts];
+    var NAV_HINT = ['Press Enter to continue', 'Press Enter to see your prices'];
 
     /* ---------- render ---------- */
+
+    function currentStep() { return VIEW === 'thanks' ? RESULT_STEP : S.step; }
 
     function refreshBases() {
         Array.prototype.forEach.call(body.querySelectorAll('[data-base]'), function (el) {
@@ -613,28 +658,20 @@ include __DIR__ . '/app/views/header.php';
     }
 
     function renderNav() {
-        var n = STEPS.length, i = S.step, pct = Math.round(((i + 1) / n) * 100);
+        var n = STEPS.length, i = currentStep(), pct = Math.round(((i + 1) / n) * 100);
         document.getElementById('pcFill').style.width = pct + '%';
         document.getElementById('pcTrack').setAttribute('aria-valuenow', pct);
         document.getElementById('pcTrack').setAttribute('aria-valuetext', 'Step ' + (i + 1) + ' of ' + n);
         document.getElementById('pcStatus').textContent = 'Step ' + (i + 1) + ' of ' + n + ': ' + STEPS[i];
-        document.getElementById('pcSteps').innerHTML = STEPS.map(function (s, k) {
-            var cls = k === i ? 'is-current' : (k < i ? 'is-done' : '');
-            var state = k < i ? ', completed' : (k === i ? ', current step' : '');
-            return '<button type="button" class="pc-step ' + cls + '" data-a="goto" data-s="' + k + '"' + (k === i ? ' aria-current="step"' : '') + ' aria-label="Step ' + (k + 1) + ': ' + s + state + '">' +
-                '<span class="pc-step-n" aria-hidden="true">' + (k < i ? '✓' : k + 1) + '</span>' + s + '</button>';
-        }).join('');
+        if (VIEW === 'thanks') return; // no Back / Next on the thank-you page
         document.getElementById('pcBack').style.visibility = i === 0 ? 'hidden' : 'visible';
-        // The results step has its own buttons; on the costs step "Next" becomes "See my prices".
-        document.getElementById('pcNav').style.display = i === RESULT_STEP ? 'none' : '';
         document.getElementById('pcNextText').textContent = i === RESULT_STEP - 1 ? 'See my prices' : 'Next';
         document.getElementById('pcNavHint').textContent = NAV_HINT[i];
-        document.getElementById('pcWrap').classList.toggle('is-wide', i === RESULT_STEP);
     }
 
     function render() {
         renderNav();
-        body.innerHTML = STEP_RENDER[S.step]();
+        body.innerHTML = VIEW === 'thanks' ? thanksSheet() : STEP_RENDER[S.step]();
         refreshBases();
     }
 
@@ -656,6 +693,14 @@ include __DIR__ . '/app/views/header.php';
         var inp = inputId && document.getElementById(inputId);
         if (inp) { inp.setAttribute('aria-invalid', 'true'); inp.setAttribute('aria-describedby', 'pcStepError'); inp.focus(); }
         return false;
+    }
+
+    // True when everything needed for a price sheet is filled in (no DOM needed).
+    function dataComplete() {
+        if (!S.industry) return false;
+        return S.products.every(function (p) {
+            return has(p.name) && p.variants.every(function (v) { return num(v.mfg) > 0; });
+        });
     }
 
     // Each step must be complete before moving past it. Returns true when OK.
@@ -690,14 +735,21 @@ include __DIR__ . '/app/views/header.php';
 
     function goTo(step) {
         step = Math.max(0, Math.min(RESULT_STEP, step));
+        if (VIEW === 'thanks') {
+            // Steps 1–2 live on the calculator page.
+            if (step < RESULT_STEP) { S.step = step; save(); window.location.href = CALC_URL; }
+            return;
+        }
         // Moving forward checks every step in between.
         for (var k = S.step; k < step; k++) {
             if (k !== S.step) { S.step = k; save(); render(); }
             if (!validateStep(k)) return;
         }
-        if (step === RESULT_STEP && !S.unlocked) {
+        if (step === RESULT_STEP) {
+            // The price sheet is on the thank-you page; contact details first (once).
             if (S.step !== RESULT_STEP - 1) { S.step = RESULT_STEP - 1; save(); render(); }
-            openModal();
+            if (S.unlocked) window.location.href = THANKS_URL;
+            else openModal();
             return;
         }
         S.step = step;
@@ -707,7 +759,7 @@ include __DIR__ . '/app/views/header.php';
         focusStepTitle();
     }
 
-    /* ---------- lead modal ---------- */
+    /* ---------- contact popup (calculator page only) ---------- */
 
     var lastFocus = null;
     function openModal() {
@@ -719,22 +771,13 @@ include __DIR__ . '/app/views/header.php';
         setTimeout(function () { document.getElementById('pcName').focus(); }, 30);
     }
     function closeModal() {
+        if (!modal) return;
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
         if (lastFocus && lastFocus.focus) lastFocus.focus();
     }
-    // Keep Tab / Shift+Tab inside the dialog while it's open.
-    modal.addEventListener('keydown', function (e) {
-        if (e.key !== 'Tab') return;
-        var items = Array.prototype.filter.call(modal.querySelectorAll('button, input'), function (el) {
-            return el.tabIndex !== -1 && !el.disabled && el.offsetParent !== null;
-        });
-        if (!items.length) return;
-        var first = items[0], last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    });
+    function modalOpen() { return !!modal && modal.classList.contains('is-open'); }
 
     function formError(msg, inputId) {
         var box = document.getElementById('pcFormError');
@@ -746,62 +789,77 @@ include __DIR__ . '/app/views/header.php';
         }
     }
 
-    form.addEventListener('input', function (e) { e.target.removeAttribute('aria-invalid'); e.target.removeAttribute('aria-describedby'); });
+    if (modal) {
+        // Keep Tab / Shift+Tab inside the dialog while it's open.
+        modal.addEventListener('keydown', function (e) {
+            if (e.key !== 'Tab') return;
+            var items = Array.prototype.filter.call(modal.querySelectorAll('button, input'), function (el) {
+                return el.tabIndex !== -1 && !el.disabled && el.offsetParent !== null;
+            });
+            if (!items.length) return;
+            var first = items[0], last = items[items.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        });
+        modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
 
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        var name = form.full_name.value.trim();
-        var phone = form.phone.value.trim();
-        var email = form.email.value.trim();
-        var digits = phone.replace(/\D/g, '');
-        if (!name) return formError('Please enter your name.', 'pcName');
-        if (digits.length < 10 || digits.length > 15) return formError('Please enter a valid phone number.', 'pcPhone');
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return formError('Please enter a valid email address.', 'pcEmail');
+        form.addEventListener('input', function (e) { e.target.removeAttribute('aria-invalid'); e.target.removeAttribute('aria-describedby'); });
 
-        var btn = document.getElementById('pcSubmit');
-        btn.disabled = true;
-        btn.setAttribute('aria-busy', 'true');
-        document.getElementById('pcFormError').hidden = true;
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var name = form.full_name.value.trim();
+            var phone = form.phone.value.trim();
+            var email = form.email.value.trim();
+            var digits = phone.replace(/\D/g, '');
+            if (!name) return formError('Please enter your name.', 'pcName');
+            if (digits.length < 10 || digits.length > 15) return formError('Please enter a valid phone number.', 'pcPhone');
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return formError('Please enter a valid email address.', 'pcEmail');
 
-        var variants = [];
-        S.products.forEach(function (p, pi) {
-            p.variants.forEach(function (v, vi) {
-                var c = calc(p, v);
-                variants.push({
-                    name: fullName(p, pi, v, vi), mfg: num(v.mfg), pack: num(v.pack), ship: num(v.ship),
-                    extras: p.extras.map(function (x) { return { name: x.name, value: extraValue(v, x) }; }),
-                    base: Math.round(c.base), selling_price: c.sp, compare_at: c.comp,
-                    gst: c.tax, breakeven_roas: isFinite(c.beRoas) ? c.beRoas.toFixed(2) + 'x' : '—'
+            var btn = document.getElementById('pcSubmit');
+            btn.disabled = true;
+            btn.setAttribute('aria-busy', 'true');
+            document.getElementById('pcFormError').hidden = true;
+
+            var variants = [];
+            S.products.forEach(function (p, pi) {
+                p.variants.forEach(function (v, vi) {
+                    var c = calc(p, v);
+                    variants.push({
+                        name: fullName(p, pi, v, vi), mfg: num(v.mfg), pack: num(v.pack), ship: num(v.ship),
+                        extras: p.extras.map(function (x) { return { name: x.name, value: extraValue(v, x) }; }),
+                        base: Math.round(c.base), selling_price: c.sp, compare_at: c.comp,
+                        gst: c.tax, breakeven_roas: isFinite(c.beRoas) ? c.beRoas.toFixed(2) + 'x' : '—'
+                    });
                 });
             });
-        });
-        var payload = {
-            full_name: name, phone: phone, email: email, website: form.website.value,
-            product: S.products.map(pname).join(', '),
-            industry: S.industry || '',
-            budget: S.budget || '',
-            variants: variants
-        };
+            var payload = {
+                full_name: name, phone: phone, email: email, website: form.website.value,
+                product: S.products.map(pname).join(', '),
+                industry: S.industry || '',
+                budget: S.budget || '',
+                variants: variants
+            };
 
-        function done() { btn.disabled = false; btn.removeAttribute('aria-busy'); }
-        fetch(LEAD_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        }).then(function (res) {
-            return res.json().catch(function () { return { success: false }; });
-        }).then(function (data) {
-            done();
-            if (!data || !data.success) return formError((data && data.message) || 'Something went wrong. Please try again.');
-            S.unlocked = true;
-            form.reset();
-            closeModal();
-            goTo(RESULT_STEP);
-        }).catch(function () {
-            done();
-            formError('Could not connect. Please check your internet and try again.');
+            function failed(msg) { btn.disabled = false; btn.removeAttribute('aria-busy'); formError(msg); }
+            fetch(LEAD_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(function (res) {
+                return res.json().catch(function () { return { success: false }; });
+            }).then(function (data) {
+                if (!data || !data.success) return failed((data && data.message) || 'Something went wrong. Please try again.');
+                S.unlocked = true;
+                S.step = RESULT_STEP - 1;
+                save();
+                try { sessionStorage.setItem(NAME_KEY, name.split(/\s+/)[0]); } catch (err) {}
+                // Its own address, so ad platforms / analytics can count it as a conversion.
+                window.location.href = THANKS_URL;
+            }).catch(function () {
+                failed('Could not connect. Please check your internet and try again.');
+            });
         });
-    });
+    }
 
     /* ---------- events ---------- */
 
@@ -840,8 +898,8 @@ include __DIR__ . '/app/views/header.php';
         save();
     });
     root.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && modal.classList.contains('is-open')) { closeModal(); return; }
-        if (e.key !== 'Enter' || modal.classList.contains('is-open')) return;
+        if (e.key === 'Escape' && modalOpen()) { closeModal(); return; }
+        if (e.key !== 'Enter' || modalOpen()) return;
         var pid = e.target.getAttribute('data-extra-name') || e.target.getAttribute('data-extra-val');
         if (pid) { e.preventDefault(); addExtra(pid); return; }
         // Enter in any step field moves on, like submitting a form.
@@ -855,7 +913,6 @@ include __DIR__ . '/app/views/header.php';
             if (e.target.open) { var n = document.getElementById('exName_' + pid); if (n) n.focus(); }
         }
     }, true);
-    modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
 
     function addExtra(pid) {
         var p = findP(pid);
@@ -872,7 +929,6 @@ include __DIR__ . '/app/views/header.php';
     var ACTIONS = {
         next: function () { goTo(S.step + 1); },
         back: function () { goTo(S.step - 1); },
-        goto: function (el) { goTo(parseInt(el.getAttribute('data-s'), 10)); },
         'edit-costs': function () { goTo(1); },
         'close-modal': closeModal,
         'add-product': function () {
@@ -928,8 +984,8 @@ include __DIR__ . '/app/views/header.php';
             S.unlocked = unlocked;
             S.industry = industry;
             S.budget = budget;
-            moreOpen = {};
-            save(); render(); scrollToCard(); focusStepTitle();
+            save();
+            window.location.href = CALC_URL;
         }
     };
 
@@ -970,6 +1026,16 @@ include __DIR__ . '/app/views/header.php';
         toastTimer = setTimeout(function () { t.classList.remove('is-on'); }, 2200);
     }
 
+    /* ---------- start ---------- */
+
+    if (VIEW === 'thanks') {
+        // Only reachable after the contact form; otherwise send them to fill it in.
+        if (!S.unlocked || !dataComplete()) { window.location.replace(CALC_URL); return; }
+        try {
+            var first = sessionStorage.getItem(NAME_KEY);
+            if (first) document.getElementById('pcThanksName').textContent = ', ' + first;
+        } catch (e) {}
+    }
     render();
 })();
 </script>
